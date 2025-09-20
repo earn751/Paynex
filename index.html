@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>PayNex</title>
+  <title>PayNex - Telegram Mini App</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
@@ -39,6 +39,7 @@
       padding-bottom: 80px;
     }
 
+    /* Spinner Styles */
     .spinner-overlay {
       position: fixed;
       top: 0;
@@ -332,6 +333,12 @@
       padding: 10px;
       color: var(--text);
       cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .share-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
     }
 
     .share-btn i {
@@ -574,6 +581,12 @@
       color: var(--accent);
     }
 
+    .notification-message {
+      font-size: 14px;
+      margin-bottom: 5px;
+      color: var(--text);
+    }
+
     .notification-time {
       font-size: 12px;
       color: var(--text-secondary);
@@ -636,101 +649,29 @@
       }
     }
 
-    .modal {
-      position: fixed;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      background: var(--card-bg);
-      border-radius: 15px;
-      padding: 20px;
-      z-index: 1001;
-      width: 90%;
-      max-width: 400px;
-      display: none;
-    }
-
-    .modal.active {
-      display: block;
-    }
-
-    .modal-header {
+    .referral-stats {
       display: flex;
       justify-content: space-between;
-      align-items: center;
-      margin-bottom: 15px;
-      padding-bottom: 10px;
-      border-bottom: 1px solid var(--input-bg);
-    }
-
-    .close-modal {
-      background: none;
-      border: none;
-      color: var(--text);
-      font-size: 20px;
-      cursor: pointer;
-    }
-
-    .category-section {
-      margin-bottom: 20px;
-    }
-
-    .category-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 15px;
-      cursor: pointer;
-    }
-
-    .category-content {
-      display: none;
-    }
-
-    .category-content.active {
-      display: block;
-    }
-
-    .admin-table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 10px;
-    }
-
-    .admin-table th, .admin-table td {
-      padding: 8px;
-      text-align: left;
-      border-bottom: 1px solid var(--input-bg);
-      font-size: 12px;
-    }
-
-    .admin-table th {
-      background: var(--primary);
-      color: var(--text);
-    }
-
-    .referral-history {
-      margin-top: 20px;
-    }
-
-    .referral-history h3 {
-      font-size: 16px;
-      margin-bottom: 10px;
-    }
-
-    .referral-history ul {
-      list-style: none;
-      padding: 0;
-    }
-
-    .referral-history li {
+      margin: 15px 0;
       padding: 10px;
       background: var(--input-bg);
-      border-radius: 8px;
-      margin-bottom: 10px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
+      border-radius: 10px;
+    }
+
+    .referral-stats .stat {
+      text-align: center;
+    }
+
+    .referral-stats .stat-value {
+      font-size: 18px;
+      font-weight: bold;
+      color: var(--success);
+      display: block;
+    }
+
+    .referral-stats .stat-label {
+      font-size: 12px;
+      color: var(--text-secondary);
     }
 
     @media (max-width: 480px) {
@@ -870,44 +811,56 @@
           Referral System
         </h2>
 
-        <div class="stats-container">
-          <div class="stat-card">
-            <div class="stat-label">মোট রেফার</div>
-            <div class="stat-value" id="refCount">0</div>
+        <div class="referral-stats">
+          <div class="stat">
+            <span class="stat-value" id="refCount">0</span>
+            <span class="stat-label">মোট রেফার</span>
           </div>
-          <div class="stat-card">
-            <div class="stat-label">রেফার ইনকাম</div>
-            <div class="stat-value">৳<span id="refIncome">0</span></div>
+          <div class="stat">
+            <span class="stat-value">৳<span id="refIncome">0</span></span>
+            <span class="stat-label">রেফার ইনকাম</span>
+          </div>
+          <div class="stat">
+            <span class="stat-value" id="refLevel">1</span>
+            <span class="stat-label">লেভেল</span>
           </div>
         </div>
 
-        <p>আপনার Referral Link শেয়ার করুন এবং প্রতি রেফারেলে ৳25 পাউন!</p>
+        <p style="text-align: center; margin: 15px 0; color: var(--success); font-weight: bold;">
+          প্রতি রেফারেলে ৳25 পান! 🔥
+        </p>
 
         <div class="referral-link">
-          <input id="refLink" type="text" readonly>
+          <input id="refLink" type="text" readonly placeholder="আপনার রেফারেল লিংক লোড হচ্ছে...">
           <button class="copy-btn" onclick="copyRef()">
             <i class="fas fa-copy"></i>
           </button>
         </div>
 
+        <div style="text-align: center; margin: 10px 0; color: var(--text-secondary); font-size: 12px;">
+          আপনার লিংক শেয়ার করুন বন্ধুদের সাথে
+        </div>
+
         <div class="share-buttons">
-          <button class="share-btn facebook" onclick="shareOnFacebook()">
+          <button class="share-btn facebook" onclick="shareOnFacebook()" title="Facebook এ শেয়ার">
             <i class="fab fa-facebook"></i>
             <span>Facebook</span>
           </button>
-          <button class="share-btn whatsapp" onclick="shareOnWhatsApp()">
+          <button class="share-btn whatsapp" onclick="shareOnWhatsApp()" title="WhatsApp এ শেয়ার">
             <i class="fab fa-whatsapp"></i>
             <span>WhatsApp</span>
           </button>
-          <button class="share-btn messenger" onclick="shareOnMessenger()">
+          <button class="share-btn messenger" onclick="shareOnMessenger()" title="Messenger এ শেয়ার">
             <i class="fab fa-facebook-messenger"></i>
             <span>Messenger</span>
           </button>
         </div>
 
-        <div class="referral-history">
-          <h3>Referral History</h3>
-          <ul id="referralHistory"></ul>
+        <div style="margin-top: 20px; padding: 15px; background: var(--input-bg); border-radius: 10px; text-align: center;">
+          <h4 style="color: var(--accent); margin-bottom: 10px;">📈 আপনার রেফারেল লেভেল</h4>
+          <p style="color: var(--text-secondary); font-size: 14px;">
+            <strong id="levelInfo">লেভেল 1:</strong> প্রতি রেফার ৳25
+          </p>
         </div>
       </div>
     </div>
@@ -919,7 +872,7 @@
         <div class="profile-name" id="userName">User Name</div>
         <div class="profile-username" id="userUsername">@username</div>
         <div class="profile-id">Nexer ID: <span id="userId">12345</span></div>
-        <div class="profile-tagline" id="userLevel">Top Nexer Level 5</div>
+        <div class="profile-tagline" id="userLevel">Top Nexer Level 1</div>
       </div>
 
       <div class="card">
@@ -1009,11 +962,11 @@
 
           <div class="policy-content" id="policyContent">
             <ul class="policy-list">
-              <li>বিশেষ ভাবে বলছি আপনারা task গুলো সততার সাথে করুন 🙏প্রত্যেক task ক্যাটাগরি আচে "একাউন্ট রেজিস্ট্রেশন " এই ক্যাটাগরি তে যেই task থাকবে ওই লিংক গুলাতে গিয়ে একাউন্ট করতে হবে must না হলে আপনাদের ব্যালেন্স অটোমেটিক কেটে যাবে যদি সঠিক ভাবে কাজ না করেন </li>
+              <li>একদিনে ২০টি টাস্ক সম্পন্ন করা যাবে।</li>
               <li>প্রতি রেফারে ২৫ টাকা যোগ হবে।</li>
               <li>উইথড্রোর জন্য ন্যূনতম ৫০০ টাকা এবং ১০টি রেফার আবশ্যক।</li>
-              <li>টাস্ক সম্পূর্ণ করার পর তা যাচাই করতে ২৪ ঘন্টা সময় লাগতে পারে।✔️এবং আমরা সাধারণত প্রথমে task ব্যালেন্স অ্যাড করে দি পরে তা আমরা সময় নিয়ে দেখি তাই fake কাজ করলে বা fake রেফার করলে একাউন্ট সাসপেন্ড হলে কেউ দায়ী থাকবে না </li>
-              <li>উইথড্রোর রিকোয়েস্ট প্রসেস হতে ৪-৭ ঘন্টা সময় লাগতে পারে।</li>
+              <li>টাস্ক সম্পূর্ণ করার পর তা যাচাই করতে ২৪ ঘন্টা সময় লাগতে পারে।</li>
+              <li>উইথড্রোর রিকোয়েস্ট প্রসেস হতে ২৪-৪৮ ঘন্টা সময় লাগতে পারে।</li>
             </ul>
           </div>
         </div>
@@ -1025,22 +978,22 @@
   <nav>
     <button class="nav-btn active" id="navHome" onclick="showPage('home')">
       <i class="fas fa-home"></i>
-      <span>Home</span>
+      <span>হোম</span>
     </button>
     <button class="nav-btn" id="navRefer" onclick="showPage('refer')">
       <i class="fas fa-user-friends"></i>
-      <span>Refer</span>
+      <span>রেফার</span>
     </button>
     <button class="nav-btn" id="navProfile" onclick="showPage('profile')">
       <i class="fas fa-user"></i>
-      <span>Profile</span>
+      <span>প্রোফাইল</span>
     </button>
   </nav>
 
   <!-- Notifications Panel -->
   <div class="notification-panel" id="notificationPanel">
     <div class="notification-header">
-      <h3>Notifications</h3>
+      <h3>নোটিফিকেশন</h3>
       <button class="close-notifications" onclick="toggleNotifications()">
         <i class="fas fa-times"></i>
       </button>
@@ -1052,6 +1005,15 @@
   <div class="overlay" id="overlay" onclick="toggleNotifications()"></div>
 
   <script>
+    // ========== CONFIGURATION - UPDATED FOR PAYNEX_EARNBOT ==========
+    const BOT_CONFIG = {
+      username: "Paynex_Earnbot",  // ✅ আপডেট করা Bot Username
+      token: "8452148581:AAGkseZLOKWequ7ymuWIzlFct3joP-IwZbA",
+      referralBonus: 25,
+      minWithdraw: 500,
+      minReferralsForWithdraw: 10
+    };
+
     // Firebase configuration
     const firebaseConfig = {
       apiKey: "AIzaSyCho5RtEIoXnNlNNrpBg65BmTpJY23Se7Y",
@@ -1074,21 +1036,6 @@
     tg.expand();
     tg.enableClosingConfirmation();
 
-    // Handle Telegram Web App theme and color settings
-    try {
-      tg.setHeaderColor('bg_color');
-      tg.setBackgroundColor('#ffffff');
-      tg.onEvent('themeChanged', function() {
-        document.body.style.background = tg.themeParams.bg_color || 'linear-gradient(135deg, #121c36 0%, #0d1425 100%)';
-        document.querySelector('header').style.background = tg.themeParams.bg_color || '#0088cc';
-      });
-      tg.onEvent('viewportChanged', function() {
-        tg.expand(); // Ensure the app is fully expanded
-      });
-    } catch (e) {
-      console.warn("Error handling Telegram Web App events:", e);
-    }
-
     // User info from Telegram
     let user = tg.initDataUnsafe.user || {
       id: 12345,
@@ -1097,20 +1044,12 @@
       photo_url: "https://cdn-icons-png.flaticon.com/512/3135/3135715.png"
     };
 
-    let uid = user.id;
+    let uid = user.id.toString();
     let name = user.first_name + (user.last_name ? " " + user.last_name : "");
     let username = user.username ? "@" + user.username : "@user_" + uid;
     let avatarUrl = user.photo_url || "https://cdn-icons-png.flaticon.com/512/3135/3135715.png";
 
-    // Update UI with user info
-    document.getElementById("userName").innerText = name;
-    document.getElementById("userUsername").innerText = username;
-    document.getElementById("userId").innerText = uid;
-    document.getElementById("userAvatar").src = avatarUrl;
-    document.getElementById("profileAvatar").src = avatarUrl;
-    document.getElementById("refLink").value = `https://t.me/Paynex_Earnbot?start=ref_${uid}`;
-
-    // User data
+    // User data structure
     let userData = {
       refCount: 0,
       taskIncome: 0,
@@ -1119,99 +1058,338 @@
       completedTasks: [],
       dailyTaskCount: 0,
       lastTaskDate: null,
-      level: 5,
+      level: 1,
       notifications: [],
-      referralHistory: []
+      referrerId: null,
+      joinDate: null,
+      referralBonusRate: 25,
+      isActive: true
     };
 
-    // Check if user is admin
-    let isAdmin = false;
-    auth.onAuthStateChanged((user) => {
-      if (user) {
-        user.getIdTokenResult().then((idTokenResult) => {
-          isAdmin = idTokenResult.claims.admin === true;
-          if (isAdmin) {
-            document.getElementById("adminSection").classList.remove("hidden");
-            loadUserSessions();
-          }
+    // ========== TELEGRAM BOT FUNCTIONS ==========
+    async function sendTelegramMessage(chatId, text, options = {}) {
+      try {
+        const url = `https://api.telegram.org/bot${BOT_CONFIG.token}/sendMessage`;
+        const payload = {
+          chat_id: chatId,
+          text: text,
+          parse_mode: 'HTML',
+          ...options
+        };
+
+        const response = await fetch(url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
         });
+
+        const result = await response.json();
+        return result.ok;
+      } catch (error) {
+        console.error("Telegram API Error:", error);
+        return false;
       }
-    });
-
-    // Track user session
-    let sessionStartTime = Date.now();
-    function trackUserSession() {
-      window.addEventListener('beforeunload', () => {
-        const sessionEndTime = Date.now();
-        const duration = Math.floor((sessionEndTime - sessionStartTime) / 1000);
-        const sessionRef = database.ref(`userSessions/${uid}/${sessionStartTime}`);
-        sessionRef.set({
-          startTime: sessionStartTime,
-          duration: duration,
-          timestamp: firebase.database.ServerValue.TIMESTAMP
-        }).catch((error) => {
-          console.error("Error saving session:", error);
-        });
-      });
     }
 
-    // Load user sessions for admin panel
-    function loadUserSessions() {
-      const sessionsRef = database.ref('userSessions');
-      sessionsRef.once('value').then((snapshot) => {
-        const sessionTable = document.getElementById("sessionTable");
-        sessionTable.innerHTML = "";
-        if (snapshot.exists()) {
-          snapshot.forEach(userSnapshot => {
-            const userId = userSnapshot.key;
-            userSnapshot.forEach(sessionSnapshot => {
-              const session = sessionSnapshot.val();
-              const row = document.createElement("tr");
-              row.innerHTML = `
-                <td>${userId}</td>
-                <td>${formatTime(session.startTime)}</td>
-                <td>${session.duration}</td>
-              `;
-              sessionTable.appendChild(row);
-            });
-          });
-        } else {
-          sessionTable.innerHTML = "<tr><td colspan='3'>কোন সেশন ডেটা নেই</td></tr>";
+    async function sendWelcomeMessage(userId, referrerId = null) {
+      let message = `🎉 <b>স্বাগতম PayNex এ!</b>\n\n`;
+      message += `👤 আপনার নাম: ${name}\n`;
+      message += `🆔 আপনার ID: <code>${userId}</code>\n\n`;
+
+      if (referrerId) {
+        message += `🤝 <b>রেফারেলের মাধ্যমে জয়েন:</b>\n`;
+        message += `আপনাকে আমন্ত্রণ জানিয়েছেন একজন বন্ধু।\n\n`;
+      }
+
+      message += `💰 <b>কিভাবে আয় করবেন:</b>\n`;
+      message += `• টাস্ক সম্পন্ন করুন - ৳5/টাস্ক\n`;
+      message += `• বন্ধুদের আমন্ত্রণ জানান - ৳25/রেফার\n`;
+      message += `• ন্যূনতম উত্তোলন: ৳500\n\n`;
+      message += `🚀 এখনই শুরু করুন এবং টাকা আয় করুন!`;
+
+      return await sendTelegramMessage(userId, message);
+    }
+
+    async function notifyReferrer(referrerId, newUserName, newUserId) {
+      const message = `🎊 <b>নতুন রেফারেল!</b>\n\n`;
+      message += `👤 <b>${newUserName}</b> আপনার লিংক দিয়ে জয়েন করেছেন!\n`;
+      message += `🆔 নতুন ইউজার ID: <code>${newUserId}</code>\n`;
+      message += `💰 <b>+৳${BOT_CONFIG.referralBonus} বোনাস</b> যোগ হয়েছে!\n\n`;
+      message += `📊 আপনার মোট রেফারেল: <b>${userData.refCount + 1}</b>\n`;
+      message += `🎯 আরো বন্ধুদের আমন্ত্রণ জানান এবং বেশি আয় করুন!`;
+
+      return await sendTelegramMessage(referrerId, message);
+    }
+
+    // ========== REFERRAL SYSTEM ==========
+    function generateReferralLink(userId) {
+      return `https://t.me/${BOT_CONFIG.username}/app?startapp=ref_${userId}`;
+    }
+
+    function initializeReferralSystem() {
+      console.log("🔄 Initializing PERFECT referral system for Paynex_Earnbot user:", uid);
+      
+      // Update referral link
+      const refLink = generateReferralLink(uid);
+      document.getElementById("refLink").value = refLink;
+      console.log("🔗 Paynex_Earnbot Referral Link Generated:", refLink);
+
+      // Check for referral parameter
+      const initData = tg.initDataUnsafe;
+      let referralId = null;
+
+      // Check Telegram start_app parameter
+      if (initData.start_app && initData.start_app.startsWith('ref_')) {
+        referralId = initData.start_app.replace('ref_', '');
+        console.log("✅ Paynex_Earnbot Referral detected from start_app:", referralId);
+      }
+
+      // Fallback: Check URL parameters
+      if (!referralId) {
+        const urlParams = new URLSearchParams(window.location.search);
+        const startAppParam = urlParams.get('startapp');
+        if (startAppParam && startAppParam.startsWith('ref_')) {
+          referralId = startAppParam.replace('ref_', '');
+          console.log("✅ Paynex_Earnbot Referral detected from URL startapp:", referralId);
         }
-      }).catch((error) => {
-        console.error("Error loading user sessions:", error);
+      }
+
+      // Process referral if found
+      if (referralId && referralId !== uid) {
+        processPerfectReferral(referralId);
+      } else {
+        console.log("ℹ️ No Paynex_Earnbot referral detected or self-referral");
+        // Send welcome message for new users
+        if (!userData.joinDate) {
+          sendWelcomeMessage(uid);
+        }
+      }
+
+      // Start real-time referral monitoring
+      startReferralMonitoring();
+    }
+
+    async function processPerfectReferral(referrerId) {
+      console.log("🚀 Processing PERFECT Paynex_Earnbot referral from:", referrerId, "to:", uid);
+      
+      const referralRef = database.ref(`referrals/${referrerId}/${uid}`);
+      const userRef = database.ref(`users/${uid}`);
+      const referrerRef = database.ref(`users/${referrerId}`);
+
+      try {
+        // Check if referral already exists
+        const snapshot = await referralRef.once('value');
+        if (snapshot.exists()) {
+          console.log("⚠️ Paynex_Earnbot referral already processed");
+          return;
+        }
+
+        console.log("✅ New Paynex_Earnbot referral - processing...");
+
+        // Create referral record
+        const referralData = {
+          referredUserId: uid,
+          referrerId: referrerId,
+          timestamp: firebase.database.ServerValue.TIMESTAMP,
+          status: 'active',
+          bonusAmount: BOT_CONFIG.referralBonus,
+          referredUserName: name,
+          bot: BOT_CONFIG.username
+        };
+
+        // Save referral
+        await referralRef.set(referralData);
+        console.log("💾 Paynex_Earnbot referral record saved");
+
+        // Update current user with referrer info
+        await userRef.update({
+          referrerId: referrerId,
+          joinDate: firebase.database.ServerValue.TIMESTAMP,
+          botJoined: BOT_CONFIG.username
+        });
+
+        // Update referrer's stats (transaction for atomicity)
+        await referrerRef.transaction(async (referrer) => {
+          if (referrer) {
+            referrer.refCount = (referrer.refCount || 0) + 1;
+            referrer.refIncome = (referrer.refIncome || 0) + BOT_CONFIG.referralBonus;
+            
+            // Update referral level
+            const newLevel = Math.min(10, Math.floor(referrer.refCount / 5) + 1);
+            if (newLevel > (referrer.level || 1)) {
+              referrer.level = newLevel;
+              referrer.referralBonusRate = 25 + (newLevel - 1) * 5; // +5 per level
+            }
+            
+            console.log("📊 Paynex_Earnbot Referrer updated:", {
+              refCount: referrer.refCount,
+              refIncome: referrer.refIncome,
+              level: referrer.level,
+              bonusRate: referrer.referralBonusRate
+            });
+            
+            return referrer;
+          }
+          return referrer;
+        });
+
+        // Send notifications
+        await sendWelcomeMessage(uid, referrerId);
+        await notifyReferrer(referrerId, name, uid);
+
+        // Add system notification
+        const notificationRef = database.ref('systemNotifications').push();
+        await notificationRef.set({
+          title: "নতুন Paynex_Earnbot রেফারেল!",
+          message: `${name} ${referrerId} এর Paynex_Earnbot রেফারেল লিংক দিয়ে জয়েন করেছেন।`,
+          timestamp: firebase.database.ServerValue.TIMESTAMP,
+          type: 'referral',
+          referrerId: referrerId,
+          userId: uid,
+          bot: BOT_CONFIG.username
+        });
+
+        // Show success message
+        showNotification(`🎉 Paynex_Earnbot এ সফলভাবে রেফার করা হয়েছে! আপনার রেফার ${BOT_CONFIG.referralBonus}৳ বোনাস পাবেন।`);
+
+        // Update UI
+        userData.refCount = (userData.refCount || 0) + 1;
+        userData.refIncome = (userData.refIncome || 0) + BOT_CONFIG.referralBonus;
+        updateUI();
+
+        console.log("🎯 PERFECT Paynex_Earnbot referral completed successfully!");
+        
+      } catch (error) {
+        console.error("❌ Paynex_Earnbot referral processing error:", error);
+        showNotification("❌ Paynex_Earnbot রেফারেল প্রসেস করতে সমস্যা হয়েছে!");
+      }
+    }
+
+    function startReferralMonitoring() {
+      // Real-time referral count monitoring
+      const referralsRef = database.ref(`referrals/${uid}`);
+      referralsRef.on('value', (snapshot) => {
+        let count = 0;
+        let totalIncome = 0;
+        let highestLevel = 1;
+        
+        if (snapshot.exists()) {
+          snapshot.forEach(() => count++);
+          // Calculate total income and level from user data
+          totalIncome = userData.refIncome || 0;
+          highestLevel = userData.level || 1;
+        }
+        
+        // Update UI in real-time
+        document.getElementById("refCount").innerText = count;
+        document.getElementById("refIncome").innerText = totalIncome;
+        document.getElementById("profileRef").innerText = count;
+        document.getElementById("refLevel").innerText = highestLevel;
+        
+        // Update level info
+        updateLevelInfo(highestLevel);
+        
+        console.log(`🔄 Paynex_Earnbot Real-time update - Referrals: ${count}, Income: ৳${totalIncome}, Level: ${highestLevel}`);
       });
     }
 
-    // Load user data from Firebase
+    function updateLevelInfo(level) {
+      const levelInfo = document.getElementById("levelInfo");
+      const bonusRate = 25 + (level - 1) * 5;
+      levelInfo.innerHTML = `লেভেল ${level}: প্রতি রেফার ৳${bonusRate}`;
+    }
+
+    // ========== FIREBASE FUNCTIONS ==========
     function loadUserData() {
       const userRef = database.ref('users/' + uid);
-      userRef.once('value').then((snapshot) => {
+      
+      userRef.on('value', async (snapshot) => {
         if (snapshot.exists()) {
           const data = snapshot.val();
-          userData = {...userData, ...data};
+          userData = { ...userData, ...data };
+          console.log("📊 Paynex_Earnbot User data loaded:", userData);
+          
+          // Send welcome message for first-time users
+          if (!userData.joinDate) {
+            await sendWelcomeMessage(uid);
+            userData.joinDate = firebase.database.ServerValue.TIMESTAMP;
+            userRef.update({ joinDate: userData.joinDate });
+          }
         } else {
+          // Initialize new user
           userRef.set(userData);
+          await sendWelcomeMessage(uid);
         }
+        
         updateUI();
         loadTasks();
         loadLiveTasks();
         loadNotifications();
         loadSliderImages();
-        loadReferralHistory();
-        trackUserSession();
-        hideSpinner();
-      }).catch((error) => {
-        console.error("Error loading user data:", error);
-        loadFromLocalStorage();
-        updateUI();
-        loadTasks();
         trackUserSession();
         hideSpinner();
       });
     }
 
-    // Hide spinner after content loads
+    function saveUserData() {
+      const userRef = database.ref('users/' + uid);
+      userRef.set(userData).catch((error) => {
+        console.error("Paynex_Earnbot Error saving user data:", error);
+        saveToLocalStorage();
+      });
+    }
+
+    // ========== UI FUNCTIONS ==========
+    function updateUI() {
+      const totalBalance = userData.taskIncome + userData.refIncome - userData.totalWithdraw;
+      document.getElementById("totalBalance").innerText = Math.round(totalBalance);
+      document.getElementById("taskIncome").innerText = userData.taskIncome || 0;
+      document.getElementById("refIncomeDetail").innerText = userData.refIncome || 0;
+      document.getElementById("totalWithdraw").innerText = userData.totalWithdraw || 0;
+      document.getElementById("profileIncome").innerText = Math.round(totalBalance);
+      document.getElementById("userLevel").innerText = `Top Nexer Level ${userData.level || 1}`;
+      
+      // Update withdrawal eligibility
+      updateWithdrawEligibility();
+      
+      console.log("🎨 Paynex_Earnbot UI Updated:", {
+        totalBalance,
+        refCount: userData.refCount,
+        refIncome: userData.refIncome,
+        level: userData.level
+      });
+    }
+
+    function updateWithdrawEligibility() {
+      const totalBalance = userData.taskIncome + userData.refIncome - userData.totalWithdraw;
+      const canWithdraw = totalBalance >= BOT_CONFIG.minWithdraw && (userData.refCount || 0) >= BOT_CONFIG.minReferralsForWithdraw;
+      
+      const withdrawBtn = document.getElementById("withdrawBtn");
+      const minWithdrawInfo = document.querySelector(".min-withdraw-info");
+      
+      if (canWithdraw) {
+        withdrawBtn.style.background = "var(--success)";
+        withdrawBtn.innerHTML = "Withdraw Now ✅";
+        minWithdrawInfo.innerHTML = `✅ আপনি Paynex_Earnbot উত্তোলনের জন্য যোগ্য! ন্যূনতম: ৳${BOT_CONFIG.minWithdraw}`;
+        minWithdrawInfo.style.color = "var(--success)";
+      } else {
+        withdrawBtn.style.background = "var(--text-secondary)";
+        withdrawBtn.innerHTML = "Withdraw Locked 🔒";
+        withdrawBtn.disabled = true;
+        
+        let requirement = "";
+        if (totalBalance < BOT_CONFIG.minWithdraw) {
+          requirement = `ব্যালেন্স: ৳${Math.round(totalBalance)}/${BOT_CONFIG.minWithdraw}`;
+        }
+        if ((userData.refCount || 0) < BOT_CONFIG.minReferralsForWithdraw) {
+          requirement += ` | রেফার: ${userData.refCount || 0}/${BOT_CONFIG.minReferralsForWithdraw}`;
+        }
+        
+        minWithdrawInfo.innerHTML = `🔒 Paynex_Earnbot ${requirement} পূরণ করুন`;
+        minWithdrawInfo.style.color = "var(--warning)";
+      }
+    }
+
     function hideSpinner() {
       const spinnerOverlay = document.getElementById("spinnerOverlay");
       spinnerOverlay.style.opacity = '0';
@@ -1220,132 +1398,7 @@
       }, 500);
     }
 
-    // Fallback to local storage
-    function loadFromLocalStorage() {
-      userData.refCount = parseInt(localStorage.getItem("refCount") || 0);
-      userData.taskIncome = parseInt(localStorage.getItem("taskIncome") || 0);
-      userData.refIncome = parseInt(localStorage.getItem("refIncome") || 0);
-      userData.totalWithdraw = parseInt(localStorage.getItem("totalWithdraw") || 0);
-      userData.completedTasks = JSON.parse(localStorage.getItem("completedTasks") || '[]');
-      userData.dailyTaskCount = parseInt(localStorage.getItem("dailyTaskCount") || 0);
-      userData.lastTaskDate = localStorage.getItem("lastTaskDate") || null;
-      userData.level = parseInt(localStorage.getItem("level") || 5);
-      userData.notifications = JSON.parse(localStorage.getItem("notifications") || '[]');
-      userData.referralHistory = JSON.parse(localStorage.getItem("referralHistory") || '[]');
-    }
-
-    // Save user data to Firebase
-    function saveUserData() {
-      const userRef = database.ref('users/' + uid);
-      userRef.set(userData).catch((error) => {
-        console.error("Error saving user data:", error);
-        saveToLocalStorage();
-      });
-    }
-
-    // Fallback to local storage
-    function saveToLocalStorage() {
-      localStorage.setItem("refCount", userData.refCount);
-      localStorage.setItem("taskIncome", userData.taskIncome);
-      localStorage.setItem("refIncome", userData.refIncome);
-      localStorage.setItem("totalWithdraw", userData.totalWithdraw);
-      localStorage.setItem("completedTasks", JSON.stringify(userData.completedTasks));
-      localStorage.setItem("dailyTaskCount", userData.dailyTaskCount);
-      localStorage.setItem("lastTaskDate", userData.lastTaskDate);
-      localStorage.setItem("level", userData.level);
-      localStorage.setItem("notifications", JSON.stringify(userData.notifications));
-      localStorage.setItem("referralHistory", JSON.stringify(userData.referralHistory));
-    }
-
-    // Load referral history
-    function loadReferralHistory() {
-      const historyList = document.getElementById("referralHistory");
-      historyList.innerHTML = "";
-      if (userData.referralHistory && userData.referralHistory.length > 0) {
-        userData.referralHistory.forEach(referral => {
-          const li = document.createElement("li");
-          li.innerHTML = `
-            <span>${referral.name}</span>
-            <span>${formatTime(referral.timestamp)}</span>
-          `;
-          historyList.appendChild(li);
-        });
-      } else {
-        historyList.innerHTML = "<li>কোন রেফারেল হিস্টোরি নেই</li>";
-      }
-    }
-
-    // Load slider images from Firebase
-    function loadSliderImages() {
-      const sliderRef = database.ref('sliderImages');
-      sliderRef.once('value').then((snapshot) => {
-        const sliderImages = document.getElementById("sliderImages");
-        sliderImages.innerHTML = "";
-        if (snapshot.exists()) {
-          const images = [];
-          snapshot.forEach(childSnapshot => {
-            images.push(childSnapshot.val());
-          });
-          images.forEach((image, index) => {
-            const imgDiv = document.createElement("div");
-            imgDiv.style.width = "100%";
-            imgDiv.innerHTML = `<a href="${image.link}" target="_blank"><img src="${image.url}" class="slider-image ${index === 0 ? 'active' : ''}" alt="Slider Image ${index + 1}"></a>`;
-            sliderImages.appendChild(imgDiv);
-          });
-          startSlider(images.length);
-        } else {
-          sliderImages.innerHTML = `<img src="https://via.placeholder.com/300x150/0088cc/ffffff?text=PayNex" class="slider-image active" alt="PayNex">`;
-        }
-      }).catch((error) => {
-        console.error("Error loading slider images:", error);
-        sliderImages.innerHTML = `<img src="https://via.placeholder.com/300x150/0088cc/ffffff?text=PayNex" class="slider-image active" alt="PayNex">`;
-      });
-    }
-
-    // Start image slider
-    function startSlider(imageCount) {
-      if (imageCount <= 1) return;
-      const images = document.querySelectorAll(".slider-image");
-      let currentIndex = 0;
-      setInterval(() => {
-        images[currentIndex].classList.remove("active");
-        currentIndex = (currentIndex + 1) % imageCount;
-        images[currentIndex].classList.add("active");
-      }, 5000);
-    }
-
-    // Load live tasks from Firebase
-    function loadLiveTasks() {
-      const liveTasksRef = database.ref('liveTasks');
-      const liveTasksContainer = document.getElementById("liveTasks");
-      liveTasksContainer.innerHTML = "";
-      liveTasksRef.once('value').then((snapshot) => {
-        if (snapshot.exists()) {
-          const liveTasks = [];
-          snapshot.forEach(childSnapshot => {
-            liveTasks.push(childSnapshot.val());
-          });
-          liveTasks.forEach(task => {
-            let done = userData.completedTasks.includes(task.id);
-            let div = document.createElement("div");
-            div.className = "task-item";
-            div.innerHTML = `
-              <div class="task-number">${task.id}</div>
-              <div class="task-icon"><i class="fas ${task.icon}"></i></div>
-              <div class="task-title">${task.title}<span class="task-reward">৳${task.reward}</span></div>
-              <button class="task-btn ${done ? 'completed' : ''}" onclick="completeTask(${task.id}, '${task.link}')" ${done ? 'disabled' : ''}>
-                ${done ? 'Completed' : 'Complete Now'}
-              </button>
-            `;
-            liveTasksContainer.appendChild(div);
-          });
-        }
-      }).catch((error) => {
-        console.error("Error loading live tasks:", error);
-      });
-    }
-
-    // Load tasks
+    // ========== TASK SYSTEM ==========
     function loadTasks() {
       const tasks = [
         { id: 1, category: "registration", title: "নতুন অ্যাকাউন্ট ১ রেজিস্টার করুন", icon: "fa-user-plus", reward: 5 },
@@ -1366,13 +1419,12 @@
         { id: 16, category: "socialMedia", title: "পোস্টে লাইক দিন", icon: "fa-thumbs-up", reward: 5 },
         { id: 17, category: "socialMedia", title: "পোস্টে কমেন্ট করুন", icon: "fa-comment", reward: 5 },
         { id: 18, category: "socialMedia", title: "চ্যানেল সাবস্ক্রাইব করুন", icon: "fa-bell", reward: 5 },
-        { id: 19, category: "socialMedia", title: "গ্রুপে জয়েন করুন", icon: "fa-users", reward: 5 },
-        { id: 20, category: "socialMedia", title: "পোস্ট শেয়ার করুন", icon: "fa-share-alt", reward: 5 }
+        { id: 19, category: "socialMedia", title: "গ্রুপে জয়েন করুন", icon: "fa-users", reward: 5 },
+        { id: 20, category: "socialMedia", title: "পোস্ট শেয়ার করুন", icon: "fa-share-alt", reward: 5 }
       ];
       renderTasks(tasks);
     }
 
-    // Render tasks in the UI
     function renderTasks(tasks) {
       const containers = {
         registration: document.getElementById("registrationTasks"),
@@ -1380,6 +1432,7 @@
         survey: document.getElementById("surveyTasks"),
         socialMedia: document.getElementById("socialMediaTasks")
       };
+      
       Object.keys(containers).forEach(category => {
         containers[category].innerHTML = "";
         tasks.filter(task => task.category === category).forEach(task => {
@@ -1390,8 +1443,8 @@
             <div class="task-number">${task.id}</div>
             <div class="task-icon"><i class="fas ${task.icon}"></i></div>
             <div class="task-title">${task.title}<span class="task-reward">৳${task.reward}</span></div>
-            <button class="task-btn ${done ? 'completed' : ''}" onclick="completeTask(${task.id}, 'https://otieu.com/4/9502992')" ${done ? 'disabled' : ''}>
-              ${done ? 'Completed' : 'Complete Now'}
+            <button class="task-btn ${done ? 'completed' : ''}" onclick="completeTask(${task.id})" ${done ? 'disabled' : ''}>
+              ${done ? 'সম্পন্ন ✅' : 'শুরু করুন'}
             </button>
           `;
           containers[category].appendChild(div);
@@ -1399,33 +1452,137 @@
       });
     }
 
-    // Complete a task
-    function completeTask(taskId, link) {
+    function completeTask(taskId) {
       const today = new Date().toISOString().split('T')[0];
       if (userData.lastTaskDate !== today) {
         userData.dailyTaskCount = 0;
         userData.lastTaskDate = today;
       }
+      
       if (userData.dailyTaskCount >= 20) {
-        showNotification("আজকের সব টাস্ক শেষ!");
+        showNotification("⚠️ আজকের সব টাস্ক শেষ! আগামীকাল আবার চেষ্টা করুন।");
         return;
       }
+      
       if (userData.completedTasks.includes(taskId)) {
-        showNotification("এই টাস্ক আগে কমপ্লিট করা হয়েছে!");
+        showNotification("✅ এই টাস্ক আগে সম্পন্ন করা হয়েছে!");
         return;
       }
+      
+      // Complete task
       userData.completedTasks.push(taskId);
       userData.taskIncome += 5;
       userData.dailyTaskCount += 1;
+      
       saveUserData();
       updateUI();
       loadTasks();
-      loadLiveTasks();
-      showNotification("টাস্ক সম্পন্ন হয়েছে! ৳5 যোগ করা হয়েছে।");
-      window.open(link, "_blank");
+      
+      // Send completion notification
+      sendTelegramMessage(uid, `✅ <b>টাস্ক সম্পন্ন!</b>\n\nটাস্ক ID: ${taskId}\n💰 +৳5 যোগ হয়েছে!\n\nমোট ব্যালেন্স: ৳${userData.taskIncome + userData.refIncome - userData.totalWithdraw}`);
+      
+      showNotification("🎉 টাস্ক সম্পন্ন! ৳5 যোগ হয়েছে।");
+      
+      // Show confetti
+      showConfetti();
     }
 
-    // Toggle category section
+    // ========== SHARING FUNCTIONS ==========
+    function copyRef() {
+      const refLink = document.getElementById("refLink");
+      refLink.select();
+      refLink.setSelectionRange(0, 99999);
+      navigator.clipboard.writeText(refLink.value).then(() => {
+        showNotification("📋 Paynex_Earnbot রেফারেল লিংক কপি হয়েছে! শেয়ার করুন।");
+        console.log("📋 Paynex_Earnbot Referral link copied:", refLink.value);
+      }).catch(err => {
+        document.execCommand("copy");
+        showNotification("📋 Paynex_Earnbot রেফারেল লিংক কপি হয়েছে!");
+        console.log("📋 Paynex_Earnbot Fallback copy successful");
+      });
+    }
+
+    function shareOnFacebook() {
+      const url = encodeURIComponent(document.getElementById("refLink").value);
+      const text = encodeURIComponent(`PayNex এ জয়েন করুন এবং টাকা আয় করুন! আমার Paynex_Earnbot রেফারেল লিংক: ${document.getElementById("refLink").value}\n\nপ্রতি রেফারেলে ৳25 বোনাস! 💰`);
+      window.open(`https://www.facebook.com/sharer/sharer.php?u=${url}&quote=${text}`, '_blank');
+      showNotification("📱 Facebook এ Paynex_Earnbot শেয়ার হচ্ছে...");
+    }
+
+    function shareOnWhatsApp() {
+      const text = encodeURIComponent(`PayNex এ জয়েন করুন এবং টাকা আয় করুন! আমার Paynex_Earnbot রেফারেল লিংক: ${document.getElementById("refLink").value}\n\nপ্রতি রেফারেলে ৳25 বোনাস! 💰`);
+      window.open(`https://wa.me/?text=${text}`, '_blank');
+      showNotification("📱 WhatsApp এ Paynex_Earnbot শেয়ার হচ্ছে...");
+    }
+
+    function shareOnMessenger() {
+      const url = encodeURIComponent(document.getElementById("refLink").value);
+      window.open(`fb-messenger://share?link=${url}`, '_blank');
+      showNotification("📱 Messenger এ Paynex_Earnbot শেয়ার হচ্ছে...");
+    }
+
+    // ========== WITHDRAWAL SYSTEM ==========
+    document.getElementById("withdrawForm").addEventListener("submit", async function(e) {
+      e.preventDefault();
+      
+      const method = document.getElementById("method").value;
+      const number = document.getElementById("number").value;
+      const amount = parseInt(document.getElementById("amount").value);
+      const totalBalance = userData.taskIncome + userData.refIncome - userData.totalWithdraw;
+      
+      // Validation
+      if (totalBalance < BOT_CONFIG.minWithdraw || (userData.refCount || 0) < BOT_CONFIG.minReferralsForWithdraw) {
+        document.getElementById("withdrawMsg").innerHTML = "❌ <strong>শর্ত পূরণ হয়নি!</strong><br>Paynex_Earnbot ন্যূনতম ৳500 এবং 10 রেফার প্রয়োজন।";
+        return;
+      }
+      
+      if (amount > totalBalance) {
+        document.getElementById("withdrawMsg").innerHTML = "❌ <strong>পর্যাপ্ত ব্যালেন্স নেই!</strong><br>Paynex_Earnbot আপনার ব্যালেন্স: ৳" + Math.round(totalBalance);
+        return;
+      }
+      
+      if (amount < BOT_CONFIG.minWithdraw) {
+        document.getElementById("withdrawMsg").innerHTML = "❌ <strong>Paynex_Earnbot ন্যূনতম ৳500</strong> উত্তোলন করতে হবে!";
+        return;
+      }
+      
+      const btn = document.getElementById("withdrawBtn");
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> প্রসেসিং...';
+      
+      try {
+        // Process withdrawal
+        userData.totalWithdraw += amount;
+        await saveUserData();
+        updateUI();
+        
+        // Send withdrawal confirmation
+        const message = `💸 <b>Paynex_Earnbot উত্তোলন রিকোয়েস্ট</b>\n\n`;
+        message += `💳 পদ্ধতি: ${method.toUpperCase()}\n`;
+        message += `📱 নাম্বার: ${number}\n`;
+        message += `💰 পরিমাণ: ৳${amount}\n`;
+        message += `📅 তারিখ: ${new Date().toLocaleDateString('bn-BD')}\n\n`;
+        message += `⏳ 24-48 ঘন্টার মধ্যে প্রসেস হবে।`;
+        
+        await sendTelegramMessage(uid, message);
+        
+        document.getElementById("withdrawMsg").innerHTML = `✅ <strong>সফল!</strong><br>Paynex_Earnbot ${method} - ${number} - ৳${amount}<br>24-48 ঘন্টার মধ্যে প্রসেস হবে।`;
+        document.getElementById("withdrawForm").reset();
+        
+        showConfetti();
+        showNotification(`🎉 Paynex_Earnbot উত্তোলন রিকোয়েস্ট সফল! ৳${amount} প্রসেস হচ্ছে।`);
+        
+      } catch (error) {
+        console.error("Paynex_Earnbot Withdrawal error:", error);
+        document.getElementById("withdrawMsg").innerHTML = "❌ Paynex_Earnbot উত্তোলন প্রসেস করতে সমস্যা হয়েছে!";
+        showNotification("❌ Paynex_Earnbot উত্তোলন প্রসেস করতে সমস্যা হয়েছে!");
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = 'Withdraw Request';
+      }
+    });
+
+    // ========== UTILITY FUNCTIONS ==========
     function toggleCategory(category) {
       const content = document.getElementById(`${category}Content`);
       const arrow = document.getElementById(`${category}Arrow`);
@@ -1434,42 +1591,6 @@
       arrow.classList.toggle("fa-chevron-up");
     }
 
-    // Toggle admin section
-    function toggleAdminSection() {
-      const content = document.getElementById("adminContent");
-      const arrow = document.getElementById("adminArrow");
-      content.classList.toggle("active");
-      arrow.classList.toggle("fa-chevron-down");
-      arrow.classList.toggle("fa-chevron-up");
-    }
-
-    // Copy referral link
-    function copyRef() {
-      let copyText = document.getElementById("refLink");
-      copyText.select();
-      copyText.setSelectionRange(0, 99999);
-      document.execCommand("copy");
-      showNotification("Referral Link কপি করা হয়েছে!");
-    }
-
-    // Share functions
-    function shareOnFacebook() {
-      const url = encodeURIComponent(document.getElementById("refLink").value);
-      window.open(`https://www.facebook.com/sharer/sharer.php?u=${url}`, '_blank');
-    }
-
-    function shareOnWhatsApp() {
-      const text = encodeURIComponent("Join PayNex and earn money! Use my referral link: ");
-      const url = encodeURIComponent(document.getElementById("refLink").value);
-      window.open(`https://wa.me/?text=${text}${url}`, '_blank');
-    }
-
-    function shareOnMessenger() {
-      const url = encodeURIComponent(document.getElementById("refLink").value);
-      window.open(`fb-messenger://share?link=${url}`, '_blank');
-    }
-
-    // Toggle sections
     function toggleWithdrawSection() {
       const content = document.getElementById("withdrawContent");
       const arrow = document.getElementById("withdrawArrow");
@@ -1486,7 +1607,6 @@
       arrow.classList.toggle("fa-chevron-up");
     }
 
-    // Toggle notifications panel
     function toggleNotifications() {
       const panel = document.getElementById("notificationPanel");
       const overlay = document.getElementById("overlay");
@@ -1494,17 +1614,85 @@
       overlay.classList.toggle("active");
     }
 
+    function showNotification(message) {
+      const toast = document.createElement('div');
+      toast.style.cssText = `
+        position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
+        background: var(--card-bg); color: var(--text); padding: 12px 20px;
+        border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        z-index: 10000; opacity: 0; transition: opacity 0.3s;
+        font-size: 14px; max-width: 90%; text-align: center;
+      `;
+      toast.innerText = message;
+      document.body.appendChild(toast);
+      
+      setTimeout(() => toast.style.opacity = '1', 10);
+      setTimeout(() => {
+        toast.style.opacity = '0';
+        setTimeout(() => toast.remove(), 300);
+      }, 4000);
+    }
+
+    function showConfetti() {
+      const colors = ['#0088cc', '#00c2ff', '#00d66c', '#ff9500', '#ff3b30'];
+      for (let i = 0; i < 50; i++) {
+        const confetti = document.createElement('div');
+        confetti.className = 'confetti';
+        confetti.style.cssText = `
+          left: ${Math.random() * 100}vw;
+          background: ${colors[Math.floor(Math.random() * colors.length)]};
+          animation: confettiFall ${Math.random() * 3 + 2}s linear forwards;
+        `;
+        document.body.appendChild(confetti);
+        setTimeout(() => confetti.remove(), 5000);
+      }
+    }
+
+    function showPage(page) {
+      // Hide all pages
+      document.querySelectorAll('.content > div').forEach(div => div.classList.add("hidden"));
+      document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove("active"));
+      
+      // Show selected page
+      if (page === "home") {
+        document.getElementById("homePage").classList.remove("hidden");
+        document.getElementById("navHome").classList.add("active");
+        loadTasks();
+        loadLiveTasks();
+      } else if (page === "refer") {
+        document.getElementById("referPage").classList.remove("hidden");
+        document.getElementById("navRefer").classList.add("active");
+      } else if (page === "profile") {
+        document.getElementById("profilePage").classList.remove("hidden");
+        document.getElementById("navProfile").classList.add("active");
+        updateWithdrawEligibility();
+      }
+    }
+
+    // Track user session
+    let sessionStartTime = Date.now();
+    function trackUserSession() {
+      window.addEventListener('beforeunload', () => {
+        const duration = Math.floor((Date.now() - sessionStartTime) / 1000);
+        database.ref(`userSessions/${uid}/${sessionStartTime}`).set({
+          startTime: sessionStartTime,
+          duration: duration,
+          timestamp: firebase.database.ServerValue.TIMESTAMP,
+          bot: BOT_CONFIG.username
+        });
+      });
+    }
+
     // Load notifications
     function loadNotifications() {
-      const notificationsRef = database.ref('notifications');
+      const notificationsRef = database.ref('systemNotifications');
       notificationsRef.orderByChild('timestamp').limitToLast(10).once('value').then((snapshot) => {
         const notificationsList = document.getElementById("notificationsList");
         notificationsList.innerHTML = "";
+        
         if (snapshot.exists()) {
           const notifications = [];
-          snapshot.forEach(childSnapshot => {
-            notifications.push(childSnapshot.val());
-          });
+          snapshot.forEach(childSnapshot => notifications.push(childSnapshot.val()));
           notifications.reverse().forEach(notification => {
             const div = document.createElement("div");
             div.className = "notification-item";
@@ -1512,226 +1700,122 @@
               <div class="notification-title">${notification.title}</div>
               <div class="notification-message">${notification.message}</div>
               <div class="notification-time">${formatTime(notification.timestamp)}</div>
-              ${notification.hasVoting ? `
-                <div class="vote-buttons">
-                  <button class="vote-btn" onclick="submitVote('${notification.id}', 'yes')">Yes</button>
-                  <button class="vote-btn" onclick="submitVote('${notification.id}', 'no')">No</button>
-                </div>
-              ` : ''}
             `;
             notificationsList.appendChild(div);
           });
           document.getElementById("notificationBadge").innerText = notifications.length;
         } else {
-          notificationsList.innerHTML = "<p>কোন নোটিফিকেশন নেই</p>";
+          notificationsList.innerHTML = "<p style='text-align: center; color: var(--text-secondary);'>Paynex_Earnbot কোন নোটিফিকেশন নেই</p>";
         }
-      }).catch((error) => {
-        console.error("Error loading notifications:", error);
       });
     }
 
-    // Submit vote
-    function submitVote(notificationId, vote) {
-      const voteRef = database.ref(`votes/${notificationId}/${uid}`);
-      voteRef.set({
-        vote: vote,
-        timestamp: Date.now()
-      }).then(() => {
-        showNotification(`আপনার ভোট (${vote}) সফলভাবে জমা দেওয়া হয়েছে!`);
-      }).catch((error) => {
-        console.error("Error submitting vote:", error);
-        showNotification("ভোট জমা দিতে সমস্যা হয়েছে!");
-      });
-    }
-
-    // Format timestamp
     function formatTime(timestamp) {
+      if (!timestamp) return "এখন";
       const date = new Date(timestamp);
-      return date.toLocaleDateString('bn-BD') + ' ' + date.toLocaleTimeString('bn-BD');
+      return date.toLocaleDateString('bn-BD', { 
+        year: 'numeric', month: 'short', day: 'numeric',
+        hour: '2-digit', minute: '2-digit'
+      });
     }
 
-    // Withdraw form submission
-    function handleWithdrawForm(e) {
-      e.preventDefault();
-      const method = document.getElementById("method").value;
-      const number = document.getElementById("number").value;
-      const amount = parseInt(document.getElementById("amount").value);
-      const totalBalance = userData.taskIncome + userData.refIncome - userData.totalWithdraw;
-      if (totalBalance < 500 || userData.refCount < 10) {
-        document.getElementById("withdrawMsg").innerText = "❌ শর্ত পূরণ হয়নি! ন্যূনতম ৫০০ টাকা এবং ১০ রেফার প্রয়োজন।";
-        return;
-      }
-      if (amount > totalBalance) {
-        document.getElementById("withdrawMsg").innerText = "❌ আপনার ব্যালেন্স পর্যাপ্ত নয়!";
-        return;
-      }
-      if (amount < 500) {
-        document.getElementById("withdrawMsg").innerText = "❌ ন্যূনতম ৫০০ টাকা উত্তোলন করতে হবে!";
-        return;
-      }
-      const btn = document.getElementById("withdrawBtn");
-      btn.disabled = true;
-      btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+    // Load slider images (placeholder)
+    function loadSliderImages() {
+      const sliderImages = document.getElementById("sliderImages");
+      sliderImages.innerHTML = `
+        <div style="width: 100%;">
+          <img src="https://via.placeholder.com/300x150/0088cc/ffffff?text=Paynex_Earnbot+Welcome" class="slider-image active" alt="Welcome">
+        </div>
+        <div style="width: 100%;">
+          <img src="https://via.placeholder.com/300x150/00c2ff/ffffff?text=Earn+Money+with+Paynex_Earnbot" class="slider-image" alt="Earn Money">
+        </div>
+      `;
+      
+      // Simple slider
       setTimeout(() => {
-        userData.totalWithdraw += amount;
-        saveUserData();
-        updateUI();
-        document.getElementById("withdrawMsg").innerText = "✅ Withdraw Request Sent (" + method + " - " + number + " - ৳" + amount + ")";
-        document.getElementById("withdrawForm").reset();
-        btn.disabled = false;
-        btn.innerHTML = 'Withdraw Request';
-        showConfetti();
-      }, 2000);
+        const images = document.querySelectorAll(".slider-image");
+        let current = 0;
+        setInterval(() => {
+          images[current].classList.remove("active");
+          current = (current + 1) % images.length;
+          images[current].classList.add("active");
+        }, 3000);
+      }, 1000);
     }
 
-    // Show confetti animation
-    function showConfetti() {
-      const colors = ['#0088cc', '#00c2ff', '#00d66c', '#ff9500', '#ff3b30'];
-      for (let i = 0; i < 50; i++) {
-        const confetti = document.createElement('div');
-        confetti.className = 'confetti';
-        confetti.style.left = Math.random() * 100 + 'vw';
-        confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
-        confetti.style.animation = `confettiFall ${Math.random() * 3 + 2}s linear forwards`;
-        document.body.appendChild(confetti);
-        setTimeout(() => {
-          confetti.remove();
-        }, 5000);
+    // Placeholder for live tasks
+    function loadLiveTasks() {
+      const liveTasksContainer = document.getElementById("liveTasks");
+      liveTasksContainer.innerHTML = `
+        <div class="task-item">
+          <div class="task-number">L1</div>
+          <div class="task-icon"><i class="fas fa-rocket"></i></div>
+          <div class="task-title">Paynex_Earnbot লাইভ টাস্ক - দ্রুত আয় <span class="task-reward">৳10</span></div>
+          <button class="task-btn" onclick="showNotification('🔥 Paynex_Earnbot লাইভ টাস্ক শীঘ্রই আসছে!')">সম্ভব হবে</button>
+        </div>
+      `;
+    }
+
+    // Local storage fallback
+    function saveToLocalStorage() {
+      localStorage.setItem("userData_" + uid, JSON.stringify(userData));
+    }
+
+    function loadFromLocalStorage() {
+      const saved = localStorage.getItem("userData_" + uid);
+      if (saved) {
+        const data = JSON.parse(saved);
+        userData = { ...userData, ...data };
       }
     }
 
-    // Show notification toast
-    function showNotification(message) {
-      const toast = document.createElement('div');
-      toast.style.position = 'fixed';
-      toast.style.top = '20px';
-      toast.style.left = '50%';
-      toast.style.transform = 'translateX(-50%)';
-      toast.style.backgroundColor = 'var(--card-bg)';
-      toast.style.color = 'var(--text)';
-      toast.style.padding = '10px 20px';
-      toast.style.borderRadius = '8px';
-      toast.style.boxShadow = '0 4px 15px rgba(0, 0, 0, 0.2)';
-      toast.style.zIndex = '1000';
-      toast.style.opacity = '0';
-      toast.style.transition = 'opacity 0.3s';
-      toast.innerText = message;
-      document.body.appendChild(toast);
+    // ========== INITIALIZATION ==========
+    // Update UI with user info
+    document.addEventListener('DOMContentLoaded', function() {
+      console.log("🚀 Paynex_Earnbot PERFECT Referral System Starting...");
+      console.log("👤 User:", { id: uid, name, username });
+      console.log("🤖 Bot:", BOT_CONFIG.username);
+      console.log("🔑 Token:", BOT_CONFIG.token ? "Configured" : "Missing");
+      
+      // Set user info
+      document.getElementById("userName").innerText = name;
+      document.getElementById("userUsername").innerText = username;
+      document.getElementById("userId").innerText = uid;
+      document.getElementById("userAvatar").src = avatarUrl;
+      document.getElementById("profileAvatar").src = avatarUrl;
+      
+      // Initialize systems
+      loadFromLocalStorage();
+      loadUserData();
+      initializeReferralSystem();
+      
+      // Test referral link
       setTimeout(() => {
-        toast.style.opacity = '1';
-      }, 10);
-      setTimeout(() => {
-        toast.style.opacity = '0';
-        setTimeout(() => {
-          toast.remove();
-        }, 300);
-      }, 3000);
-    }
-
-    // Update UI with current data
-    function updateUI() {
-      const totalBalance = userData.taskIncome + userData.refIncome - userData.totalWithdraw;
-      document.getElementById("totalBalance").innerText = totalBalance;
-      document.getElementById("taskIncome").innerText = userData.taskIncome;
-      document.getElementById("refIncomeDetail").innerText = userData.refIncome;
-      document.getElementById("totalWithdraw").innerText = userData.totalWithdraw;
-      document.getElementById("refCount").innerText = userData.refCount;
-      document.getElementById("refIncome").innerText = userData.refIncome;
-      document.getElementById("profileRef").innerText = userData.refCount;
-      document.getElementById("profileIncome").innerText = totalBalance;
-      document.getElementById("userLevel").innerText = `Top Nexer Level ${userData.level}`;
-      loadReferralHistory();
-    }
+        console.log("🧪 Paynex_Earnbot Test Referral Link:", generateReferralLink(uid));
+      }, 1000);
+      
+      console.log("✅ Paynex_Earnbot PERFECT Referral System initialized successfully!");
+    });
 
     // Page navigation
     function showPage(page) {
-      document.getElementById("homePage").classList.add("hidden");
-      document.getElementById("referPage").classList.add("hidden");
-      document.getElementById("profilePage").classList.add("hidden");
-      document.getElementById("navHome").classList.remove("active");
-      document.getElementById("navRefer").classList.remove("active");
-      document.getElementById("navProfile").classList.remove("active");
+      document.querySelectorAll('.content > div').forEach(div => div.classList.add("hidden"));
+      document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove("active"));
+      
       if (page === "home") {
         document.getElementById("homePage").classList.remove("hidden");
         document.getElementById("navHome").classList.add("active");
+        loadTasks();
+        loadLiveTasks();
       } else if (page === "refer") {
         document.getElementById("referPage").classList.remove("hidden");
         document.getElementById("navRefer").classList.add("active");
       } else if (page === "profile") {
         document.getElementById("profilePage").classList.remove("hidden");
         document.getElementById("navProfile").classList.add("active");
+        updateWithdrawEligibility();
       }
     }
-
-    // Handle referral parameter
-    function handleReferral() {
-      const urlParams = new URLSearchParams(window.location.search);
-      const refParam = urlParams.get('start');
-      if (refParam && refParam.startsWith('ref_')) {
-        const refUserId = refParam.replace('ref_', '');
-        if (refUserId === uid) {
-          showNotification("নিজেকে রেফার করা যাবে না!");
-          return;
-        }
-        const refRef = database.ref('referrals/' + refUserId + '/' + uid);
-        refRef.once('value').then((snapshot) => {
-          if (snapshot.exists()) {
-            showNotification("আপনি ইতিমধ্যে এই রেফারেলের মাধ্যমে নিবন্ধিত!");
-            return;
-          }
-          // Simulated IP check (client-side placeholder; server-side recommended)
-          const userIp = 'simulated_ip_' + uid; // Replace with actual IP retrieval logic
-          database.ref('userIps/' + uid).set({ ip: userIp }).then(() => {
-            database.ref('userIps/' + refUserId).once('value').then((ipSnapshot) => {
-              const referrerIp = ipSnapshot.exists() ? ipSnapshot.val().ip : null;
-              if (referrerIp && referrerIp === userIp) {
-                showNotification("একই ডিভাইস থেকে রেফারেল গ্রহণযোগ্য নয়!");
-                return;
-              }
-              refRef.set({
-                timestamp: Date.now(),
-                referredUser: uid,
-                referredName: name
-              }).then(() => {
-                const userRef = database.ref('users/' + refUserId);
-                userRef.transaction((user) => {
-                  if (user) {
-                    user.refCount = (user.refCount || 0) + 1;
-                    user.refIncome = (user.refIncome || 0) + 25;
-                    user.referralHistory = user.referralHistory || [];
-                    user.referralHistory.push({
-                      name: name,
-                      timestamp: Date.now()
-                    });
-                  }
-                  return user;
-                }).then(() => {
-                  showNotification("রেফারেল সফলভাবে যোগ করা হয়েছে!");
-                }).catch((error) => {
-                  console.error("Error updating referrer data:", error);
-                  showNotification("রেফারেল যোগ করতে সমস্যা!");
-                });
-              }).catch((error) => {
-                console.error("Error saving referral:", error);
-                showNotification("রেফারেল যোগ করতে সমস্যা!");
-              });
-            });
-          });
-        }).catch((error) => {
-          console.error("Error checking referral:", error);
-          showNotification("রেফারেল প্রক্রিয়ায় সমস্যা!");
-        });
-      }
-    }
-
-    // Initialize the app
-    function initApp() {
-      document.getElementById("withdrawForm").addEventListener("submit", handleWithdrawForm);
-      loadUserData();
-      handleReferral();
-    }
-
-    initApp();
   </script>
 </body>
 </html>
