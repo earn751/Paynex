@@ -3,10 +3,11 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>PayNex - Paynex_Earnbot</title>
+  <title>PayNex</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
     :root {
@@ -21,6 +22,7 @@
       --text-secondary: #b0b0b0;
       --card-bg: #1a243b;
       --input-bg: #23304d;
+      --overlay: rgba(0, 0, 0, 0.7);
     }
 
     * {
@@ -49,6 +51,7 @@
       align-items: center;
       z-index: 10000;
       opacity: 1;
+      transition: opacity 0.5s ease;
     }
 
     .spinner {
@@ -85,7 +88,9 @@
       font-size: 20px;
     }
 
-    .logo i { font-size: 24px; }
+    .logo i {
+      font-size: 24px;
+    }
 
     .header-actions {
       display: flex;
@@ -125,7 +130,9 @@
       border: 2px solid white;
     }
 
-    .content { padding: 20px; }
+    .content {
+      padding: 20px;
+    }
 
     .section-title {
       margin-bottom: 15px;
@@ -135,7 +142,9 @@
       gap: 10px;
     }
 
-    .section-title i { color: var(--accent); }
+    .section-title i {
+      color: var(--accent);
+    }
 
     .card {
       background: var(--card-bg);
@@ -145,7 +154,34 @@
       box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
     }
 
-    .hero-section { text-align: center; padding: 20px 0; }
+    .hero-section {
+      text-align: center;
+      padding: 20px 0;
+    }
+
+    .hero-slider {
+      position: relative;
+      width: 100%;
+      max-width: 300px;
+      margin: 0 auto 15px;
+      overflow: hidden;
+    }
+
+    .slider-images {
+      display: flex;
+      width: 100%;
+    }
+
+    .slider-image {
+      width: 100%;
+      max-width: 300px;
+      border-radius: 15px;
+      display: none;
+    }
+
+    .slider-image.active {
+      display: block;
+    }
 
     .hero-title {
       font-size: 24px;
@@ -191,7 +227,10 @@
       font-size: 12px;
     }
 
-    .task-icon { font-size: 30px; margin-bottom: 10px; }
+    .task-icon {
+      font-size: 30px;
+      margin-bottom: 10px;
+    }
 
     .task-title {
       font-size: 14px;
@@ -219,8 +258,13 @@
       transition: all 0.3s;
     }
 
-    .task-btn:hover { background: rgba(255, 255, 255, 0.3); }
-    .task-btn.completed { background: var(--success); }
+    .task-btn:hover {
+      background: rgba(255, 255, 255, 0.3);
+    }
+
+    .task-btn.completed {
+      background: var(--success);
+    }
 
     .stats-container {
       display: grid;
@@ -243,9 +287,15 @@
       color: var(--accent);
     }
 
-    .stat-label { font-size: 12px; color: var(--text-secondary); }
+    .stat-label {
+      font-size: 12px;
+      color: var(--text-secondary);
+    }
 
-    .referral-link { display: flex; margin: 15px 0; }
+    .referral-link {
+      display: flex;
+      margin: 15px 0;
+    }
 
     .referral-link input {
       flex: 1;
@@ -282,21 +332,29 @@
       padding: 10px;
       color: var(--text);
       cursor: pointer;
-      transition: all 0.3s;
     }
 
-    .share-btn:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    .share-btn i {
+      font-size: 24px;
+      margin-bottom: 5px;
     }
 
-    .share-btn i { font-size: 24px; margin-bottom: 5px; }
+    .share-btn.facebook i {
+      color: #1877f2;
+    }
 
-    .share-btn.facebook i { color: #1877f2; }
-    .share-btn.whatsapp i { color: #25d366; }
-    .share-btn.messenger i { color: #006aff; }
+    .share-btn.whatsapp i {
+      color: #25d366;
+    }
 
-    .profile-header { text-align: center; margin-bottom: 20px; }
+    .share-btn.messenger i {
+      color: #006aff;
+    }
+
+    .profile-header {
+      text-align: center;
+      margin-bottom: 20px;
+    }
 
     .profile-avatar {
       width: 100px;
@@ -307,9 +365,23 @@
       margin: 0 auto 15px;
     }
 
-    .profile-name { font-size: 20px; font-weight: bold; margin-bottom: 5px; }
-    .profile-username { color: var(--text-secondary); margin-bottom: 10px; }
-    .profile-id { font-size: 14px; color: var(--text-secondary); margin-bottom: 15px; }
+    .profile-name {
+      font-size: 20px;
+      font-weight: bold;
+      margin-bottom: 5px;
+    }
+
+    .profile-username {
+      color: var(--text-secondary);
+      margin-bottom: 10px;
+    }
+
+    .profile-id {
+      font-size: 14px;
+      color: var(--text-secondary);
+      margin-bottom: 15px;
+    }
+
     .profile-tagline {
       background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
       padding: 8px 15px;
@@ -319,9 +391,11 @@
       margin-bottom: 20px;
     }
 
-    .withdraw-section { margin-top: 20px; }
+    .withdraw-section, .admin-section {
+      margin-top: 20px;
+    }
 
-    .withdraw-header {
+    .withdraw-header, .admin-header {
       display: flex;
       align-items: center;
       justify-content: space-between;
@@ -329,11 +403,23 @@
       cursor: pointer;
     }
 
-    .withdraw-content { display: none; }
-    .withdraw-content.active { display: block; }
+    .withdraw-content, .admin-content {
+      display: none;
+    }
 
-    .form-group { margin-bottom: 15px; }
-    .form-group label { display: block; margin-bottom: 5px; font-size: 14px; }
+    .withdraw-content.active, .admin-content.active {
+      display: block;
+    }
+
+    .form-group {
+      margin-bottom: 15px;
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 5px;
+      font-size: 14px;
+    }
 
     .form-control {
       width: 100%;
@@ -355,16 +441,53 @@
       font-size: 16px;
       font-weight: bold;
       transition: all 0.3s;
+      position: relative;
+      overflow: hidden;
     }
 
-    .submit-btn:hover { background: var(--primary-dark); }
-    .submit-btn:disabled { background: var(--text-secondary); cursor: not-allowed; }
+    .submit-btn:hover {
+      background: var(--primary-dark);
+    }
+
+    .submit-btn:disabled {
+      background: var(--text-secondary);
+      cursor: not-allowed;
+    }
 
     .min-withdraw-info {
       text-align: center;
       margin: 15px 0;
       font-size: 14px;
       color: var(--text-secondary);
+    }
+
+    .policy-section {
+      margin-top: 20px;
+    }
+
+    .policy-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 15px;
+      cursor: pointer;
+    }
+
+    .policy-content {
+      display: none;
+    }
+
+    .policy-content.active {
+      display: block;
+    }
+
+    .policy-list {
+      padding-left: 20px;
+    }
+
+    .policy-list li {
+      margin-bottom: 10px;
+      line-height: 1.4;
     }
 
     nav {
@@ -391,10 +514,18 @@
       transition: all 0.3s;
     }
 
-    .nav-btn i { font-size: 20px; margin-bottom: 5px; }
-    .nav-btn.active { color: var(--primary); }
+    .nav-btn i {
+      font-size: 20px;
+      margin-bottom: 5px;
+    }
 
-    .hidden { display: none; }
+    .nav-btn.active {
+      color: var(--primary);
+    }
+
+    .hidden {
+      display: none;
+    }
 
     .notification-panel {
       position: fixed;
@@ -409,7 +540,9 @@
       transition: right 0.3s ease;
     }
 
-    .notification-panel.active { right: 0; }
+    .notification-panel.active {
+      right: 0;
+    }
 
     .notification-header {
       display: flex;
@@ -435,9 +568,37 @@
       margin-bottom: 15px;
     }
 
-    .notification-title { font-weight: bold; margin-bottom: 5px; color: var(--accent); }
-    .notification-message { font-size: 14px; margin-bottom: 5px; color: var(--text); }
-    .notification-time { font-size: 12px; color: var(--text-secondary); margin-top: 5px; }
+    .notification-title {
+      font-weight: bold;
+      margin-bottom: 5px;
+      color: var(--accent);
+    }
+
+    .notification-time {
+      font-size: 12px;
+      color: var(--text-secondary);
+      margin-top: 5px;
+    }
+
+    .vote-buttons {
+      display: flex;
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .vote-btn {
+      background: var(--primary);
+      border: none;
+      color: white;
+      padding: 6px 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 12px;
+    }
+
+    .vote-btn:hover {
+      background: var(--primary-dark);
+    }
 
     .overlay {
       position: fixed;
@@ -450,7 +611,9 @@
       display: none;
     }
 
-    .overlay.active { display: block; }
+    .overlay.active {
+      display: block;
+    }
 
     .confetti {
       position: fixed;
@@ -463,33 +626,135 @@
     }
 
     @keyframes confettiFall {
-      0% { transform: translateY(-100px) rotate(0deg); opacity: 1; }
-      100% { transform: translateY(1000px) rotate(720deg); opacity: 0; }
+      0% {
+        transform: translateY(-100px) rotate(0deg);
+        opacity: 1;
+      }
+      100% {
+        transform: translateY(1000px) rotate(720deg);
+        opacity: 0;
+      }
     }
 
-    .referral-stats {
+    .modal {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: var(--card-bg);
+      border-radius: 15px;
+      padding: 20px;
+      z-index: 1001;
+      width: 90%;
+      max-width: 400px;
+      display: none;
+    }
+
+    .modal.active {
+      display: block;
+    }
+
+    .modal-header {
       display: flex;
       justify-content: space-between;
-      margin: 15px 0;
-      padding: 10px;
-      background: var(--input-bg);
-      border-radius: 10px;
+      align-items: center;
+      margin-bottom: 15px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--input-bg);
     }
 
-    .referral-stats .stat { text-align: center; }
-    .referral-stats .stat-value { font-size: 18px; font-weight: bold; color: var(--success); display: block; }
-    .referral-stats .stat-label { font-size: 12px; color: var(--text-secondary); }
+    .close-modal {
+      background: none;
+      border: none;
+      color: var(--text);
+      font-size: 20px;
+      cursor: pointer;
+    }
+
+    .category-section {
+      margin-bottom: 20px;
+    }
+
+    .category-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 15px;
+      cursor: pointer;
+    }
+
+    .category-content {
+      display: none;
+    }
+
+    .category-content.active {
+      display: block;
+    }
+
+    .admin-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+    }
+
+    .admin-table th, .admin-table td {
+      padding: 8px;
+      text-align: left;
+      border-bottom: 1px solid var(--input-bg);
+      font-size: 12px;
+    }
+
+    .admin-table th {
+      background: var(--primary);
+      color: var(--text);
+    }
+
+    .referral-history {
+      margin-top: 20px;
+    }
+
+    .referral-history h3 {
+      font-size: 16px;
+      margin-bottom: 10px;
+    }
+
+    .referral-history ul {
+      list-style: none;
+      padding: 0;
+    }
+
+    .referral-history li {
+      padding: 10px;
+      background: var(--input-bg);
+      border-radius: 8px;
+      margin-bottom: 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
 
     @media (max-width: 480px) {
-      .task-grid { grid-template-columns: 1fr; }
-      .stats-container { grid-template-columns: 1fr; }
-      .share-buttons { grid-template-columns: repeat(2, 1fr); }
-      .notification-panel { width: 85%; right: -85%; }
+      .task-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .stats-container {
+        grid-template-columns: 1fr;
+      }
+
+      .share-buttons {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .notification-panel {
+        width: 85%;
+        right: -85%;
+      }
     }
   </style>
 </head>
 <body>
-  <!-- Spinner -->
+  <!-- Spinner Overlay -->
   <div class="spinner-overlay" id="spinnerOverlay">
     <div class="spinner"></div>
   </div>
@@ -513,6 +778,9 @@
     <div id="homePage">
       <div class="card">
         <div class="hero-section">
+          <div class="hero-slider" id="heroSlider">
+            <div class="slider-images" id="sliderImages"></div>
+          </div>
           <h1 class="hero-title">আপনার আয় বৃদ্ধি করুন</h1>
           <div class="balance-amount">৳<span id="totalBalance">0</span></div>
           <div class="stats-container">
@@ -534,10 +802,63 @@
 
       <div class="card">
         <h2 class="section-title">
+          <i class="fas fa-fire"></i>
+          লাইভ টাস্ক
+        </h2>
+        <div class="task-grid" id="liveTasks"></div>
+
+        <h2 class="section-title">
           <i class="fas fa-tasks"></i>
           আজকের টাস্ক
         </h2>
-        <div class="task-grid" id="taskGrid"></div>
+        <div class="category-section">
+          <div class="category-header" onclick="toggleCategory('registration')">
+            <h3 class="section-title">
+              <i class="fas fa-user-plus"></i>
+              অ্যাকাউন্ট রেজিস্ট্রেশন করে ইনকাম
+            </h3>
+            <i class="fas fa-chevron-down" id="registrationArrow"></i>
+          </div>
+          <div class="category-content" id="registrationContent">
+            <div class="task-grid" id="registrationTasks"></div>
+          </div>
+        </div>
+        <div class="category-section">
+          <div class="category-header" onclick="toggleCategory('appDownload')">
+            <h3 class="section-title">
+              <i class="fas fa-download"></i>
+              অ্যাপ ডাউনলোড করে ইনকাম
+            </h3>
+            <i class="fas fa-chevron-down" id="appDownloadArrow"></i>
+          </div>
+          <div class="category-content" id="appDownloadContent">
+            <div class="task-grid" id="appDownloadTasks"></div>
+          </div>
+        </div>
+        <div class="category-section">
+          <div class="category-header" onclick="toggleCategory('survey')">
+            <h3 class="section-title">
+              <i class="fas fa-poll"></i>
+              সার্ভে করে ইনকাম
+            </h3>
+            <i class="fas fa-chevron-down" id="surveyArrow"></i>
+          </div>
+          <div class="category-content" id="surveyContent">
+            <div class="task-grid" id="surveyTasks"></div>
+          </div>
+        </div>
+        <div class="category-section">
+          <div class="category-header" onclick="toggleCategory('socialMedia')">
+            <h3 class="section-title">
+              <i class="fas fa-thumbs-up"></i>
+              সোশ্যাল মিডিয়া টাস্ক
+            </h3>
+            <i class="fas fa-chevron-down" id="socialMediaArrow"></i>
+          </div>
+          <div class="category-content" id="socialMediaContent">
+            <div class="task-grid" id="socialMediaTasks"></div>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -549,27 +870,21 @@
           Referral System
         </h2>
 
-        <div class="referral-stats">
-          <div class="stat">
-            <span class="stat-value" id="refCount">0</span>
-            <span class="stat-label">মোট রেফার</span>
+        <div class="stats-container">
+          <div class="stat-card">
+            <div class="stat-label">মোট রেফার</div>
+            <div class="stat-value" id="refCount">0</div>
           </div>
-          <div class="stat">
-            <span class="stat-value">৳<span id="refIncome">0</span></span>
-            <span class="stat-label">রেফার ইনকাম</span>
-          </div>
-          <div class="stat">
-            <span class="stat-value" id="refLevel">1</span>
-            <span class="stat-label">লেভেল</span>
+          <div class="stat-card">
+            <div class="stat-label">রেফার ইনকাম</div>
+            <div class="stat-value">৳<span id="refIncome">0</span></div>
           </div>
         </div>
 
-        <p style="text-align: center; margin: 15px 0; color: var(--success); font-weight: bold;">
-          প্রতি রেফারেলে ৳25 পান! 🔥
-        </p>
+        <p>আপনার Referral Link শেয়ার করুন এবং প্রতি রেফারেলে ৳25 পাউন!</p>
 
         <div class="referral-link">
-          <input id="refLink" type="text" readonly placeholder="রেফারেল লিংক লোড হচ্ছে...">
+          <input id="refLink" type="text" readonly>
           <button class="copy-btn" onclick="copyRef()">
             <i class="fas fa-copy"></i>
           </button>
@@ -590,11 +905,9 @@
           </button>
         </div>
 
-        <div style="margin-top: 20px; padding: 15px; background: var(--input-bg); border-radius: 10px; text-align: center;">
-          <h4 style="color: var(--accent); margin-bottom: 10px;">📈 আপনার রেফারেল লেভেল</h4>
-          <p style="color: var(--text-secondary); font-size: 14px;">
-            <strong id="levelInfo">লেভেল 1:</strong> প্রতি রেফার ৳25
-          </p>
+        <div class="referral-history">
+          <h3>Referral History</h3>
+          <ul id="referralHistory"></ul>
         </div>
       </div>
     </div>
@@ -605,8 +918,8 @@
         <img id="profileAvatar" class="profile-avatar" src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" alt="Profile">
         <div class="profile-name" id="userName">User Name</div>
         <div class="profile-username" id="userUsername">@username</div>
-        <div class="profile-id">ID: <span id="userId">12345</span></div>
-        <div class="profile-tagline" id="userLevel">Level 1</div>
+        <div class="profile-id">Nexer ID: <span id="userId">12345</span></div>
+        <div class="profile-tagline" id="userLevel">Top Nexer Level 5</div>
       </div>
 
       <div class="card">
@@ -625,19 +938,19 @@
           <div class="withdraw-header" onclick="toggleWithdrawSection()">
             <h3 class="section-title">
               <i class="fas fa-money-bill-wave"></i>
-              উত্তোলন
+              Withdraw
             </h3>
             <i class="fas fa-chevron-down" id="withdrawArrow"></i>
           </div>
 
           <div class="withdraw-content" id="withdrawContent">
-            <p class="min-withdraw-info">ন্যূনতম উত্তোলন: ৳500 এবং 10 রেফার</p>
+            <p class="min-withdraw-info">ন্যূনতম উত্তোলন: ৳500 এবং 10 রেফার প্রয়োজন</p>
 
             <form id="withdrawForm">
               <div class="form-group">
                 <label for="method">পদ্ধতি</label>
                 <select id="method" class="form-control" required>
-                  <option value="">নির্বাচন করুন</option>
+                  <option value="">পদ্ধতি নির্বাচন করুন</option>
                   <option value="bkash">বিকাশ</option>
                   <option value="nagad">নগদ</option>
                 </select>
@@ -649,14 +962,59 @@
               </div>
 
               <div class="form-group">
-                <label for="amount">পরিমাণ</label>
+                <label for="amount">টাকার পরিমাণ</label>
                 <input type="number" id="amount" class="form-control" placeholder="পরিমাণ টাকা" min="500" required>
               </div>
 
-              <button type="submit" class="submit-btn" id="withdrawBtn">উত্তোলন রিকোয়েস্ট</button>
+              <button type="submit" class="submit-btn" id="withdrawBtn">Withdraw Request</button>
             </form>
 
             <p id="withdrawMsg" style="text-align: center; margin-top: 15px;"></p>
+          </div>
+        </div>
+
+        <div class="admin-section hidden" id="adminSection">
+          <div class="admin-header" onclick="toggleAdminSection()">
+            <h3 class="section-title">
+              <i class="fas fa-user-shield"></i>
+              Admin Panel
+            </h3>
+            <i class="fas fa-chevron-down" id="adminArrow"></i>
+          </div>
+          <div class="admin-content" id="adminContent">
+            <h4>User Session Tracking</h4>
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th>User ID</th>
+                  <th>Session Start</th>
+                  <th>Duration (s)</th>
+                </tr>
+              </thead>
+              <tbody id="sessionTable"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="policy-section">
+          <div class="policy-header" onclick="togglePolicySection()">
+            <h3 class="section-title">
+              <i class="fas fa-info-circle"></i>
+              Policy & Rules
+            </h3>
+            <i class="fas fa-chevron-down" id="policyArrow"></i>
+          </div>
+
+          <div class="policy-content" id="policyContent">
+            <ul class="policy-list">
+              <li>প্রথমে অতিগুরুত্বপূর্ণ ভাবে বলছি আপনারা task গুলো সততার সাথে করুন 🙏প্রত্যেক task ক্যাটাগরি আচে "একাউন্ট রেজিস্ট্রেশন " এই ক্যাটাগরি তে যেই task থাকবে ওই লিংক গুলাতে গিয়ে একাউন্ট করতে হবে must না হলে আপনাদের ব্যালেন্স অটোমেটিক কেটে যাবে যদি সঠিক ভাবে কাজ না করেন </li>
+              <li>প্রতি রেফারে ২৫ টাকা যোগ হবে।</li>
+              <li>উইথড্রোর জন্য ন্যূনতম ৫০০ টাকা এবং ১০টি রেফার আবশ্যক।</li>
+              <li>টাস্ক সম্পূর্ণ করার পর তা যাচাই করতে ২৪ ঘন্টা সময় লাগতে পারে।✔️এবং আমরা সাধারণত প্রথমে task ব্যালেন্স অ্যাড করে দি পরে তা আমরা সময় নিয়ে দেখি তাই fake কাজ করলে বা fake রেফার করলে একাউন্ট সাসপেন্ড হলে কেউ দায়ী থাকবে না </li>
+              <li>উইথড্রোর রিকোয়েস্ট প্রসেস হতে ৪-৭ ঘন্টা সময় লাগতে পারে।</li>
+            </ul>
           </div>
         </div>
       </div>
@@ -667,22 +1025,22 @@
   <nav>
     <button class="nav-btn active" id="navHome" onclick="showPage('home')">
       <i class="fas fa-home"></i>
-      <span>হোম</span>
+      <span>Home</span>
     </button>
     <button class="nav-btn" id="navRefer" onclick="showPage('refer')">
       <i class="fas fa-user-friends"></i>
-      <span>রেফার</span>
+      <span>Refer</span>
     </button>
     <button class="nav-btn" id="navProfile" onclick="showPage('profile')">
       <i class="fas fa-user"></i>
-      <span>প্রোফাইল</span>
+      <span>Profile</span>
     </button>
   </nav>
 
-  <!-- Notifications -->
+  <!-- Notifications Panel -->
   <div class="notification-panel" id="notificationPanel">
     <div class="notification-header">
-      <h3>নোটিফিকেশন</h3>
+      <h3>Notifications</h3>
       <button class="close-notifications" onclick="toggleNotifications()">
         <i class="fas fa-times"></i>
       </button>
@@ -690,17 +1048,11 @@
     <div id="notificationsList"></div>
   </div>
 
+  <!-- Overlay -->
   <div class="overlay" id="overlay" onclick="toggleNotifications()"></div>
 
   <script>
-    // ========== FIXED CONFIGURATION ==========
-    const BOT_CONFIG = {
-      username: "Paynex_Earnbot",
-      token: "8452148581:AAGkseZLOKWequ7ymuWIzlFct3joP-IwZbA",
-      referralBonus: 25
-    };
-
-    // Firebase config
+    // Firebase configuration
     const firebaseConfig = {
       apiKey: "AIzaSyCho5RtEIoXnNlNNrpBg65BmTpJY23Se7Y",
       authDomain: "maillbeex.firebaseapp.com",
@@ -708,21 +1060,58 @@
       projectId: "maillbeex",
       storageBucket: "maillbeex.firebasestorage.app",
       messagingSenderId: "5938669413",
-      appId: "1:5938669413:web:34b6bbbbb0e81628a2a38c"
+      appId: "1:5938669413:web:34b6bbbbb0e81628a2a38c",
+      measurementId: "G-F6YNLNQSK7"
     };
 
     // Initialize Firebase
     firebase.initializeApp(firebaseConfig);
     const database = firebase.database();
+    const auth = firebase.auth();
 
-    // Telegram WebApp
+    // Telegram Web App initialization
     let tg = window.Telegram.WebApp;
     tg.expand();
+    tg.enableClosingConfirmation();
 
-    // Global user data
+    // Handle Telegram Web App theme and color settings
+    try {
+      tg.setHeaderColor('bg_color');
+      tg.setBackgroundColor('#ffffff');
+      tg.onEvent('themeChanged', function() {
+        document.body.style.background = tg.themeParams.bg_color || 'linear-gradient(135deg, #121c36 0%, #0d1425 100%)';
+        document.querySelector('header').style.background = tg.themeParams.bg_color || '#0088cc';
+      });
+      tg.onEvent('viewportChanged', function() {
+        tg.expand(); // Ensure the app is fully expanded
+      });
+    } catch (e) {
+      console.warn("Error handling Telegram Web App events:", e);
+    }
+
+    // User info from Telegram
+    let user = tg.initDataUnsafe.user || {
+      id: 12345,
+      first_name: "Demo",
+      username: "demo_user",
+      photo_url: "https://cdn-icons-png.flaticon.com/512/3135/3135715.png"
+    };
+
+    let uid = user.id;
+    let name = user.first_name + (user.last_name ? " " + user.last_name : "");
+    let username = user.username ? "@" + user.username : "@user_" + uid;
+    let avatarUrl = user.photo_url || "https://cdn-icons-png.flaticon.com/512/3135/3135715.png";
+
+    // Update UI with user info
+    document.getElementById("userName").innerText = name;
+    document.getElementById("userUsername").innerText = username;
+    document.getElementById("userId").innerText = uid;
+    document.getElementById("userAvatar").src = avatarUrl;
+    document.getElementById("profileAvatar").src = avatarUrl;
+    document.getElementById("refLink").value = `https://t.me/Paynex_Earnbot?start=ref_${uid}`;
+
+    // User data
     let userData = {
-      uid: null,
-      name: '',
       refCount: 0,
       taskIncome: 0,
       refIncome: 0,
@@ -730,345 +1119,346 @@
       completedTasks: [],
       dailyTaskCount: 0,
       lastTaskDate: null,
-      level: 1,
-      joinDate: null,
-      referrerId: null
+      level: 5,
+      referralHistory: []
     };
 
-    // ========== FIXED REFERRAL DETECTION ==========
-    function detectReferral() {
-      console.log("🔍 Starting referral detection...");
-      
-      // Method 1: Telegram initData
-      let referralId = null;
-      console.log("📡 Telegram initData:", tg.initDataUnsafe);
-      
-      // Check start_app parameter (Telegram Mini App)
-      if (tg.initDataUnsafe.start_app) {
-        console.log("📱 Found start_app:", tg.initDataUnsafe.start_app);
-        if (tg.initDataUnsafe.start_app.startsWith('ref_')) {
-          referralId = tg.initDataUnsafe.start_app.replace('ref_', '');
-          console.log("🎉 REFERRAL FOUND via start_app:", referralId);
-        }
-      }
-      
-      // Method 2: URL parameters (fallback)
-      if (!referralId) {
-        const urlParams = new URLSearchParams(window.location.search);
-        console.log("🌐 URL params:", window.location.search);
-        
-        const startAppParam = urlParams.get('startapp');
-        if (startAppParam && startAppParam.startsWith('ref_')) {
-          referralId = startAppParam.replace('ref_', '');
-          console.log("🎉 REFERRAL FOUND via URL startapp:", referralId);
-        }
-        
-        // Method 3: Check for 'start' parameter (legacy)
-        const startParam = urlParams.get('start');
-        if (startParam && startParam.startsWith('ref_')) {
-          referralId = startParam.replace('ref_', '');
-          console.log("🎉 REFERRAL FOUND via legacy start param:", referralId);
-        }
-      }
-      
-      // Method 4: Check initDataUnsafe.start_param (alternative)
-      if (!referralId && tg.initDataUnsafe.start_param) {
-        console.log("🔍 Checking start_param:", tg.initDataUnsafe.start_param);
-        if (tg.initDataUnsafe.start_param.startsWith('ref_')) {
-          referralId = tg.initDataUnsafe.start_param.replace('ref_', '');
-          console.log("🎉 REFERRAL FOUND via start_param:", referralId);
-        }
-      }
-      
-      console.log("📊 Final referral result:", referralId || "No referral");
-      return referralId;
-    }
-
-    // ========== REFERRAL PROCESSING ==========
-    async function processReferral(referrerId) {
-      if (!referrerId || referrerId === userData.uid) {
-        console.log("⚠️ Invalid referral - same user or no referrer");
-        return false;
-      }
-      
-      console.log("🚀 Processing referral from:", referrerId, "to:", userData.uid);
-      
-      try {
-        const referralRef = database.ref(`referrals/${referrerId}/${userData.uid}`);
-        const snapshot = await referralRef.once('value');
-        
-        if (snapshot.exists()) {
-          console.log("⚠️ Referral already exists");
-          return false;
-        }
-        
-        // Create new referral
-        const referralData = {
-          referredUserId: userData.uid,
-          referrerId: referrerId,
-          referredUserName: userData.name,
-          timestamp: firebase.database.ServerValue.TIMESTAMP,
-          bonusAmount: BOT_CONFIG.referralBonus,
-          status: 'active'
-        };
-        
-        await referralRef.set(referralData);
-        console.log("💾 Referral saved to Firebase");
-        
-        // Update current user
-        const userRef = database.ref(`users/${userData.uid}`);
-        await userRef.update({
-          referrerId: referrerId,
-          joinDate: firebase.database.ServerValue.TIMESTAMP
-        });
-        
-        // Update referrer (atomic transaction)
-        const referrerRef = database.ref(`users/${referrerId}`);
-        await referrerRef.transaction((referrer) => {
-          if (referrer) {
-            referrer.refCount = (referrer.refCount || 0) + 1;
-            referrer.refIncome = (referrer.refIncome || 0) + BOT_CONFIG.referralBonus;
-            
-            // Update level
-            const newLevel = Math.min(10, Math.floor((referrer.refCount || 0) / 5) + 1);
-            if (newLevel > (referrer.level || 1)) {
-              referrer.level = newLevel;
-            }
-            
-            console.log("📊 Referrer updated:", referrer.refCount, "referrals, ৳", referrer.refIncome);
-            return referrer;
+    // Check if user is admin
+    let isAdmin = false;
+    auth.onAuthStateChanged((user) => {
+      if (user) {
+        user.getIdTokenResult().then((idTokenResult) => {
+          isAdmin = idTokenResult.claims.admin === true;
+          if (isAdmin) {
+            document.getElementById("adminSection").classList.remove("hidden");
+            loadUserSessions();
           }
-          return { refCount: 1, refIncome: BOT_CONFIG.referralBonus, level: 1 };
         });
-        
-        // Send notifications
-        await sendTelegramMessage(userData.uid, `🎉 <b>স্বাগতম PayNex!</b>\n\nআপনি ${referrerId} এর রেফারেল লিংক দিয়ে জয়েন করেছেন!\n\n💰 প্রতি রেফারেলে ৳25 আয় করুন!`);
-        
-        // Show success
-        showNotification(`🎉 সফলভাবে রেফার করা হয়েছে! আপনার রেফার ${BOT_CONFIG.referralBonus}৳ বোনাস পাবেন।`);
-        
-        console.log("✅ Referral processed successfully!");
-        return true;
-        
-      } catch (error) {
-        console.error("❌ Referral error:", error);
-        showNotification("❌ রেফারেল প্রসেস করতে সমস্যা!");
-        return false;
       }
-    }
+    });
 
-    // ========== TELEGRAM MESSAGES ==========
-    async function sendTelegramMessage(chatId, text) {
-      try {
-        const url = `https://api.telegram.org/bot${BOT_CONFIG.token}/sendMessage`;
-        const response = await fetch(url, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            chat_id: chatId,
-            text: text,
-            parse_mode: 'HTML'
-          })
+    // Track user session
+    let sessionStartTime = Date.now();
+    function trackUserSession() {
+      window.addEventListener('beforeunload', () => {
+        const sessionEndTime = Date.now();
+        const duration = Math.floor((sessionEndTime - sessionStartTime) / 1000);
+        const sessionRef = database.ref(`userSessions/${uid}/${sessionStartTime}`);
+        sessionRef.set({
+          startTime: sessionStartTime,
+          duration: duration,
+          timestamp: firebase.database.ServerValue.TIMESTAMP
+        }).catch((error) => {
+          console.error("Error saving session:", error);
         });
-        
-        const result = await response.json();
-        console.log("📱 Telegram message sent:", result.ok ? "Success" : result.description);
-        return result.ok;
-      } catch (error) {
-        console.error("❌ Telegram error:", error);
-        return false;
-      }
-    }
-
-    // ========== UI UPDATES ==========
-    function updateUI() {
-      document.getElementById("totalBalance").innerText = Math.round(userData.taskIncome + userData.refIncome - userData.totalWithdraw);
-      document.getElementById("taskIncome").innerText = userData.taskIncome || 0;
-      document.getElementById("refIncomeDetail").innerText = userData.refIncome || 0;
-      document.getElementById("totalWithdraw").innerText = userData.totalWithdraw || 0;
-      document.getElementById("profileIncome").innerText = Math.round(userData.taskIncome + userData.refIncome - userData.totalWithdraw);
-      document.getElementById("profileRef").innerText = userData.refCount || 0;
-      document.getElementById("userLevel").innerText = `Level ${userData.level || 1}`;
-      
-      // Update referral page
-      if (document.getElementById("refCount")) {
-        document.getElementById("refCount").innerText = userData.refCount || 0;
-        document.getElementById("refIncome").innerText = userData.refIncome || 0;
-        document.getElementById("refLevel").innerText = userData.level || 1;
-      }
-    }
-
-    // Generate referral link
-    function generateReferralLink(userId) {
-      return `https://t.me/${BOT_CONFIG.username}/app?startapp=ref_${userId}`;
-    }
-
-    // Copy referral link
-    function copyRef() {
-      const refInput = document.getElementById("refLink");
-      const refLink = generateReferralLink(userData.uid);
-      refInput.value = refLink;
-      
-      refInput.select();
-      refInput.setSelectionRange(0, 99999);
-      
-      navigator.clipboard.writeText(refLink).then(() => {
-        showNotification("📋 রেফারেল লিংক কপি হয়েছে!");
-        console.log("📋 Copied:", refLink);
-      }).catch(() => {
-        document.execCommand("copy");
-        showNotification("📋 রেফারেল লিংক কপি হয়েছে!");
       });
     }
 
-    // Sharing functions
-    function shareOnFacebook() {
-      const refLink = generateReferralLink(userData.uid);
-      const text = encodeURIComponent(`PayNex এ জয়েন করুন এবং টাকা আয় করুন!\n\nআমার রেফারেল: ${refLink}\n\nপ্রতি রেফারেলে ৳25! 💰`);
-      window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(refLink)}&quote=${text}`, '_blank');
-      showNotification("📱 Facebook তে শেয়ার হচ্ছে...");
+    // Load user sessions for admin panel
+    function loadUserSessions() {
+      const sessionsRef = database.ref('userSessions');
+      sessionsRef.once('value').then((snapshot) => {
+        const sessionTable = document.getElementById("sessionTable");
+        sessionTable.innerHTML = "";
+        if (snapshot.exists()) {
+          snapshot.forEach(userSnapshot => {
+            const userId = userSnapshot.key;
+            userSnapshot.forEach(sessionSnapshot => {
+              const session = sessionSnapshot.val();
+              const row = document.createElement("tr");
+              row.innerHTML = `
+                <td>${userId}</td>
+                <td>${formatTime(session.startTime)}</td>
+                <td>${session.duration}</td>
+              `;
+              sessionTable.appendChild(row);
+            });
+          });
+        } else {
+          sessionTable.innerHTML = "<tr><td colspan='3'>কোন সেশন ডেটা নেই</td></tr>";
+        }
+      }).catch((error) => {
+        console.error("Error loading user sessions:", error);
+      });
     }
 
-    function shareOnWhatsApp() {
-      const refLink = generateReferralLink(userData.uid);
-      const text = encodeURIComponent(`PayNex এ জয়েন করুন এবং টাকা আয় করুন!\n\nআমার রেফারেল: ${refLink}\n\nপ্রতি রেফারেলে ৳25! 💰`);
-      window.open(`https://wa.me/?text=${text}`, '_blank');
-      showNotification("📱 WhatsApp তে শেয়ার হচ্ছে...");
+    // Load user data from Firebase with real-time listener
+    function loadUserData() {
+      const userRef = database.ref('users/' + uid);
+      userRef.on('value', (snapshot) => {
+        if (snapshot.exists()) {
+          const data = snapshot.val();
+          userData = {...userData, ...data};
+        } else {
+          userRef.set(userData);
+        }
+        updateUI();
+      });
+      loadTasks();
+      loadLiveTasks();
+      loadSliderImages();
+      loadNotifications();
+      trackUserSession();
+      hideSpinner();
     }
 
-    function shareOnMessenger() {
-      const refLink = generateReferralLink(userData.uid);
-      window.open(`fb-messenger://share?link=${encodeURIComponent(refLink)}`, '_blank');
-      showNotification("📱 Messenger তে শেয়ার হচ্ছে...");
+    // Hide spinner after content loads
+    function hideSpinner() {
+      const spinnerOverlay = document.getElementById("spinnerOverlay");
+      spinnerOverlay.style.opacity = '0';
+      setTimeout(() => {
+        spinnerOverlay.style.display = 'none';
+      }, 500);
     }
 
-    // Task system
+    // Fallback to local storage
+    function loadFromLocalStorage() {
+      userData.refCount = parseInt(localStorage.getItem("refCount") || 0);
+      userData.taskIncome = parseInt(localStorage.getItem("taskIncome") || 0);
+      userData.refIncome = parseInt(localStorage.getItem("refIncome") || 0);
+      userData.totalWithdraw = parseInt(localStorage.getItem("totalWithdraw") || 0);
+      userData.completedTasks = JSON.parse(localStorage.getItem("completedTasks") || '[]');
+      userData.dailyTaskCount = parseInt(localStorage.getItem("dailyTaskCount") || 0);
+      userData.lastTaskDate = localStorage.getItem("lastTaskDate") || null;
+      userData.level = parseInt(localStorage.getItem("level") || 5);
+      userData.referralHistory = JSON.parse(localStorage.getItem("referralHistory") || '[]');
+    }
+
+    // Save user data to Firebase
+    function saveUserData() {
+      const userRef = database.ref('users/' + uid);
+      userRef.set(userData).catch((error) => {
+        console.error("Error saving user data:", error);
+        saveToLocalStorage();
+      });
+    }
+
+    // Fallback to local storage
+    function saveToLocalStorage() {
+      localStorage.setItem("refCount", userData.refCount);
+      localStorage.setItem("taskIncome", userData.taskIncome);
+      localStorage.setItem("refIncome", userData.refIncome);
+      localStorage.setItem("totalWithdraw", userData.totalWithdraw);
+      localStorage.setItem("completedTasks", JSON.stringify(userData.completedTasks));
+      localStorage.setItem("dailyTaskCount", userData.dailyTaskCount);
+      localStorage.setItem("lastTaskDate", userData.lastTaskDate);
+      localStorage.setItem("level", userData.level);
+      localStorage.setItem("referralHistory", JSON.stringify(userData.referralHistory));
+    }
+
+    // Load referral history
+    function loadReferralHistory() {
+      const historyList = document.getElementById("referralHistory");
+      historyList.innerHTML = "";
+      if (userData.referralHistory && userData.referralHistory.length > 0) {
+        userData.referralHistory.forEach(referral => {
+          const li = document.createElement("li");
+          li.innerHTML = `
+            <span>${referral.name}</span>
+            <span>${formatTime(referral.timestamp)}</span>
+          `;
+          historyList.appendChild(li);
+        });
+      } else {
+        historyList.innerHTML = "<li>কোন রেফারেল হিস্টোরি নেই</li>";
+      }
+    }
+
+    // Load slider images from Firebase
+    function loadSliderImages() {
+      const sliderRef = database.ref('sliderImages');
+      sliderRef.once('value').then((snapshot) => {
+        const sliderImages = document.getElementById("sliderImages");
+        sliderImages.innerHTML = "";
+        if (snapshot.exists()) {
+          const images = [];
+          snapshot.forEach(childSnapshot => {
+            images.push(childSnapshot.val());
+          });
+          images.forEach((image, index) => {
+            const imgDiv = document.createElement("div");
+            imgDiv.style.width = "100%";
+            imgDiv.innerHTML = `<a href="${image.link}" target="_blank"><img src="${image.url}" class="slider-image ${index === 0 ? 'active' : ''}" alt="Slider Image ${index + 1}"></a>`;
+            sliderImages.appendChild(imgDiv);
+          });
+          startSlider(images.length);
+        } else {
+          sliderImages.innerHTML = `<img src="https://via.placeholder.com/300x150/0088cc/ffffff?text=PayNex" class="slider-image active" alt="PayNex">`;
+        }
+      }).catch((error) => {
+        console.error("Error loading slider images:", error);
+        sliderImages.innerHTML = `<img src="https://via.placeholder.com/300x150/0088cc/ffffff?text=PayNex" class="slider-image active" alt="PayNex">`;
+      });
+    }
+
+    // Start image slider
+    function startSlider(imageCount) {
+      if (imageCount <= 1) return;
+      const images = document.querySelectorAll(".slider-image");
+      let currentIndex = 0;
+      setInterval(() => {
+        images[currentIndex].classList.remove("active");
+        currentIndex = (currentIndex + 1) % imageCount;
+        images[currentIndex].classList.add("active");
+      }, 5000);
+    }
+
+    // Load live tasks from Firebase
+    function loadLiveTasks() {
+      const liveTasksRef = database.ref('liveTasks');
+      const liveTasksContainer = document.getElementById("liveTasks");
+      liveTasksContainer.innerHTML = "";
+      liveTasksRef.once('value').then((snapshot) => {
+        if (snapshot.exists()) {
+          const liveTasks = [];
+          snapshot.forEach(childSnapshot => {
+            liveTasks.push(childSnapshot.val());
+          });
+          liveTasks.forEach(task => {
+            let done = userData.completedTasks.includes(task.id);
+            let div = document.createElement("div");
+            div.className = "task-item";
+            div.innerHTML = `
+              <div class="task-number">${task.id}</div>
+              <div class="task-icon"><i class="fas ${task.icon}"></i></div>
+              <div class="task-title">${task.title}<span class="task-reward">৳${task.reward}</span></div>
+              <button class="task-btn ${done ? 'completed' : ''}" onclick="completeTask(${task.id}, '${task.link}')" ${done ? 'disabled' : ''}>
+                ${done ? 'Completed' : 'Complete Now'}
+              </button>
+            `;
+            liveTasksContainer.appendChild(div);
+          });
+        }
+      }).catch((error) => {
+        console.error("Error loading live tasks:", error);
+      });
+    }
+
+    // Load tasks
     function loadTasks() {
       const tasks = [
-        { id: 1, title: "নতুন অ্যাকাউন্ট রেজিস্টার করুন", icon: "fa-user-plus", reward: 5 },
-        { id: 2, title: "অ্যাপ ডাউনলোড করুন", icon: "fa-download", reward: 5 },
-        { id: 3, title: "সার্ভে সম্পন্ন করুন", icon: "fa-poll", reward: 5 },
-        { id: 4, title: "পোস্টে লাইক দিন", icon: "fa-thumbs-up", reward: 5 },
-        { id: 5, title: "পোস্ট শেয়ার করুন", icon: "fa-share-alt", reward: 5 },
-        { id: 6, title: "চ্যানেল সাবস্ক্রাইব করুন", icon: "fa-bell", reward: 5 }
+        { id: 1, category: "registration", title: "নতুন অ্যাকাউন্ট ১ রেজিস্টার করুন", icon: "fa-user-plus", reward: 5 },
+        { id: 2, category: "registration", title: "নতুন অ্যাকাউন্ট ২ রেজিস্টার করুন", icon: "fa-user-plus", reward: 5 },
+        { id: 3, category: "registration", title: "নতুন অ্যাকাউন্ট ৩ রেজিস্টার করুন", icon: "fa-user-plus", reward: 5 },
+        { id: 4, category: "registration", title: "নতুন অ্যাকাউন্ট ৪ রেজিস্টার করুন", icon: "fa-user-plus", reward: 5 },
+        { id: 5, category: "registration", title: "নতুন অ্যাকাউন্ট ৫ রেজিস্টার করুন", icon: "fa-user-plus", reward: 5 },
+        { id: 6, category: "appDownload", title: "অ্যাপ ১ ডাউনলোড করুন", icon: "fa-download", reward: 5 },
+        { id: 7, category: "appDownload", title: "অ্যাপ ২ ডাউনলোড করুন", icon: "fa-download", reward: 5 },
+        { id: 8, category: "appDownload", title: "অ্যাপ ৩ ডাউনলোড করুন", icon: "fa-download", reward: 5 },
+        { id: 9, category: "appDownload", title: "অ্যাপ ৪ ডাউনলোড করুন", icon: "fa-download", reward: 5 },
+        { id: 10, category: "appDownload", title: "অ্যাপ ৫ ডাউনলোড করুন", icon: "fa-download", reward: 5 },
+        { id: 11, category: "survey", title: "সার্ভে ১ সম্পন্ন করুন", icon: "fa-poll", reward: 5 },
+        { id: 12, category: "survey", title: "সার্ভে ২ সম্পন্ন করুন", icon: "fa-poll", reward: 5 },
+        { id: 13, category: "survey", title: "সার্ভে ৩ সম্পন্ন করুন", icon: "fa-poll", reward: 5 },
+        { id: 14, category: "survey", title: "সার্ভে ৪ সম্পন্ন করুন", icon: "fa-poll", reward: 5 },
+        { id: 15, category: "survey", title: "সার্ভে ৫ সম্পন্ন করুন", icon: "fa-poll", reward: 5 },
+        { id: 16, category: "socialMedia", title: "পোস্টে লাইক দিন", icon: "fa-thumbs-up", reward: 5 },
+        { id: 17, category: "socialMedia", title: "পোস্টে কমেন্ট করুন", icon: "fa-comment", reward: 5 },
+        { id: 18, category: "socialMedia", title: "চ্যানেল সাবস্ক্রাইব করুন", icon: "fa-bell", reward: 5 },
+        { id: 19, category: "socialMedia", title: "গ্রুপে জয়েন করুন", icon: "fa-users", reward: 5 },
+        { id: 20, category: "socialMedia", title: "পোস্ট শেয়ার করুন", icon: "fa-share-alt", reward: 5 }
       ];
-      
-      const taskGrid = document.getElementById("taskGrid");
-      taskGrid.innerHTML = "";
-      
-      tasks.forEach(task => {
-        const done = userData.completedTasks.includes(task.id);
-        const div = document.createElement("div");
-        div.className = "task-item";
-        div.innerHTML = `
-          <div class="task-number">${task.id}</div>
-          <div class="task-icon"><i class="fas ${task.icon}"></i></div>
-          <div class="task-title">${task.title}<span class="task-reward">৳${task.reward}</span></div>
-          <button class="task-btn ${done ? 'completed' : ''}" onclick="completeTask(${task.id})" ${done ? 'disabled' : ''}>
-            ${done ? 'সম্পন্ন ✅' : 'শুরু করুন'}
-          </button>
-        `;
-        taskGrid.appendChild(div);
+      renderTasks(tasks);
+    }
+
+    // Render tasks in the UI
+    function renderTasks(tasks) {
+      const containers = {
+        registration: document.getElementById("registrationTasks"),
+        appDownload: document.getElementById("appDownloadTasks"),
+        survey: document.getElementById("surveyTasks"),
+        socialMedia: document.getElementById("socialMediaTasks")
+      };
+      Object.keys(containers).forEach(category => {
+        containers[category].innerHTML = "";
+        tasks.filter(task => task.category === category).forEach(task => {
+          let done = userData.completedTasks.includes(task.id);
+          let div = document.createElement("div");
+          div.className = "task-item";
+          div.innerHTML = `
+            <div class="task-number">${task.id}</div>
+            <div class="task-icon"><i class="fas ${task.icon}"></i></div>
+            <div class="task-title">${task.title}<span class="task-reward">৳${task.reward}</span></div>
+            <button class="task-btn ${done ? 'completed' : ''}" onclick="completeTask(${task.id}, 'https://otieu.com/4/9502992')" ${done ? 'disabled' : ''}>
+              ${done ? 'Completed' : 'Complete Now'}
+            </button>
+          `;
+          containers[category].appendChild(div);
+        });
       });
     }
 
-    function completeTask(taskId) {
+    // Complete a task
+    function completeTask(taskId, link) {
       const today = new Date().toISOString().split('T')[0];
       if (userData.lastTaskDate !== today) {
         userData.dailyTaskCount = 0;
         userData.lastTaskDate = today;
       }
-      
-      if (userData.dailyTaskCount >= 6) {
-        showNotification("⚠️ আজকের সব টাস্ক সম্পন্ন!");
+      if (userData.dailyTaskCount >= 20) {
+        showNotification("আজকের সব টাস্ক শেষ!");
         return;
       }
-      
       if (userData.completedTasks.includes(taskId)) {
-        showNotification("✅ এই টাস্ক আগে সম্পন্ন!");
+        showNotification("এই টাস্ক আগে কমপ্লিট করা হয়েছে!");
         return;
       }
-      
       userData.completedTasks.push(taskId);
       userData.taskIncome += 5;
       userData.dailyTaskCount += 1;
-      
-      // Save to Firebase
-      const userRef = database.ref(`users/${userData.uid}`);
-      userRef.update({
-        taskIncome: userData.taskIncome,
-        completedTasks: userData.completedTasks,
-        dailyTaskCount: userData.dailyTaskCount,
-        lastTaskDate: userData.lastTaskDate
-      });
-      
+      saveUserData();
       updateUI();
       loadTasks();
-      showNotification("🎉 টাস্ক সম্পন্ন! +৳5 যোগ হয়েছে!");
-      
-      // Confetti
-      showConfetti();
+      loadLiveTasks();
+      showNotification("টাস্ক সম্পন্ন হয়েছে! ৳5 যোগ করা হয়েছে।");
+      window.open(link, "_blank");
     }
 
-    // Withdraw system
-    document.getElementById("withdrawForm").addEventListener("submit", async function(e) {
-      e.preventDefault();
-      
-      const method = document.getElementById("method").value;
-      const number = document.getElementById("number").value;
-      const amount = parseInt(document.getElementById("amount").value);
-      const totalBalance = userData.taskIncome + userData.refIncome - userData.totalWithdraw;
-      
-      if (totalBalance < 500) {
-        showNotification("❌ ন্যূনতম ৳500 প্রয়োজন!");
-        return;
-      }
-      
-      if (amount > totalBalance) {
-        showNotification("❌ পর্যাপ্ত ব্যালেন্স নেই!");
-        return;
-      }
-      
-      const btn = document.getElementById("withdrawBtn");
-      btn.disabled = true;
-      btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> প্রসেসিং...';
-      
-      try {
-        userData.totalWithdraw += amount;
-        await database.ref(`users/${userData.uid}/totalWithdraw`).set(userData.totalWithdraw);
-        updateUI();
-        
-        showNotification(`✅ উত্তোলন রিকোয়েস্ট পাঠানো হয়েছে! ৳${amount}`);
-        document.getElementById("withdrawForm").reset();
-        
-      } catch (error) {
-        console.error("Withdraw error:", error);
-        showNotification("❌ উত্তোলন প্রসেসে সমস্যা!");
-      } finally {
-        btn.disabled = false;
-        btn.innerHTML = 'উত্তোলন রিকোয়েস্ট';
-      }
-    });
-
-    // Navigation
-    function showPage(page) {
-      document.querySelectorAll('.content > div').forEach(div => div.classList.add("hidden"));
-      document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove("active"));
-      
-      if (page === "home") {
-        document.getElementById("homePage").classList.remove("hidden");
-        document.getElementById("navHome").classList.add("active");
-        loadTasks();
-      } else if (page === "refer") {
-        document.getElementById("referPage").classList.remove("hidden");
-        document.getElementById("navRefer").classList.add("active");
-        document.getElementById("refLink").value = generateReferralLink(userData.uid);
-      } else if (page === "profile") {
-        document.getElementById("profilePage").classList.remove("hidden");
-        document.getElementById("navProfile").classList.add("active");
-      }
+    // Toggle category section
+    function toggleCategory(category) {
+      const content = document.getElementById(`${category}Content`);
+      const arrow = document.getElementById(`${category}Arrow`);
+      content.classList.toggle("active");
+      arrow.classList.toggle("fa-chevron-down");
+      arrow.classList.toggle("fa-chevron-up");
     }
 
+    // Toggle admin section
+    function toggleAdminSection() {
+      const content = document.getElementById("adminContent");
+      const arrow = document.getElementById("adminArrow");
+      content.classList.toggle("active");
+      arrow.classList.toggle("fa-chevron-down");
+      arrow.classList.toggle("fa-chevron-up");
+    }
+
+    // Copy referral link
+    function copyRef() {
+      let copyText = document.getElementById("refLink");
+      copyText.select();
+      copyText.setSelectionRange(0, 99999);
+      document.execCommand("copy");
+      showNotification("Referral Link কপি করা হয়েছে!");
+    }
+
+    // Share functions
+    function shareOnFacebook() {
+      const url = encodeURIComponent(document.getElementById("refLink").value);
+      window.open(`https://www.facebook.com/sharer/sharer.php?u=${url}`, '_blank');
+    }
+
+    function shareOnWhatsApp() {
+      const text = encodeURIComponent("Join PayNex and earn money! Use my referral link: ");
+      const url = encodeURIComponent(document.getElementById("refLink").value);
+      window.open(`https://wa.me/?text=${text}${url}`, '_blank');
+    }
+
+    function shareOnMessenger() {
+      const url = encodeURIComponent(document.getElementById("refLink").value);
+      window.open(`fb-messenger://share?link=${url}`, '_blank');
+    }
+
+    // Toggle sections
     function toggleWithdrawSection() {
       const content = document.getElementById("withdrawContent");
       const arrow = document.getElementById("withdrawArrow");
@@ -1077,106 +1467,282 @@
       arrow.classList.toggle("fa-chevron-up");
     }
 
-    function toggleNotifications() {
-      document.getElementById("notificationPanel").classList.toggle("active");
-      document.getElementById("overlay").classList.toggle("active");
+    function togglePolicySection() {
+      const content = document.getElementById("policyContent");
+      const arrow = document.getElementById("policyArrow");
+      content.classList.toggle("active");
+      arrow.classList.toggle("fa-chevron-down");
+      arrow.classList.toggle("fa-chevron-up");
     }
 
+    // Toggle notifications panel
+    function toggleNotifications() {
+      const panel = document.getElementById("notificationPanel");
+      const overlay = document.getElementById("overlay");
+      panel.classList.toggle("active");
+      overlay.classList.toggle("active");
+    }
+
+    // Load notifications (user-specific)
+    function loadNotifications() {
+      const notifRef = database.ref('users/' + uid + '/notifications');
+      notifRef.orderByChild('timestamp').limitToLast(10).on('value', (snapshot) => {
+        const notificationsList = document.getElementById("notificationsList");
+        notificationsList.innerHTML = "";
+        let count = 0;
+        if (snapshot.exists()) {
+          const notifications = [];
+          snapshot.forEach(child => {
+            notifications.push({id: child.key, ...child.val()});
+          });
+          notifications.reverse().forEach(notification => {
+            const div = document.createElement("div");
+            div.className = "notification-item";
+            div.innerHTML = `
+              <div class="notification-title">${notification.title}</div>
+              <div class="notification-message">${notification.message}</div>
+              <div class="notification-time">${formatTime(notification.timestamp)}</div>
+              ${notification.hasVoting ? `
+                <div class="vote-buttons">
+                  <button class="vote-btn" onclick="submitVote('${notification.id}', 'yes')">Yes</button>
+                  <button class="vote-btn" onclick="submitVote('${notification.id}', 'no')">No</button>
+                </div>
+              ` : ''}
+            `;
+            notificationsList.appendChild(div);
+            count++;
+          });
+        } else {
+          notificationsList.innerHTML = "<p>কোন নোটিফিকেশন নেই</p>";
+        }
+        document.getElementById("notificationBadge").innerText = count;
+      });
+    }
+
+    // Submit vote
+    function submitVote(notificationId, vote) {
+      const voteRef = database.ref(`votes/${notificationId}/${uid}`);
+      voteRef.set({
+        vote: vote,
+        timestamp: Date.now()
+      }).then(() => {
+        showNotification(`আপনার ভোট (${vote}) সফলভাবে জমা দেওয়া হয়েছে!`);
+      }).catch((error) => {
+        console.error("Error submitting vote:", error);
+        showNotification("ভোট জমা দিতে সমস্যা হয়েছে!");
+      });
+    }
+
+    // Format timestamp
+    function formatTime(timestamp) {
+      const date = new Date(timestamp);
+      return date.toLocaleDateString('bn-BD') + ' ' + date.toLocaleTimeString('bn-BD');
+    }
+
+    // Withdraw form submission
+    function handleWithdrawForm(e) {
+      e.preventDefault();
+      const method = document.getElementById("method").value;
+      const number = document.getElementById("number").value;
+      const amount = parseInt(document.getElementById("amount").value);
+      const totalBalance = userData.taskIncome + userData.refIncome - userData.totalWithdraw;
+      if (totalBalance < 500 || userData.refCount < 10) {
+        document.getElementById("withdrawMsg").innerText = "❌ শর্ত পূরণ হয়নি! ন্যূনতম ৫০০ টাকা এবং ১০ রেফার প্রয়োজন।";
+        return;
+      }
+      if (amount > totalBalance) {
+        document.getElementById("withdrawMsg").innerText = "❌ আপনার ব্যালেন্স পর্যাপ্ত নয়!";
+        return;
+      }
+      if (amount < 500) {
+        document.getElementById("withdrawMsg").innerText = "❌ ন্যূনতম ৫০০ টাকা উত্তোলন করতে হবে!";
+        return;
+      }
+      const btn = document.getElementById("withdrawBtn");
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+      setTimeout(() => {
+        userData.totalWithdraw += amount;
+        saveUserData();
+        updateUI();
+        document.getElementById("withdrawMsg").innerText = "✅ Withdraw Request Sent (" + method + " - " + number + " - ৳" + amount + ")";
+        document.getElementById("withdrawForm").reset();
+        btn.disabled = false;
+        btn.innerHTML = 'Withdraw Request';
+        showConfetti();
+      }, 2000);
+    }
+
+    // Show confetti animation
+    function showConfetti() {
+      const colors = ['#0088cc', '#00c2ff', '#00d66c', '#ff9500', '#ff3b30'];
+      for (let i = 0; i < 50; i++) {
+        const confetti = document.createElement('div');
+        confetti.className = 'confetti';
+        confetti.style.left = Math.random() * 100 + 'vw';
+        confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+        confetti.style.animation = `confettiFall ${Math.random() * 3 + 2}s linear forwards`;
+        document.body.appendChild(confetti);
+        setTimeout(() => {
+          confetti.remove();
+        }, 5000);
+      }
+    }
+
+    // Show notification toast
     function showNotification(message) {
       const toast = document.createElement('div');
-      toast.style.cssText = `
-        position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
-        background: var(--card-bg); color: var(--text); padding: 12px 20px;
-        border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-        z-index: 10000; opacity: 0; transition: opacity 0.3s;
-        font-size: 14px; max-width: 90%; text-align: center;
-      `;
+      toast.style.position = 'fixed';
+      toast.style.top = '20px';
+      toast.style.left = '50%';
+      toast.style.transform = 'translateX(-50%)';
+      toast.style.backgroundColor = 'var(--card-bg)';
+      toast.style.color = 'var(--text)';
+      toast.style.padding = '10px 20px';
+      toast.style.borderRadius = '8px';
+      toast.style.boxShadow = '0 4px 15px rgba(0, 0, 0, 0.2)';
+      toast.style.zIndex = '1000';
+      toast.style.opacity = '0';
+      toast.style.transition = 'opacity 0.3s';
       toast.innerText = message;
       document.body.appendChild(toast);
-      
-      setTimeout(() => toast.style.opacity = '1', 10);
+      setTimeout(() => {
+        toast.style.opacity = '1';
+      }, 10);
       setTimeout(() => {
         toast.style.opacity = '0';
-        setTimeout(() => toast.remove(), 300);
+        setTimeout(() => {
+          toast.remove();
+        }, 300);
       }, 3000);
     }
 
-    function showConfetti() {
-      const colors = ['#0088cc', '#00c2ff', '#00d66c', '#ff9500', '#ff3b30'];
-      for (let i = 0; i < 30; i++) {
-        const confetti = document.createElement('div');
-        confetti.className = 'confetti';
-        confetti.style.cssText = `
-          left: ${Math.random() * 100}vw;
-          background: ${colors[Math.floor(Math.random() * colors.length)]};
-          animation: confettiFall ${Math.random() * 3 + 2}s linear forwards;
-        `;
-        document.body.appendChild(confetti);
-        setTimeout(() => confetti.remove(), 5000);
+    // Update UI with current data
+    function updateUI() {
+      const totalBalance = userData.taskIncome + userData.refIncome - userData.totalWithdraw;
+      document.getElementById("totalBalance").innerText = totalBalance;
+      document.getElementById("taskIncome").innerText = userData.taskIncome;
+      document.getElementById("refIncomeDetail").innerText = userData.refIncome;
+      document.getElementById("totalWithdraw").innerText = userData.totalWithdraw;
+      document.getElementById("refCount").innerText = userData.refCount;
+      document.getElementById("refIncome").innerText = userData.refIncome;
+      document.getElementById("profileRef").innerText = userData.refCount;
+      document.getElementById("profileIncome").innerText = totalBalance;
+      document.getElementById("userLevel").innerText = `Top Nexer Level ${userData.level}`;
+      loadReferralHistory();
+    }
+
+    // Page navigation
+    function showPage(page) {
+      document.getElementById("homePage").classList.add("hidden");
+      document.getElementById("referPage").classList.add("hidden");
+      document.getElementById("profilePage").classList.add("hidden");
+      document.getElementById("navHome").classList.remove("active");
+      document.getElementById("navRefer").classList.remove("active");
+      document.getElementById("navProfile").classList.remove("active");
+      if (page === "home") {
+        document.getElementById("homePage").classList.remove("hidden");
+        document.getElementById("navHome").classList.add("active");
+      } else if (page === "refer") {
+        document.getElementById("referPage").classList.remove("hidden");
+        document.getElementById("navRefer").classList.add("active");
+      } else if (page === "profile") {
+        document.getElementById("profilePage").classList.remove("hidden");
+        document.getElementById("navProfile").classList.add("active");
       }
     }
 
-    // ========== INITIALIZATION ==========
-    document.addEventListener('DOMContentLoaded', async function() {
-      console.log("🚀 Paynex_Earnbot Starting...");
-      
-      // Get user info
-      const user = tg.initDataUnsafe.user;
-      if (!user) {
-        showNotification("❌ User data not found!");
-        console.error("❌ No user data");
-        return;
-      }
-      
-      userData.uid = user.id.toString();
-      userData.name = user.first_name + (user.last_name ? ' ' + user.last_name : '');
-      
-      console.log("👤 User:", userData.uid, userData.name);
-      
-      // Update UI with user info
-      document.getElementById("userName").innerText = userData.name;
-      document.getElementById("userUsername").innerText = user.username ? '@' + user.username : `@user_${userData.uid}`;
-      document.getElementById("userId").innerText = userData.uid;
-      document.getElementById("userAvatar").src = user.photo_url || "https://cdn-icons-png.flaticon.com/512/3135/3135715.png";
-      document.getElementById("profileAvatar").src = user.photo_url || "https://cdn-icons-png.flaticon.com/512/3135/3135715.png";
-      
-      // Hide spinner
-      document.getElementById("spinnerOverlay").style.display = 'none';
-      
-      // Detect and process referral
-      const referralId = detectReferral();
-      if (referralId) {
-        await processReferral(referralId);
-      } else {
-        console.log("ℹ️ No referral detected");
-      }
-      
-      // Load user data from Firebase
-      const userRef = database.ref(`users/${userData.uid}`);
-      userRef.once('value').then(snapshot => {
-        if (snapshot.exists()) {
-          const data = snapshot.val();
-          userData = { ...userData, ...data };
+    // Handle referral parameter
+    function handleReferral() {
+      const refParam = tg.initDataUnsafe.start_param;
+      if (refParam && refParam.startsWith('ref_')) {
+        const refUserId = refParam.replace('ref_', '');
+        if (refUserId === uid) {
+          showNotification("নিজেকে রেফার করা যাবে না!");
+          return;
         }
-        updateUI();
-        loadTasks();
-        console.log("✅ Initialization complete!");
-      });
-      
-      // Real-time referral monitoring
-      const referralsRef = database.ref(`referrals/${userData.uid}`);
-      referralsRef.on('value', snapshot => {
-        let count = 0;
-        if (snapshot.exists()) {
-          snapshot.forEach(() => count++);
-        }
-        userData.refCount = count;
-        updateUI();
-      });
-    });
+        const refRef = database.ref('referrals/' + refUserId + '/' + uid);
+        refRef.once('value').then((snapshot) => {
+          if (snapshot.exists()) {
+            showNotification("আপনি ইতিমধ্যে এই রেফারেলের মাধ্যমে নিবন্ধিত!");
+            return;
+          }
+          // Simulated IP check (client-side placeholder; server-side recommended)
+          const userIp = 'simulated_ip_' + uid; // Replace with actual IP retrieval logic
+          database.ref('userIps/' + uid).set({ ip: userIp }).then(() => {
+            database.ref('userIps/' + refUserId).once('value').then((ipSnapshot) => {
+              const referrerIp = ipSnapshot.exists() ? ipSnapshot.val().ip : null;
+              if (referrerIp && referrerIp === userIp) {
+                showNotification("একই ডিভাইস থেকে রেফারেল গ্রহণযোগ্য নয়!");
+                return;
+              }
+              refRef.set({
+                timestamp: Date.now(),
+                referredUser: uid,
+                referredName: name
+              }).then(() => {
+                const userRef = database.ref('users/' + refUserId);
+                userRef.transaction((user) => {
+                  if (user) {
+                    user.refCount = (user.refCount || 0) + 1;
+                    user.refIncome = (user.refIncome || 0) + 25;
+                    user.referralHistory = user.referralHistory || [];
+                    user.referralHistory.push({
+                      name: name,
+                      timestamp: Date.now()
+                    });
+                  }
+                  return user;
+                }).then(() => {
+                  // Notify referrer
+                  database.ref('users/' + refUserId + '/notifications').push({
+                    title: "New Referral",
+                    message: `${name} joined using your referral link! You earned 25 BDT.`,
+                    timestamp: firebase.database.ServerValue.TIMESTAMP,
+                    hasVoting: false
+                  });
+                  // Add bonus to referred user (new user)
+                  const currentUserRef = database.ref('users/' + uid);
+                  currentUserRef.transaction((currentUser) => {
+                    if (currentUser) {
+                      currentUser.refIncome = (currentUser.refIncome || 0) + 10;
+                    }
+                    return currentUser;
+                  }).then(() => {
+                    // Notify new user
+                    database.ref('users/' + uid + '/notifications').push({
+                      title: "Welcome to PayNex",
+                      message: "You have successfully joined using a referral link and received 10 BDT signup bonus!",
+                      timestamp: firebase.database.ServerValue.TIMESTAMP,
+                      hasVoting: false
+                    });
+                    showNotification("রেফারেল সফলভাবে যোগ করা হয়েছে! আপনি 10 BDT সাইনআপ বোনাস পেয়েছেন।");
+                  });
+                }).catch((error) => {
+                  console.error("Error updating referrer data:", error);
+                  showNotification("রেফারেল যোগ করতে সমস্যা!");
+                });
+              }).catch((error) => {
+                console.error("Error saving referral:", error);
+                showNotification("রেফারেল যোগ করতে সমস্যা!");
+              });
+            });
+          });
+        }).catch((error) => {
+          console.error("Error checking referral:", error);
+          showNotification("রেফারেল প্রক্রিয়ায় সমস্যা!");
+        });
+      }
+    }
 
-    // Set default navigation
-    showPage('home');
+    // Initialize the app
+    function initApp() {
+      document.getElementById("withdrawForm").addEventListener("submit", handleWithdrawForm);
+      loadUserData();
+      handleReferral();
+    }
+
+    initApp();
   </script>
 </body>
 </html>
