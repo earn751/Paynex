@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <meta name="description" content="PayNex ">
-    <meta name="keywords" content="টাকা উপার্জন, রিওয়ার্ড,, বিজ্ঞাপন দেখুন, রেফারেল">
+    <meta name="description" content="PayNex - Telegram রিওয়ার্ড অ্যাপে টাকা উপার্জন করুন">
+    <meta name="keywords" content="টাকা উপার্জন, রিওয়ার্ড, টেলিগ্রাম, বিজ্ঞাপন দেখুন, রেফারেল">
     <meta name="author" content="PayNex">
-    <title>PayNex</title>
+    <title>PayNex </title>
     
     <!-- Google Fonts (Nunito) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -18,10 +18,6 @@
 
     <!-- Three.js for 3D animations -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    
-    <!-- Firebase SDK -->
-    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
     
     <style>
         /* CSS Variables for Purple Instagram Style Theme */
@@ -680,23 +676,7 @@
         document.addEventListener('DOMContentLoaded', () => {
             const tg = window.Telegram.WebApp;
 
-            // --- Firebase Configuration ---
-            const firebaseConfig = {
-                apiKey: "AIzaSyCho5RtEIoXnNlNNrpBg65BmTpJY23Se7Y",
-                authDomain: "maillbeex.firebaseapp.com",
-                databaseURL: "https://maillbeex-default-rtdb.firebaseio.com",
-                projectId: "maillbeex",
-                storageBucket: "maillbeex.firebasestorage.app",
-                messagingSenderId: "5938669413",
-                appId: "1:5938669413:web:34b6bbbbb0e81628a2a38c",
-                measurementId: "G-F6YNLNQSK7"
-            };
-
-            // Initialize Firebase
-            firebase.initializeApp(firebaseConfig);
-            const database = firebase.database();
-
-            // --- App Configuration ---
+            // --- Configuration ---
             const BOT_TOKEN = "8452148581:AAGkseZLOKWequ7ymuWIzlFct3joP-IwZbA";
             const BOT_USERNAME = "Paynex_Earnbot";
             const ADMIN_CHAT_ID = "6786186083";
@@ -732,64 +712,24 @@
                 hasJoinedChannel: false,
                 userId: null,
                 profileName: '',
-                profilePhoto: '',
-                lastLogin: null
-            };
-
-            // Firebase State Management
-            const saveStateToFirebase = () => {
-                if (userState.userId) {
-                    database.ref('users/' + userState.userId).set(userState)
-                        .then(() => {
-                            console.log('User state saved to Firebase');
-                        })
-                        .catch((error) => {
-                            console.error('Error saving to Firebase:', error);
-                            // Fallback to localStorage if Firebase fails
-                            localStorage.setItem(`userState_${userState.userId}`, JSON.stringify(userState));
-                        });
-                }
-            };
-
-            const loadStateFromFirebase = (userId) => {
-                return new Promise((resolve) => {
-                    database.ref('users/' + userId).once('value')
-                        .then((snapshot) => {
-                            if (snapshot.exists()) {
-                                userState = snapshot.val();
-                                console.log('User state loaded from Firebase');
-                            } else {
-                                // If no data in Firebase, try localStorage
-                                const savedState = localStorage.getItem(`userState_${userId}`);
-                                if (savedState) {
-                                    userState = JSON.parse(savedState);
-                                    // Save to Firebase for future use
-                                    saveStateToFirebase();
-                                }
-                            }
-                            
-                            // Ensure new state properties exist
-                            if (userState.hasJoinedChannel === undefined) userState.hasJoinedChannel = false;
-                            if (userState.profileName === undefined) userState.profileName = '';
-                            if (userState.profilePhoto === undefined) userState.profilePhoto = '';
-                            if (userState.lastLogin === undefined) userState.lastLogin = null;
-                            
-                            resolve();
-                        })
-                        .catch((error) => {
-                            console.error('Error loading from Firebase:', error);
-                            // Fallback to localStorage
-                            const savedState = localStorage.getItem(`userState_${userId}`);
-                            if (savedState) {
-                                userState = JSON.parse(savedState);
-                            }
-                            resolve();
-                        });
-                });
+                profilePhoto: ''
             };
 
             const saveState = () => {
-                saveStateToFirebase();
+                if (userState.userId) {
+                    localStorage.setItem(`userState_${userState.userId}`, JSON.stringify(userState));
+                }
+            };
+
+            const loadState = (userId) => {
+                const savedState = localStorage.getItem(`userState_${userId}`);
+                if (savedState) {
+                    userState = JSON.parse(savedState);
+                    // Ensure new state properties exist
+                    if (userState.hasJoinedChannel === undefined) userState.hasJoinedChannel = false;
+                    if (userState.profileName === undefined) userState.profileName = '';
+                    if (userState.profilePhoto === undefined) userState.profilePhoto = '';
+                }
             };
             
             // --- 3D Background Animation ---
@@ -847,7 +787,7 @@
             };
 
             // --- Core Functions ---
-            const initApp = async () => {
+            const initApp = () => {
                 tg.ready();
                 tg.expand();
                 document.body.className = `${tg.colorScheme}-theme`;
@@ -859,16 +799,13 @@
                 }
                 
                 userState.userId = user.id;
-                await loadStateFromFirebase(user.id);
+                loadState(user.id);
                 
                 const today = new Date().toISOString().slice(0, 10);
                 if (userState.lastAdWatchDate !== today) {
                     userState.dailyAdWatchCount = 0;
                     userState.lastAdWatchDate = today;
                 }
-                
-                // Update last login time
-                userState.lastLogin = new Date().toISOString();
                 
                 // Initialize 3D background
                 init3DBackground();
@@ -952,7 +889,7 @@
                     saveState();
                     updateUI();
                     tg.HapticFeedback.notificationOccurred('success');
-                    tg.showAlert(`Congratulations! আপনি ${POINTS_PER_AD} taka 💸আপনার একাউন্ট এ যোগ করা হয়েছে ✨✅.`);
+                    tg.showAlert(`Congratulations!💎💸আপনার একাউন্ট এ  ${POINTS_PER_AD} taka যোগ করা হইয়েসে💫🎉✅`);
                 }).catch(() => {
                     tg.showAlert("Ad could not be loaded. Please try again later.");
                 }).finally(() => {
@@ -975,7 +912,7 @@
                 setTimeout(() => {
                     userState.points += CHANNEL_JOIN_BONUS;
                     userState.hasJoinedChannel = true;
-                    tg.showAlert(`welcome 🎉✨! আপনি  ${CHANNEL_JOIN_BONUS} bonus taka পেয়েছেন ✨🩵`);
+                    tg.showAlert(`Thank you! You received ${CHANNEL_JOIN_BONUS} bonus taka.`);
                     saveState();
                     updateUI();
                 }, 3000);
@@ -1045,22 +982,14 @@
                 if (startParam && startParam.startsWith('ref_')) {
                     const referrerId = startParam.split('ref_')[1];
                     if (referrerId && referrerId !== userState.userId && !userState.referrals.includes(userState.userId)) {
-                        // Load referrer's data from Firebase and add referral bonus
-                        database.ref('users/' + referrerId).once('value')
-                            .then((snapshot) => {
-                                if (snapshot.exists()) {
-                                    const referrerState = snapshot.val();
-                                    referrerState.referrals = referrerState.referrals || [];
-                                    if (!referrerState.referrals.includes(userState.userId)) {
-                                        referrerState.points += REFERRAL_BONUS;
-                                        referrerState.referrals.push(userState.userId);
-                                        database.ref('users/' + referrerId).set(referrerState);
-                                    }
-                                }
-                            })
-                            .catch((error) => {
-                                console.error('Error handling referral:', error);
-                            });
+                        // Simulate adding referral bonus to referrer
+                        const referrerState = JSON.parse(localStorage.getItem(`userState_${referrerId}`)) || { points: 0, referrals: [] };
+                        referrerState.referrals = referrerState.referrals || [];
+                        if (!referrerState.referrals.includes(userState.userId)) {
+                            referrerState.points += REFERRAL_BONUS;
+                            referrerState.referrals.push(userState.userId);
+                            localStorage.setItem(`userState_${referrerId}`, JSON.stringify(referrerState));
+                        }
                     }
                 }
             };
