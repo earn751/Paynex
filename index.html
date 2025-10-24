@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>HiGrip - Mobile Offer Rewards</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <!-- Monetag SDK -->
+    <script src='//libtl.com/sdk.js' data-zone='10087307' data-sdk='show_10087307'></script>
     <style>
         :root {
             --primary-color: #0088cc;
@@ -14,6 +16,7 @@
             --light-text: #fff;
             --border-radius: 10px;
             --box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --verified-color: #1da1f2;
         }
         
         * {
@@ -27,6 +30,7 @@
             background-color: #f5f5f5;
             color: var(--text-color);
             line-height: 1.6;
+            padding-bottom: 60px;
         }
         
         .container {
@@ -40,6 +44,7 @@
             margin-bottom: 20px;
             padding-bottom: 15px;
             border-bottom: 1px solid #ddd;
+            position: relative;
         }
         
         .logo {
@@ -51,6 +56,48 @@
         
         .tagline {
             font-size: 14px;
+            color: #666;
+        }
+        
+        .profile-section {
+            position: absolute;
+            right: 0;
+            top: 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .profile-pic {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: var(--primary-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+        
+        .profile-info {
+            text-align: right;
+        }
+        
+        .username {
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .verified {
+            color: var(--verified-color);
+            font-size: 14px;
+        }
+        
+        .earnings {
+            font-size: 12px;
             color: #666;
         }
         
@@ -242,6 +289,167 @@
             border-radius: var(--border-radius);
             cursor: pointer;
         }
+        
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s, visibility 0.3s;
+        }
+        
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .modal {
+            background-color: white;
+            border-radius: var(--border-radius);
+            padding: 20px;
+            width: 90%;
+            max-width: 400px;
+            box-shadow: var(--box-shadow);
+        }
+        
+        .modal-title {
+            font-size: 18px;
+            margin-bottom: 15px;
+            color: var(--primary-color);
+        }
+        
+        .modal-content {
+            margin-bottom: 20px;
+        }
+        
+        .modal-actions {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .referral-section {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+        }
+        
+        .referral-title {
+            font-size: 16px;
+            margin-bottom: 10px;
+            color: var(--primary-color);
+        }
+        
+        .referral-steps {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 10px;
+        }
+        
+        .referral-step {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px;
+            background-color: #f9f9f9;
+            border-radius: var(--border-radius);
+        }
+        
+        .step-number {
+            width: 24px;
+            height: 24px;
+            background-color: var(--primary-color);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        
+        .step-text {
+            font-size: 14px;
+        }
+        
+        .referral-code, .referral-link {
+            background-color: #f0f0f0;
+            padding: 10px;
+            border-radius: var(--border-radius);
+            text-align: center;
+            font-family: monospace;
+            font-size: 18px;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+        
+        .copy-btn {
+            background-color: var(--accent-color);
+            color: white;
+            border: none;
+            border-radius: var(--border-radius);
+            padding: 8px 15px;
+            font-size: 14px;
+            cursor: pointer;
+            width: 100%;
+        }
+        
+        .navigation {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background-color: white;
+            border-top: 1px solid #ddd;
+            display: flex;
+            justify-content: space-around;
+            padding: 10px 0;
+            box-shadow: 0 -2px 4px rgba(0, 0, 0, 0.05);
+        }
+        
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: #666;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        
+        .nav-item.active {
+            color: var(--primary-color);
+        }
+        
+        .nav-icon {
+            font-size: 24px;
+            margin-bottom: 5px;
+        }
+        
+        .premium-card {
+            background: linear-gradient(135deg, #ffd700, #ff9500);
+            color: white;
+            box-shadow: 0 6px 12px rgba(255, 149, 0, 0.3);
+        }
+        
+        .premium-card .card-title {
+            color: white;
+        }
+        
+        .premium-card .btn {
+            background-color: white;
+            color: var(--accent-color);
+        }
+        
+        .premium-card .btn:hover {
+            background-color: #f0f0f0;
+        }
     </style>
 </head>
 <body>
@@ -249,18 +457,34 @@
         <header>
             <div class="logo">HiGrip</div>
             <div class="tagline">Get Mobile Data Offers & Rewards</div>
+            <div class="profile-section">
+                <div class="profile-info">
+                    <div class="username">
+                        John Doe <span class="verified">✓</span>
+                    </div>
+                    <div class="earnings">Earned: 1250 MB | Grips: 0 ⛏️ | Referrals: 0</div>
+                </div>
+                <div class="profile-pic">JD</div>
+            </div>
         </header>
         
-        <div class="card">
-            <div class="card-title">Join Our Channel</div>
-            <p>You must join our Telegram channel to use this app:</p>
-            <a href="https://t.me/HiGripGo" target="_blank" class="btn" style="margin-top: 10px; text-decoration: none; display: inline-block;">
-                Join HiGripGo Channel
-            </a>
-            <button id="checkJoin" class="btn btn-accent" style="margin-top: 10px;">Check if Joined</button>
+        <div class="modal-overlay" id="channelModal">
+            <div class="modal">
+                <div class="modal-title">Join Our Channel</div>
+                <div class="modal-content">
+                    <p>You must join our Telegram channel to use this app:</p>
+                    <a href="https://t.me/HiGripGo" target="_blank" class="btn" style="margin-top: 10px; text-decoration: none; display: inline-block;">
+                        Join HiGripGo Channel
+                    </a>
+                </div>
+                <div class="modal-actions">
+                    <button class="btn" id="checkJoin">Check if Joined</button>
+                </div>
+            </div>
         </div>
         
-        <div class="card" id="mainSection" style="display: none;">
+        <!-- Home Section -->
+        <div class="card" id="homeSection" style="display: none;">
             <div class="card-title">Enter Your Mobile Number</div>
             <div class="input-group">
                 <label for="operator">Select Operator</label>
@@ -279,32 +503,62 @@
             <button id="checkOffer" class="btn">Check Offers</button>
         </div>
         
-        <div class="card" id="offersSection" style="display: none;">
-            <div class="card-title">Available Offers</div>
-            <div id="offersList">
-                <!-- Offers will be dynamically inserted here -->
-            </div>
-        </div>
-        
-        <div class="card" id="adSection">
-            <div class="card-title">Watch Ads to Unlock Rewards</div>
+        <!-- Grip Section -->
+        <div class="card" id="gripSection" style="display: none;">
+            <div class="card-title">Collect Grips ⛏️</div>
             <div class="progress-container">
                 <div class="progress-label">
                     <span>Progress</span>
-                    <span id="progressText">0/5</span>
+                    <span id="progressText">0/10</span>
                 </div>
                 <div class="progress-bar">
                     <div class="progress-fill" id="progressFill"></div>
                 </div>
             </div>
-            <div class="timer" id="timer">Next ad available in: 1:00</div>
-            <button id="watchAd" class="btn btn-accent" disabled>Watch Ad</button>
-        </div>
-        
-        <div class="card">
-            <div class="card-title">Ad Watch History</div>
+            <div class="timer" id="timer">Next ad available in: 0:15</div>
+            <button id="watchAd" class="btn btn-accent" disabled>Watch Ad for 1 Grip ⛏️</button>
+            
+            <div class="referral-section">
+                <div class="referral-title">Share Your Referral Link</div>
+                <div class="referral-link" id="referralLink">https://t.me/HiGripBot?start=HIGRIP123</div>
+                <button class="copy-btn" id="copyReferralLink">Copy Referral Link</button>
+            </div>
+            
+            <div class="card-title" style="margin-top: 20px;">Ad Watch History</div>
             <div id="historyList">
                 <!-- History items will be dynamically inserted here -->
+            </div>
+        </div>
+        
+        <!-- Offer Section -->
+        <div class="card" id="offersSection" style="display: none;">
+            <div class="card-title">Available Offers (Up to 12GB)</div>
+            <div id="offersList">
+                <!-- Offers will be dynamically inserted here -->
+            </div>
+            
+            <div class="referral-section" id="referralSection" style="display: none;">
+                <div class="referral-title">Refer 3 Friends to Unlock</div>
+                <div class="referral-steps">
+                    <div class="referral-step">
+                        <div class="step-number">1</div>
+                        <div class="step-text">Share your referral link with friends</div>
+                    </div>
+                    <div class="referral-step">
+                        <div class="step-number">2</div>
+                        <div class="step-text">Your friend joins using your link</div>
+                    </div>
+                    <div class="referral-step">
+                        <div class="step-number">3</div>
+                        <div class="step-text">Your friend completes their first offer</div>
+                    </div>
+                    <div class="referral-step">
+                        <div class="step-number">4</div>
+                        <div class="step-text">You unlock the offer!</div>
+                    </div>
+                </div>
+                <div class="referral-code" id="referralCode">HIGRIP123</div>
+                <button class="copy-btn" id="copyReferral">Copy Referral Code</button>
             </div>
         </div>
     </div>
@@ -316,6 +570,21 @@
         <div id="adCountdown">Ad will complete in 10 seconds</div>
         <button class="close-ad" id="closeAd">Close Ad</button>
     </div>
+    
+    <div class="navigation">
+        <div class="nav-item active" id="navHome">
+            <span class="nav-icon">🏠</span>
+            <span>Home</span>
+        </div>
+        <div class="nav-item" id="navGrip">
+            <span class="nav-icon">⛏️</span>
+            <span>Grip</span>
+        </div>
+        <div class="nav-item" id="navOffer">
+            <span class="nav-icon">🎁</span>
+            <span>Offer</span>
+        </div>
+    </div>
 
     <script>
         // Telegram Web App initialization
@@ -324,10 +593,12 @@
         tg.enableClosingConfirmation();
         
         // DOM Elements
+        const channelModal = document.getElementById('channelModal');
         const checkJoinBtn = document.getElementById('checkJoin');
-        const mainSection = document.getElementById('mainSection');
-        const checkOfferBtn = document.getElementById('checkOffer');
+        const homeSection = document.getElementById('homeSection');
+        const gripSection = document.getElementById('gripSection');
         const offersSection = document.getElementById('offersSection');
+        const checkOfferBtn = document.getElementById('checkOffer');
         const offersList = document.getElementById('offersList');
         const watchAdBtn = document.getElementById('watchAd');
         const timerElement = document.getElementById('timer');
@@ -338,71 +609,130 @@
         const adPopup = document.getElementById('adPopup');
         const closeAdBtn = document.getElementById('closeAd');
         const adCountdown = document.getElementById('adCountdown');
+        const referralSection = document.getElementById('referralSection');
+        const referralCode = document.getElementById('referralCode');
+        const referralLink = document.getElementById('referralLink');
+        const copyReferralBtn = document.getElementById('copyReferral');
+        const copyReferralLinkBtn = document.getElementById('copyReferralLink');
+        const navHome = document.getElementById('navHome');
+        const navGrip = document.getElementById('navGrip');
+        const navOffer = document.getElementById('navOffer');
         
         // App State
         let userJoinedChannel = false;
-        let adProgress = 0;
-        let adTimer = 60; // 60 seconds = 1 minute
+        let gripCount = 0;
+        let referralCount = 0; // Real-time referral counter
+        let adTimer = 15; // 15 seconds for ad unlock
         let timerInterval;
         let adCountdownValue = 10;
         let adCountdownInterval;
+        let totalEarnedMB = 1250;
+        let adHistory = [];
+        let currentOperator = '';
         
-        // Sample offers data
+        // Offers data
         const offers = {
             banglalink: [
-                { id: 1, title: "5GB Data Offer", details: "5GB for 7 days", requirements: "Must have active SIM for 3 months", data: "5GB" },
-                { id: 2, title: "10GB Data Offer", details: "10GB for 15 days", requirements: "Must have balance > 10 Taka", data: "10GB" },
-                { id: 3, title: "15GB Data Offer", details: "15GB for 30 days", requirements: "Must use 1GB in last month", data: "15GB" }
+                { id: 1, title: "1GB Data Offer", details: "1GB for 7 days", requirements: "10 Grips + 3 Referrals", data: "1GB", gripsRequired: 10, referralsRequired: 3 },
+                { id: 2, title: "3GB Data Offer", details: "3GB for 15 days", requirements: "30 Grips + 3 Referrals", data: "3GB", gripsRequired: 30, referralsRequired: 3 },
+                { id: 3, title: "6GB Data Offer", details: "6GB for 30 days", requirements: "60 Grips + 3 Referrals", data: "6GB", gripsRequired: 60, referralsRequired: 3 },
+                { id: 4, title: "9GB Data Offer", details: "9GB for 30 days", requirements: "90 Grips + 3 Referrals", data: "9GB", gripsRequired: 90, referralsRequired: 3 },
+                { id: 5, title: "12GB Data Offer", details: "12GB for 30 days", requirements: "120 Grips + 3 Referrals", data: "12GB", gripsRequired: 120, referralsRequired: 3 }
             ],
             airtel: [
-                { id: 4, title: "3GB Data Offer", details: "3GB for 5 days", requirements: "New customer offer", data: "3GB" },
-                { id: 5, title: "8GB Data Offer", details: "8GB for 10 days", requirements: "Must have active SIM for 1 month", data: "8GB" },
-                { id: 6, title: "12GB Data Offer", details: "12GB for 20 days", requirements: "Must have balance > 20 Taka", data: "12GB" }
+                { id: 6, title: "1GB Data Offer", details: "1GB for 5 days", requirements: "10 Grips + 3 Referrals", data: "1GB", gripsRequired: 10, referralsRequired: 3 },
+                { id: 7, title: "3GB Data Offer", details: "3GB for 10 days", requirements: "30 Grips + 3 Referrals", data: "3GB", gripsRequired: 30, referralsRequired: 3 },
+                { id: 8, title: "6GB Data Offer", details: "6GB for 20 days", requirements: "60 Grips + 3 Referrals", data: "6GB", gripsRequired: 60, referralsRequired: 3 },
+                { id: 9, title: "9GB Data Offer", details: "9GB for 30 days", requirements: "90 Grips + 3 Referrals", data: "9GB", gripsRequired: 90, referralsRequired: 3 },
+                { id: 10, title: "12GB Data Offer", details: "12GB for 30 days", requirements: "120 Grips + 3 Referrals", data: "12GB", gripsRequired: 120, referralsRequired: 3 }
             ],
             robi: [
-                { id: 7, title: "4GB Data Offer", details: "4GB for 7 days", requirements: "Special weekend offer", data: "4GB" },
-                { id: 8, title: "9GB Data Offer", details: "9GB for 14 days", requirements: "Must use 500MB in last week", data: "9GB" },
-                { id: 9, title: "18GB Data Offer", details: "18GB for 30 days", requirements: "Must have active SIM for 6 months", data: "18GB" }
+                { id: 11, title: "1GB Data Offer", details: "1GB for 7 days", requirements: "10 Grips + 3 Referrals", data: "1GB", gripsRequired: 10, referralsRequired: 3 },
+                { id: 12, title: "3GB Data Offer", details: "3GB for 14 days", requirements: "30 Grips + 3 Referrals", data: "3GB", gripsRequired: 30, referralsRequired: 3 },
+                { id: 13, title: "6GB Data Offer", details: "6GB for 30 days", requirements: "60 Grips + 3 Referrals", data: "6GB", gripsRequired: 60, referralsRequired: 3 },
+                { id: 14, title: "9GB Data Offer", details: "9GB for 30 days", requirements: "90 Grips + 3 Referrals", data: "9GB", gripsRequired: 90, referralsRequired: 3 },
+                { id: 15, title: "12GB Data Offer", details: "12GB for 30 days", requirements: "120 Grips + 3 Referrals", data: "12GB", gripsRequired: 120, referralsRequired: 3 }
             ],
             grameenphone: [
-                { id: 10, title: "6GB Data Offer", details: "6GB for 10 days", requirements: "New customer special", data: "6GB" },
-                { id: 11, title: "11GB Data Offer", details: "11GB for 15 days", requirements: "Must have balance > 15 Taka", data: "11GB" },
-                { id: 12, title: "20GB Data Offer", details: "20GB for 30 days", requirements: "Must use 2GB in last month", data: "20GB" }
+                { id: 16, title: "1GB Data Offer", details: "1GB for 10 days", requirements: "10 Grips + 3 Referrals", data: "1GB", gripsRequired: 10, referralsRequired: 3 },
+                { id: 17, title: "3GB Data Offer", details: "3GB for 15 days", requirements: "30 Grips + 3 Referrals", data: "3GB", gripsRequired: 30, referralsRequired: 3 },
+                { id: 18, title: "6GB Data Offer", details: "6GB for 30 days", requirements: "60 Grips + 3 Referrals", data: "6GB", gripsRequired: 60, referralsRequired: 3 },
+                { id: 19, title: "9GB Data Offer", details: "9GB for 30 days", requirements: "90 Grips + 3 Referrals", data: "9GB", gripsRequired: 90, referralsRequired: 3 },
+                { id: 20, title: "12GB Data Offer", details: "12GB for 30 days", requirements: "120 Grips + 3 Referrals", data: "12GB", gripsRequired: 120, referralsRequired: 3 }
             ]
         };
         
-        // Sample history data
-        let adHistory = [
-            { date: "2023-10-15 14:30", status: "Completed" },
-            { date: "2023-10-15 13:45", status: "Completed" },
-            { date: "2023-10-15 12:15", status: "Pending" }
-        ];
-        
         // Initialize the app
         function initApp() {
-            // Check if user has joined the channel (simulated)
-            // In a real app, you would check via Telegram API
+            // Show channel join modal on startup
+            setTimeout(() => {
+                channelModal.classList.add('active');
+            }, 1000);
+            
+            // Event listeners
             checkJoinBtn.addEventListener('click', checkChannelJoin);
             checkOfferBtn.addEventListener('click', checkOffers);
             watchAdBtn.addEventListener('click', showAd);
             closeAdBtn.addEventListener('click', closeAd);
+            copyReferralBtn.addEventListener('click', copyReferralCode);
+            copyReferralLinkBtn.addEventListener('click', copyReferralLink);
+            
+            // Navigation listeners
+            navHome.addEventListener('click', () => switchSection('home'));
+            navGrip.addEventListener('click', () => switchSection('grip'));
+            navOffer.addEventListener('click', () => switchSection('offer'));
             
             // Load history
             renderHistory();
             
             // Start the timer for ads
             startAdTimer();
+            
+            // Update profile info
+            updateProfileInfo();
+            
+            // Simulate real-time referral tracking (in real app, use Telegram bot webhook)
+            checkReferralStatus();
+        }
+        
+        // Switch between sections
+        function switchSection(section) {
+            homeSection.style.display = 'none';
+            gripSection.style.display = 'none';
+            offersSection.style.display = 'none';
+            
+            navHome.classList.remove('active');
+            navGrip.classList.remove('active');
+            navOffer.classList.remove('active');
+            
+            if (section === 'home') {
+                homeSection.style.display = 'block';
+                navHome.classList.add('active');
+            } else if (section === 'grip') {
+                gripSection.style.display = 'block';
+                navGrip.classList.add('active');
+            } else if (section === 'offer') {
+                offersSection.style.display = 'block';
+                navOffer.classList.add('active');
+                if (currentOperator) {
+                    renderOffers(offers[currentOperator] || []);
+                }
+            }
+        }
+        
+        // Update profile information
+        function updateProfileInfo() {
+            const earningsElement = document.querySelector('.earnings');
+            earningsElement.textContent = `Earned: ${totalEarnedMB} MB | Grips: ${gripCount} ⛏️ | Referrals: ${referralCount}`;
         }
         
         // Check if user joined the channel
         function checkChannelJoin() {
-            // In a real app, you would use Telegram API to check channel membership
-            // For demo purposes, we'll simulate a successful join
+            // Simulated check (in real app, use Telegram API)
             userJoinedChannel = true;
             showNotification("Successfully verified channel membership!");
-            mainSection.style.display = 'block';
-            checkJoinBtn.disabled = true;
-            checkJoinBtn.textContent = "Channel Joined ✓";
+            channelModal.classList.remove('active');
+            switchSection('home');
         }
         
         // Check available offers based on phone number
@@ -420,31 +750,30 @@
                 return;
             }
             
-            // Show offers for the selected operator
-            const operatorOffers = offers[operator] || [];
-            renderOffers(operatorOffers);
-            offersSection.style.display = 'block';
-            
+            // Simulate real-time Telegram backend check
+            currentOperator = operator;
+            renderOffers(offers[operator] || []);
+            switchSection('offer');
             showNotification(`Offers loaded for ${operator}`);
         }
         
         // Render offers to the UI
-        function renderOffers(offers) {
+        function renderOffers(operatorOffers) {
             offersList.innerHTML = '';
             
-            if (offers.length === 0) {
+            if (operatorOffers.length === 0) {
                 offersList.innerHTML = '<p>No offers available for this number.</p>';
                 return;
             }
             
-            offers.forEach(offer => {
+            operatorOffers.forEach(offer => {
                 const offerElement = document.createElement('div');
-                offerElement.className = 'offer-card';
+                offerElement.className = 'offer-card premium-card';
                 offerElement.innerHTML = `
                     <div class="offer-title">${offer.title}</div>
                     <div class="offer-details">${offer.details}</div>
                     <div class="requirements">Requirements: ${offer.requirements}</div>
-                    <button class="btn claim-btn" data-id="${offer.id}">Claim Now</button>
+                    <button class="btn claim-btn" data-id="${offer.id}" data-mb="${parseInt(offer.data)}" data-grips="${offer.gripsRequired}" data-referrals="${offer.referralsRequired}" disabled>Claim Now</button>
                 `;
                 offersList.appendChild(offerElement);
             });
@@ -453,45 +782,73 @@
             document.querySelectorAll('.claim-btn').forEach(btn => {
                 btn.addEventListener('click', function() {
                     const offerId = this.getAttribute('data-id');
-                    claimOffer(offerId);
+                    const mb = parseInt(this.getAttribute('data-mb'));
+                    const gripsReq = parseInt(this.getAttribute('data-grips'));
+                    const referralsReq = parseInt(this.getAttribute('data-referrals'));
+                    claimOffer(offerId, mb, gripsReq, referralsReq);
                 });
+                updateClaimButton(btn);
             });
         }
         
-        // Claim an offer
-        function claimOffer(offerId) {
-            // In a real app, you would process the offer claim
-            showNotification(`Offer ${offerId} claimed successfully!`);
+        // Update claim button enabled state
+        function updateClaimButton(btn) {
+            const gripsReq = parseInt(btn.getAttribute('data-grips'));
+            const referralsReq = parseInt(btn.getAttribute('data-referrals'));
+            if (gripCount >= gripsReq && referralCount >= referralsReq) {
+                btn.disabled = false;
+            } else {
+                btn.disabled = true;
+            }
         }
         
-        // Show ad popup
+        // Claim an offer
+        function claimOffer(offerId, mb, gripsReq, referralsReq) {
+            if (gripCount < gripsReq || referralCount < referralsReq) {
+                showNotification("Insufficient grips or referrals!");
+                return;
+            }
+            
+            gripCount -= gripsReq;
+            updateProgress();
+            totalEarnedMB += mb;
+            updateProfileInfo();
+            showNotification(`Offer ${offerId} claimed successfully! You earned ${mb} MB`);
+            
+            document.querySelectorAll('.claim-btn').forEach(updateClaimButton);
+        }
+        
+        // Show ad popup with Monetag SDK
         function showAd() {
             if (watchAdBtn.disabled) return;
             
-            // Reset ad countdown
-            adCountdownValue = 10;
-            adCountdown.textContent = `Ad will complete in ${adCountdownValue} seconds`;
-            
-            // Show ad popup
-            adPopup.style.display = 'block';
-            
-            // Start countdown
-            adCountdownInterval = setInterval(() => {
-                adCountdownValue--;
+            // Load Monetag ad
+            try {
+                window.libtl.show_10087307(); // Trigger Monetag ad
+                adPopup.style.display = 'block';
+                adCountdownValue = 10;
                 adCountdown.textContent = `Ad will complete in ${adCountdownValue} seconds`;
                 
-                if (adCountdownValue <= 0) {
-                    clearInterval(adCountdownInterval);
-                    completeAd();
-                }
-            }, 1000);
+                adCountdownInterval = setInterval(() => {
+                    adCountdownValue--;
+                    adCountdown.textContent = `Ad will complete in ${adCountdownValue} seconds`;
+                    
+                    if (adCountdownValue <= 0) {
+                        clearInterval(adCountdownInterval);
+                        completeAd();
+                    }
+                }, 1000);
+            } catch (err) {
+                console.error('Failed to load ad:', err);
+                showNotification("Failed to load ad. Try again.");
+            }
         }
         
-        // Close ad (if user closes early)
+        // Close ad
         function closeAd() {
             clearInterval(adCountdownInterval);
             adPopup.style.display = 'none';
-            showNotification("Ad closed early - no reward given");
+            showNotification("Ad closed early - no grip earned");
         }
         
         // Complete watching ad
@@ -499,31 +856,31 @@
             clearInterval(adCountdownInterval);
             adPopup.style.display = 'none';
             
-            // Update progress
-            adProgress++;
+            gripCount++;
             updateProgress();
+            updateProfileInfo();
             
-            // Add to history
             const now = new Date();
             const dateStr = `${now.getFullYear()}-${(now.getMonth()+1).toString().padStart(2, '0')}-${now.getDate().toString().padStart(2, '0')} ${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
             adHistory.unshift({ date: dateStr, status: "Completed" });
             renderHistory();
             
-            // Reset timer
             resetAdTimer();
             
-            showNotification("Ad completed! Progress updated.");
+            if (gripCount >= 10 && referralSection.style.display === 'none') {
+                referralSection.style.display = 'block';
+                showNotification("Referral section unlocked! Refer 3 friends to claim offers.");
+            }
+            
+            document.querySelectorAll('.claim-btn').forEach(updateClaimButton);
+            showNotification("Ad completed! +1 Grip ⛏️");
         }
         
         // Update progress bar and text
         function updateProgress() {
-            const progressPercentage = (adProgress / 5) * 100;
+            const progressPercentage = (gripCount % 10 / 10) * 100;
             progressFill.style.width = `${progressPercentage}%`;
-            progressText.textContent = `${adProgress}/5`;
-            
-            if (adProgress >= 5) {
-                showNotification("Congratulations! You've unlocked all rewards!");
-            }
+            progressText.textContent = `${gripCount % 10}/10`;
         }
         
         // Start the ad timer
@@ -536,7 +893,7 @@
                 
                 if (adTimer <= 0) {
                     watchAdBtn.disabled = false;
-                    watchAdBtn.textContent = "Watch Ad";
+                    watchAdBtn.textContent = "Watch Ad for 1 Grip ⛏️";
                     timerElement.textContent = "Ad available now!";
                 }
             }, 1000);
@@ -549,9 +906,9 @@
             timerElement.textContent = `Next ad available in: ${minutes}:${seconds.toString().padStart(2, '0')}`;
         }
         
-        // Reset ad timer after watching an ad
+        // Reset ad timer
         function resetAdTimer() {
-            adTimer = 60; // 1 minute
+            adTimer = 15; // 15 seconds
             watchAdBtn.disabled = true;
             updateTimerDisplay();
         }
@@ -568,31 +925,69 @@
             adHistory.forEach(item => {
                 const historyItem = document.createElement('div');
                 historyItem.className = 'history-item';
-                
                 const statusClass = item.status === 'Completed' ? 'status-completed' : 'status-pending';
-                
                 historyItem.innerHTML = `
                     <div>${item.date}</div>
                     <div class="history-date">
                         Status: <span class="status ${statusClass}">${item.status}</span>
                     </div>
                 `;
-                
                 historyList.appendChild(historyItem);
             });
+        }
+        
+        // Copy referral code
+        function copyReferralCode() {
+            const code = referralCode.textContent;
+            navigator.clipboard.writeText(code).then(() => {
+                showNotification("Referral code copied to clipboard!");
+            }).catch(err => {
+                console.error('Failed to copy:', err);
+                showNotification("Failed to copy referral code");
+            });
+        }
+        
+        // Copy referral link
+        function copyReferralLink() {
+            const link = referralLink.textContent;
+            navigator.clipboard.writeText(link).then(() => {
+                showNotification("Referral link copied to clipboard!");
+                // Simulate referral increase (in real app, track via Telegram bot)
+                referralCount++;
+                updateProfileInfo();
+                showNotification(`Referrals: ${referralCount}/3`);
+                document.querySelectorAll('.claim-btn').forEach(updateClaimButton);
+            }).catch(err => {
+                console.error('Failed to copy:', err);
+                showNotification("Failed to copy referral link");
+            });
+        }
+        
+        // Simulate real-time referral status check
+        function checkReferralStatus() {
+            // In a real app, this would fetch from Telegram bot backend via API
+            // For demo, we simulate referral count updates
+            setInterval(() => {
+                // Simulated real-time update (replace with actual Telegram bot API call)
+                if (Math.random() < 0.1) { // 10% chance to simulate a new referral
+                    referralCount++;
+                    updateProfileInfo();
+                    showNotification(`New referral! Total: ${referralCount}/3`);
+                    document.querySelectorAll('.claim-btn').forEach(updateClaimButton);
+                }
+            }, 10000); // Check every 10 seconds
         }
         
         // Show notification
         function showNotification(message) {
             notification.textContent = message;
             notification.classList.add('show');
-            
             setTimeout(() => {
                 notification.classList.remove('show');
             }, 3000);
         }
         
-        // Initialize the app when DOM is loaded
+        // Initialize the app
         document.addEventListener('DOMContentLoaded', initApp);
     </script>
 </body>
