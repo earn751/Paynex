@@ -1,1095 +1,944 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="bn">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HiGrip - Mobile Offer Rewards</title>
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <!-- Monetag SDK -->
-    <script src='//libtl.com/sdk.js' data-zone='10087307' data-sdk='show_10087307'></script>
-    <style>
-        :root {
-            --primary-color: #0088cc;
-            --secondary-color: #f0f0f0;
-            --accent-color: #ff9500;
-            --text-color: #333;
-            --light-text: #fff;
-            --border-radius: 10px;
-            --box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            --verified-color: #1da1f2;
-        }
-        
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-        
-        body {
-            background-color: #f5f5f5;
-            color: var(--text-color);
-            line-height: 1.6;
-            padding-bottom: 60px;
-        }
-        
-        .container {
-            max-width: 400px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-        
-        header {
-            text-align: center;
-            margin-bottom: 20px;
-            padding-bottom: 15px;
-            border-bottom: 1px solid #ddd;
-            position: relative;
-        }
-        
-        .logo {
-            font-size: 24px;
-            font-weight: bold;
-            color: var(--primary-color);
-            margin-bottom: 5px;
-        }
-        
-        .tagline {
-            font-size: 14px;
-            color: #666;
-        }
-        
-        .profile-section {
-            position: absolute;
-            right: 0;
-            top: 0;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        
-        .profile-pic {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background-color: var(--primary-color);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-weight: bold;
-            background-size: cover;
-            background-position: center;
-        }
-        
-        .profile-info {
-            text-align: right;
-        }
-        
-        .username {
-            font-weight: bold;
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-        
-        .verified {
-            color: var(--verified-color);
-            font-size: 14px;
-        }
-        
-        .earnings {
-            font-size: 12px;
-            color: #666;
-        }
-        
-        .card {
-            background-color: white;
-            border-radius: var(--border-radius);
-            padding: 20px;
-            margin-bottom: 20px;
-            box-shadow: var(--box-shadow);
-        }
-        
-        .card-title {
-            font-size: 18px;
-            margin-bottom: 15px;
-            color: var(--primary-color);
-        }
-        
-        .input-group {
-            margin-bottom: 15px;
-        }
-        
-        label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: 500;
-        }
-        
-        select, input {
-            width: 100%;
-            padding: 12px;
-            border: 1px solid #ddd;
-            border-radius: var(--border-radius);
-            font-size: 16px;
-        }
-        
-        .btn {
-            background-color: var(--primary-color);
-            color: white;
-            border: none;
-            border-radius: var(--border-radius);
-            padding: 12px 20px;
-            font-size: 16px;
-            cursor: pointer;
-            width: 100%;
-            transition: background-color 0.3s;
-        }
-        
-        .btn:hover {
-            background-color: #0077b3;
-        }
-        
-        .btn:disabled {
-            background-color: #ccc;
-            cursor: not-allowed;
-        }
-        
-        .btn-accent {
-            background-color: var(--accent-color);
-        }
-        
-        .btn-accent:hover {
-            background-color: #e68500;
-        }
-        
-        .offer-card {
-            border-left: 4px solid var(--accent-color);
-            margin-bottom: 15px;
-            padding: 15px;
-            background-color: #f9f9f9;
-        }
-        
-        .offer-title {
-            font-weight: bold;
-            margin-bottom: 5px;
-        }
-        
-        .offer-details {
-            font-size: 14px;
-            color: #666;
-            margin-bottom: 10px;
-        }
-        
-        .requirements {
-            font-size: 12px;
-            color: #888;
-            margin-bottom: 10px;
-        }
-        
-        .progress-container {
-            margin: 20px 0;
-        }
-        
-        .progress-label {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 5px;
-        }
-        
-        .progress-bar {
-            height: 10px;
-            background-color: #e0e0e0;
-            border-radius: 5px;
-            overflow: hidden;
-        }
-        
-        .progress-fill {
-            height: 100%;
-            background-color: var(--accent-color);
-            width: 0%;
-            transition: width 0.5s;
-        }
-        
-        .timer {
-            text-align: center;
-            font-size: 14px;
-            color: #666;
-            margin-top: 10px;
-        }
-        
-        .history-item {
-            padding: 10px 0;
-            border-bottom: 1px solid #eee;
-        }
-        
-        .history-date {
-            font-size: 12px;
-            color: #888;
-        }
-        
-        .status {
-            display: inline-block;
-            padding: 3px 8px;
-            border-radius: 12px;
-            font-size: 12px;
-            margin-left: 10px;
-        }
-        
-        .status-completed {
-            background-color: #e6f7ee;
-            color: #00a65a;
-        }
-        
-        .status-pending {
-            background-color: #fff8e6;
-            color: #ffa500;
-        }
-        
-        .hidden {
-            display: none;
-        }
-        
-        .notification {
-            position: fixed;
-            top: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            background-color: var(--primary-color);
-            color: white;
-            padding: 10px 20px;
-            border-radius: var(--border-radius);
-            box-shadow: var(--box-shadow);
-            z-index: 1000;
-            opacity: 0;
-            transition: opacity 0.3s;
-        }
-        
-        .notification.show {
-            opacity: 1;
-        }
-        
-        .ad-container {
-            background-color: #333;
-            color: white;
-            padding: 20px;
-            border-radius: var(--border-radius);
-            text-align: center;
-            margin: 20px 0;
-        }
-        
-        .ad-text {
-            margin-bottom: 15px;
-        }
-        
-        .close-ad {
-            background-color: transparent;
-            border: 1px solid white;
-            color: white;
-            padding: 5px 10px;
-            border-radius: var(--border-radius);
-            cursor: pointer;
-        }
-        
-        .modal-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-color: rgba(0, 0, 0, 0.5);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 2000;
-            opacity: 0;
-            visibility: hidden;
-            transition: opacity 0.3s, visibility 0.3s;
-        }
-        
-        .modal-overlay.active {
-            opacity: 1;
-            visibility: visible;
-        }
-        
-        .modal {
-            background-color: white;
-            border-radius: var(--border-radius);
-            padding: 20px;
-            width: 90%;
-            max-width: 400px;
-            box-shadow: var(--box-shadow);
-        }
-        
-        .modal-title {
-            font-size: 18px;
-            margin-bottom: 15px;
-            color: var(--primary-color);
-        }
-        
-        .modal-content {
-            margin-bottom: 20px;
-        }
-        
-        .modal-actions {
-            display: flex;
-            gap: 10px;
-        }
-        
-        .referral-section {
-            margin-top: 20px;
-            padding-top: 20px;
-            border-top: 1px solid #eee;
-        }
-        
-        .referral-title {
-            font-size: 16px;
-            margin-bottom: 10px;
-            color: var(--primary-color);
-        }
-        
-        .referral-steps {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 10px;
-        }
-        
-        .referral-step {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding: 10px;
-            background-color: #f9f9f9;
-            border-radius: var(--border-radius);
-        }
-        
-        .step-number {
-            width: 24px;
-            height: 24px;
-            background-color: var(--primary-color);
-            color: white;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 12px;
-            font-weight: bold;
-        }
-        
-        .step-text {
-            font-size: 14px;
-        }
-        
-        .referral-code, .referral-link {
-            background-color: #f0f0f0;
-            padding: 10px;
-            border-radius: var(--border-radius);
-            text-align: center;
-            font-family: monospace;
-            font-size: 18px;
-            font-weight: bold;
-            margin: 10px 0;
-        }
-        
-        .copy-btn {
-            background-color: var(--accent-color);
-            color: white;
-            border: none;
-            border-radius: var(--border-radius);
-            padding: 8px 15px;
-            font-size: 14px;
-            cursor: pointer;
-            width: 100%;
-        }
-        
-        .navigation {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background-color: white;
-            border-top: 1px solid #ddd;
-            display: flex;
-            justify-content: space-around;
-            padding: 10px 0;
-            box-shadow: 0 -2px 4px rgba(0, 0, 0, 0.05);
-        }
-        
-        .nav-item {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            color: #666;
-            cursor: pointer;
-            font-size: 14px;
-        }
-        
-        .nav-item.active {
-            color: var(--primary-color);
-        }
-        
-        .nav-icon {
-            font-size: 24px;
-            margin-bottom: 5px;
-        }
-        
-        .premium-card {
-            background: linear-gradient(135deg, #ffd700, #ff9500);
-            color: white;
-            box-shadow: 0 6px 12px rgba(255, 149, 0, 0.3);
-        }
-        
-        .premium-card .card-title {
-            color: white;
-        }
-        
-        .premium-card .btn {
-            background-color: white;
-            color: var(--accent-color);
-        }
-        
-        .premium-card .btn:hover {
-            background-color: #f0f0f0;
-        }
+    <title>Grip Coin Mini App</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons for aesthetic UI -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <!--
+    ========================================================================================
+    MONETAG SCRIPT SETUP - এখানে আপনার Monetag Loader Code (একটি <script> ট্যাগ) বসান
+    ========================================================================================
+    
+    আপনার কোডটি দেখতে এমন হতে পারে:
+    <script type="text/javascript" src="//some-monetag-domain.com/some-path/loader.js" async></script> 
+    
+    যদি আপনি এই লাইনটি না বসান, তবে show_10087307() ফাংশন কাজ করবে না।
+    
+    ========================================================================================
+    -->
 
-        .loading-spinner {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: rgba(0, 0, 0, 0.7);
-            color: white;
-            padding: 10px 20px;
-            border-radius: 5px;
-        }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <header>
-            <div class="logo">HiGrip</div>
-            <div class="tagline">Get Mobile Data Offers & Rewards</div>
-            <div class="profile-section">
-                <div class="profile-info">
-                    <div class="username">Loading...</div>
-                    <div class="earnings">Loading...</div>
-                </div>
-                <div class="profile-pic"></div>
-            </div>
-        </header>
+    <!-- Firebase SDKs -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, setDoc, updateDoc, onSnapshot, collection, query, where, serverTimestamp, runTransaction, getDoc, addDoc, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
         
-        <div class="modal-overlay" id="channelModal">
-            <div class="modal">
-                <div class="modal-title">Join Our Channel</div>
-                <div class="modal-content">
-                    <p>You must join our Telegram channel to use this app:</p>
-                    <a href="https://t.me/HiGripGo" target="_blank" class="btn" style="margin-top: 10px; text-decoration: none; display: inline-block;">
-                        Join HiGripGo Channel
-                    </a>
-                </div>
-                <div class="modal-actions">
-                    <button class="btn" id="checkJoin">Check if Joined</button>
-                </div>
-            </div>
-        </div>
+        // --- গ্লোবাল ভেরিয়েবল ---
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
+        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
         
-        <!-- Home Section -->
-        <div class="card" id="homeSection" style="display: none;">
-            <div class="card-title">Enter Your Mobile Number</div>
-            <div class="input-group">
-                <label for="operator">Select Operator</label>
-                <select id="operator">
-                    <option value="">Select Operator</option>
-                    <option value="banglalink">Banglalink</option>
-                    <option value="airtel">Airtel</option>
-                    <option value="robi">Robi</option>
-                    <option value="grameenphone">Grameenphone</option>
-                </select>
-            </div>
-            <div class="input-group">
-                <label for="phoneNumber">Phone Number</label>
-                <input type="text" id="phoneNumber" placeholder="01XXXXXXXXX">
-            </div>
-            <button id="checkOffer" class="btn">Check Offers</button>
-        </div>
+        // অ্যাডমিনের UID এবং কমিশন রেট
+        const ADMIN_UID = "7243906826";
+        const REFERRAL_COMMISSION = { 1: 0.05, 2: 0.02, 3: 0.01 };
         
-        <!-- Grip Section -->
-        <div class="card" id="gripSection" style="display: none;">
-            <div class="card-title">Collect Grips ⛏️</div>
-            <div class="progress-container">
-                <div class="progress-label">
-                    <span>Progress</span>
-                    <span id="progressText">0/10</span>
-                </div>
-                <div class="progress-bar">
-                    <div class="progress-fill" id="progressFill"></div>
-                </div>
-            </div>
-            <div class="timer" id="timer">Next ad available in: 0:15</div>
-            <button id="watchAd" class="btn btn-accent" disabled>Watch Ad for 1 Grip ⛏️</button>
+        let app, db, auth;
+        let unsubscribeListeners = []; 
+        
+        // --- অ্যাপ স্টেট ---
+        let state = {
+            userId: null,
+            isAuthReady: false,
+            currentPage: 'grip',
+            userData: { balance: 0, telegramUsername: 'Loading...' },
+            transactions: [],
+            newsPosts: [],
+            referrals: [],
             
-            <div class="referral-section">
-                <div class="referral-title">Share Your Referral Link</div>
-                <div class="referral-link" id="referralLink">Loading...</div>
-                <button class="copy-btn" id="copyReferralLink">Copy Referral Link</button>
-            </div>
-            
-            <div class="card-title" style="margin-top: 20px;">Ad Watch History</div>
-            <div id="historyList">
-                <!-- History items will be dynamically inserted here -->
-            </div>
-        </div>
-        
-        <!-- Offer Section -->
-        <div class="card" id="offersSection" style="display: none;">
-            <div class="card-title">Available Offers (Up to 12GB)</div>
-            <div id="offersList">
-                <!-- Offers will be dynamically inserted here -->
-            </div>
-            
-            <div class="referral-section" id="referralSection" style="display: none;">
-                <div class="referral-title">Refer 3 Friends to Unlock</div>
-                <div class="referral-steps">
-                    <div class="referral-step">
-                        <div class="step-number">1</div>
-                        <div class="step-text">Share your referral link with friends</div>
-                    </div>
-                    <div class="referral-step">
-                        <div class="step-number">2</div>
-                        <div class="step-text">Your friend joins using your link</div>
-                    </div>
-                    <div class="referral-step">
-                        <div class="step-number">3</div>
-                        <div class="step-text">Your friend completes their first offer</div>
-                    </div>
-                    <div class="referral-step">
-                        <div class="step-number">4</div>
-                        <div class="step-text">You unlock the offer!</div>
-                    </div>
-                </div>
-                <div class="referral-code" id="referralCode">Loading...</div>
-                <button class="copy-btn" id="copyReferral">Copy Referral Code</button>
-            </div>
-        </div>
-    </div>
-    
-    <div class="notification" id="notification">Notification message</div>
-    
-    <div class="ad-container" id="adPopup" style="display: none;">
-        <div class="ad-text">Advertisement - Please watch till the end</div>
-        <div id="adCountdown">Ad will complete in 10 seconds</div>
-        <button class="close-ad" id="closeAd">Close Ad</button>
-    </div>
-    
-    <div class="navigation">
-        <div class="nav-item active" id="navHome">
-            <span class="nav-icon">🏠</span>
-            <span>Home</span>
-        </div>
-        <div class="nav-item" id="navGrip">
-            <span class="nav-icon">⛏️</span>
-            <span>Grip</span>
-        </div>
-        <div class="nav-item" id="navOffer">
-            <span class="nav-icon">🎁</span>
-            <span>Offer</span>
-        </div>
-    </div>
+            // Grip State
+            isTapping: false,
+            tapInterval: null,
+            coinMultiplier: 1,
+            coinsPerTick: 5,
+            adRewardActive: false,
+            adRewardDuration: 0,
 
-    <script>
-        // Telegram Web App initialization
-        let tg = window.Telegram.WebApp;
-        tg.expand();
-        tg.enableClosingConfirmation();
+            // Transfer/Status State
+            transferRecipient: '',
+            transferAmount: '',
+            recipientData: null,
+            statusMessage: null,
+        };
+
+        // --- ইউটিলিটি ফাংশন ---
+
+        const getCollectionRef = (type, uid = state.userId) => {
+            if (!db) return null;
+            switch (type) {
+                case 'user_data_doc': 
+                    return doc(db, 'artifacts', appId, 'users', uid, 'user_data');
+                case 'transactions':
+                    return collection(db, 'artifacts', appId, 'users', uid, 'transactions');
+                case 'news':
+                    return collection(db, 'artifacts', appId, 'public', 'news');
+                case 'referrals':
+                    return collection(db, 'artifacts', appId, 'public', 'referrals');
+                default:
+                    return null;
+            }
+        };
+
+        const formatBalance = (num) => (num || 0).toLocaleString('en-US', { maximumFractionDigits: 2 });
         
-        // DOM Elements
-        const channelModal = document.getElementById('channelModal');
-        const checkJoinBtn = document.getElementById('checkJoin');
-        const homeSection = document.getElementById('homeSection');
-        const gripSection = document.getElementById('gripSection');
-        const offersSection = document.getElementById('offersSection');
-        const checkOfferBtn = document.getElementById('checkOffer');
-        const offersList = document.getElementById('offersList');
-        const watchAdBtn = document.getElementById('watchAd');
-        const timerElement = document.getElementById('timer');
-        const progressFill = document.getElementById('progressFill');
-        const progressText = document.getElementById('progressText');
-        const historyList = document.getElementById('historyList');
-        const notification = document.getElementById('notification');
-        const adPopup = document.getElementById('adPopup');
-        const closeAdBtn = document.getElementById('closeAd');
-        const adCountdown = document.getElementById('adCountdown');
-        const referralSection = document.getElementById('referralSection');
-        const referralCode = document.getElementById('referralCode');
-        const referralLink = document.getElementById('referralLink');
-        const copyReferralBtn = document.getElementById('copyReferral');
-        const copyReferralLinkBtn = document.getElementById('copyReferralLink');
-        const navHome = document.getElementById('navHome');
-        const navGrip = document.getElementById('navGrip');
-        const navOffer = document.getElementById('navOffer');
+        const formatDate = (timestamp) => {
+            if (!timestamp) return 'N/A';
+            const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
+            return date.toLocaleDateString('bn-BD', {
+                day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit'
+            });
+        };
+
+        const updateStatusMessage = (message, isError = false) => {
+            state.statusMessage = message;
+            if (state.currentPage === 'transfer' || state.currentPage === 'news' || state.currentPage === 'grip') {
+                renderApp();
+            }
+        };
+
+        const replaceIcons = () => {
+            lucide.createIcons();
+        };
+
+        // --- Monetag Integration ---
         
-        // App State
-        let userJoinedChannel = false;
-        let gripCount = 0;
-        let referralCount = 0; // Real-time referral counter
-        let adTimer = 15; // 15 seconds for ad unlock
-        let timerInterval;
-        let adCountdownValue = 10;
-        let adCountdownInterval;
-        let totalEarnedMB = 1250;
-        let adHistory = [];
-        let currentOperator = '';
-        
-        // Offers data
-        const offers = {
-            banglalink: [
-                { id: 1, title: "1GB Data Offer", details: "1GB for 7 days", requirements: "10 Grips + 3 Referrals", data: "1GB", gripsRequired: 10, referralsRequired: 3 },
-                { id: 2, title: "3GB Data Offer", details: "3GB for 15 days", requirements: "30 Grips + 3 Referrals", data: "3GB", gripsRequired: 30, referralsRequired: 3 },
-                { id: 3, title: "6GB Data Offer", details: "6GB for 30 days", requirements: "60 Grips + 3 Referrals", data: "6GB", gripsRequired: 60, referralsRequired: 3 },
-                { id: 4, title: "9GB Data Offer", details: "9GB for 30 days", requirements: "90 Grips + 3 Referrals", data: "9GB", gripsRequired: 90, referralsRequired: 3 },
-                { id: 5, title: "12GB Data Offer", details: "12GB for 30 days", requirements: "120 Grips + 3 Referrals", data: "12GB", gripsRequired: 120, referralsRequired: 3 }
-            ],
-            airtel: [
-                { id: 6, title: "1GB Data Offer", details: "1GB for 5 days", requirements: "10 Grips + 3 Referrals", data: "1GB", gripsRequired: 10, referralsRequired: 3 },
-                { id: 7, title: "3GB Data Offer", details: "3GB for 10 days", requirements: "30 Grips + 3 Referrals", data: "3GB", gripsRequired: 30, referralsRequired: 3 },
-                { id: 8, title: "6GB Data Offer", details: "6GB for 20 days", requirements: "60 Grips + 3 Referrals", data: "6GB", gripsRequired: 60, referralsRequired: 3 },
-                { id: 9, title: "9GB Data Offer", details: "9GB for 30 days", requirements: "90 Grips + 3 Referrals", data: "9GB", gripsRequired: 90, referralsRequired: 3 },
-                { id: 10, title: "12GB Data Offer", details: "12GB for 30 days", requirements: "120 Grips + 3 Referrals", data: "12GB", gripsRequired: 120, referralsRequired: 3 }
-            ],
-            robi: [
-                { id: 11, title: "1GB Data Offer", details: "1GB for 7 days", requirements: "10 Grips + 3 Referrals", data: "1GB", gripsRequired: 10, referralsRequired: 3 },
-                { id: 12, title: "3GB Data Offer", details: "3GB for 14 days", requirements: "30 Grips + 3 Referrals", data: "3GB", gripsRequired: 30, referralsRequired: 3 },
-                { id: 13, title: "6GB Data Offer", details: "6GB for 30 days", requirements: "60 Grips + 3 Referrals", data: "6GB", gripsRequired: 60, referralsRequired: 3 },
-                { id: 14, title: "9GB Data Offer", details: "9GB for 30 days", requirements: "90 Grips + 3 Referrals", data: "9GB", gripsRequired: 90, referralsRequired: 3 },
-                { id: 15, title: "12GB Data Offer", details: "12GB for 30 days", requirements: "120 Grips + 3 Referrals", data: "12GB", gripsRequired: 120, referralsRequired: 3 }
-            ],
-            grameenphone: [
-                { id: 16, title: "1GB Data Offer", details: "1GB for 10 days", requirements: "10 Grips + 3 Referrals", data: "1GB", gripsRequired: 10, referralsRequired: 3 },
-                { id: 17, title: "3GB Data Offer", details: "3GB for 15 days", requirements: "30 Grips + 3 Referrals", data: "3GB", gripsRequired: 30, referralsRequired: 3 },
-                { id: 18, title: "6GB Data Offer", details: "6GB for 30 days", requirements: "60 Grips + 3 Referrals", data: "6GB", gripsRequired: 60, referralsRequired: 3 },
-                { id: 19, title: "9GB Data Offer", details: "9GB for 30 days", requirements: "90 Grips + 3 Referrals", data: "9GB", gripsRequired: 90, referralsRequired: 3 },
-                { id: 20, title: "12GB Data Offer", details: "12GB for 30 days", requirements: "120 Grips + 3 Referrals", data: "12GB", gripsRequired: 120, referralsRequired: 3 }
-            ]
+        /**
+         * আপনার দেওয়া In-App Interstitial কোড (কোড ১) ব্যবহার করে স্বয়ংক্রিয় বিজ্ঞাপন দেখায়।
+         */
+        const showAutoInterstitialAd = () => {
+            // Monetag ফাংশন গ্লোবালি উপলব্ধ আছে কি না তা পরীক্ষা করা
+            if (typeof show_10087307 === 'function') {
+                try {
+                    // In-App Interstitial কোড ১
+                    show_10087307({
+                        type: 'inApp',
+                        inAppSettings: {
+                            frequency: 2,
+                            capping: 0.1,
+                            interval: 30,
+                            timeout: 5,
+                            everyPage: false
+                        }
+                    });
+                    console.log("Monetag Auto Interstitial fired.");
+                } catch(e) {
+                    console.error("Monetag Auto Interstitial failed to show:", e);
+                }
+            }
         };
         
-        // Initialize the app
-        function initApp() {
-            if (!window.Telegram || !window.Telegram.WebApp) {
-                showNotification("Telegram WebApp script failed to load!");
-                return;
-            }
+        // --- Firebase Auth ও Init ---
+        const setupUserDocument = async (uid) => {
+            // ... (setupUserDocument remains the same)
+            if (!db) return;
+            const userRef = getCollectionRef('user_data_doc', uid);
+            const userSnap = await getDoc(userRef);
 
-            // Show channel join modal on startup
-            setTimeout(() => {
-                channelModal.classList.add('active');
-            }, 1000);
-            
-            // Event listeners
-            checkJoinBtn.addEventListener('click', checkChannelJoin);
-            checkOfferBtn.addEventListener('click', checkOffers);
-            watchAdBtn.addEventListener('click', showAd);
-            closeAdBtn.addEventListener('click', closeAd);
-            copyReferralBtn.addEventListener('click', copyReferralCode);
-            copyReferralLinkBtn.addEventListener('click', copyReferralLink);
-            
-            // Navigation listeners
-            navHome.addEventListener('click', () => switchSection('home'));
-            navGrip.addEventListener('click', () => switchSection('grip'));
-            navOffer.addEventListener('click', () => switchSection('offer'));
-            
-            // Load history
-            renderHistory();
-            
-            // Start the timer for ads
-            startAdTimer();
-            
-            // Update profile info
-            updateProfileInfo();
-            
-            // Telegram buttons integration
-            tg.BackButton.show();
-            tg.BackButton.onClick(() => {
-                switchSection('home');
-            });
-            tg.MainButton.setText("Claim Offer").hide();
-
-            // Simulate real-time referral tracking (in real app, use Telegram bot webhook)
-            checkReferralStatus();
-        }
-        
-        // Switch between sections
-        function switchSection(section) {
-            homeSection.style.display = 'none';
-            gripSection.style.display = 'none';
-            offersSection.style.display = 'none';
-            
-            navHome.classList.remove('active');
-            navGrip.classList.remove('active');
-            navOffer.classList.remove('active');
-            
-            if (section === 'home') {
-                homeSection.style.display = 'block';
-                navHome.classList.add('active');
-            } else if (section === 'grip') {
-                gripSection.style.display = 'block';
-                navGrip.classList.add('active');
-            } else if (section === 'offer') {
-                offersSection.style.display = 'block';
-                navOffer.classList.add('active');
-                if (currentOperator) {
-                    renderOffers(offers[currentOperator] || []);
-                }
-            }
-        }
-        
-        // Update profile information
-        function updateProfileInfo() {
-            const earningsElement = document.querySelector('.earnings');
-            const usernameElement = document.querySelector('.username');
-            const profilePicElement = document.querySelector('.profile-pic');
-
-            // টেলিগ্রাম ইউজার ডেটা পড়া
-            if (tg.initDataUnsafe && tg.initDataUnsafe.user) {
-                const user = tg.initDataUnsafe.user;
-                usernameElement.textContent = user.first_name + (user.last_name ? ` ${user.last_name}` : '') + ' <span class="verified">✓</span>';
-                usernameElement.innerHTML = usernameElement.textContent; // To render the span
-                profilePicElement.textContent = user.first_name.charAt(0) + (user.last_name ? user.last_name.charAt(0) : '');
-                earningsElement.textContent = `Earned: ${totalEarnedMB} MB | Grips: ${gripCount} ⛏️ | Referrals: ${referralCount}`;
-                if (user.photo_url) {
-                    profilePicElement.style.backgroundImage = `url(${user.photo_url})`;
-                    profilePicElement.textContent = '';
-                }
+            if (!userSnap.exists()) {
+                const initialData = {
+                    uid: uid,
+                    telegramUsername: `tg_user_${uid.substring(0, 8)}`,
+                    balance: 0,
+                    referralCode: uid,
+                    referredBy: null, // Simplified: Real apps get this from URL/session
+                    createdAt: serverTimestamp(),
+                    lastActive: serverTimestamp(),
+                };
+                await setDoc(userRef, initialData);
             } else {
-                showNotification("User data not available!");
+                await updateDoc(userRef, { lastActive: serverTimestamp() });
             }
-        }
-        
-        // Check if user joined the channel
-        function checkChannelJoin() {
-            // Simulated check (in real app, use Telegram API)
-            userJoinedChannel = true;
-            showNotification("Successfully verified channel membership!");
-            channelModal.classList.remove('active');
-            switchSection('home');
-        }
-        
-        // Check available offers based on phone number
-        function checkOffers() {
-            const operator = document.getElementById('operator').value;
-            const phoneNumber = document.getElementById('phoneNumber').value;
-            
-            if (!operator) {
-                showNotification("Please select an operator");
-                return;
-            }
-            
-            if (!phoneNumber || phoneNumber.length !== 11) {
-                showNotification("Please enter a valid 11-digit phone number");
-                return;
-            }
-            
-            // Simulate real-time Telegram backend check
-            currentOperator = operator;
-            renderOffers(offers[operator] || []);
-            switchSection('offer');
-            showNotification(`Offers loaded for ${operator}`);
-        }
-        
-        // Render offers to the UI
-        function renderOffers(operatorOffers) {
-            offersList.innerHTML = '';
-            
-            if (operatorOffers.length === 0) {
-                offersList.innerHTML = '<p>No offers available for this number.</p>';
-                return;
-            }
-            
-            operatorOffers.forEach(offer => {
-                const offerElement = document.createElement('div');
-                offerElement.className = 'offer-card premium-card';
-                offerElement.innerHTML = `
-                    <div class="offer-title">${offer.title}</div>
-                    <div class="offer-details">${offer.details}</div>
-                    <div class="requirements">Requirements: ${offer.requirements}</div>
-                    <button class="btn claim-btn" data-id="${offer.id}" data-mb="${parseInt(offer.data)}" data-grips="${offer.gripsRequired}" data-referrals="${offer.referralsRequired}" disabled>Claim Now</button>
-                `;
-                offersList.appendChild(offerElement);
-            });
-            
-            // Add event listeners to claim buttons
-            document.querySelectorAll('.claim-btn').forEach(btn => {
-                btn.addEventListener('click', function() {
-                    const offerId = this.getAttribute('data-id');
-                    const mb = parseInt(this.getAttribute('data-mb'));
-                    const gripsReq = parseInt(this.getAttribute('data-grips'));
-                    const referralsReq = parseInt(this.getAttribute('data-referrals'));
-                    claimOffer(offerId, mb, gripsReq, referralsReq);
-                });
-                updateClaimButton(btn);
-            });
-        }
-        
-        // Update claim button enabled state
-        function updateClaimButton(btn) {
-            const gripsReq = parseInt(btn.getAttribute('data-grips'));
-            const referralsReq = parseInt(btn.getAttribute('data-referrals'));
-            if (gripCount >= gripsReq && referralCount >= referralsReq) {
-                btn.disabled = false;
-            } else {
-                btn.disabled = true;
-            }
-        }
-        
-        // Claim an offer
-        function claimOffer(offerId, mb, gripsReq, referralsReq) {
-            if (gripCount < gripsReq || referralCount < referralsReq) {
-                showNotification("Insufficient grips or referrals!");
-                return;
-            }
-            
-            gripCount -= gripsReq;
-            updateProgress();
-            totalEarnedMB += mb;
-            updateProfileInfo();
-            showNotification(`Offer ${offerId} claimed successfully! You earned ${mb} MB`);
-            
-            document.querySelectorAll('.claim-btn').forEach(updateClaimButton);
-        }
-        
-        // Show ad popup with Monetag SDK
-        function showAd() {
-            if (watchAdBtn.disabled) return;
+        };
+
+        const initFirebaseAndAuth = async () => {
             try {
-                if (window.libtl && typeof window.libtl.show_10087307 === 'function') {
-                    window.libtl.show_10087307();
-                    adPopup.style.display = 'block';
-                    adCountdownValue = 10;
-                    adCountdown.textContent = `Ad will complete in ${adCountdownValue} seconds`;
-                    
-                    adCountdownInterval = setInterval(() => {
-                        adCountdownValue--;
-                        adCountdown.textContent = `Ad will complete in ${adCountdownValue} seconds`;
-                        if (adCountdownValue <= 0) {
-                            clearInterval(adCountdownInterval);
-                            completeAd();
-                        }
-                    }, 1000);
-                } else {
-                    throw new Error("Monetag SDK not loaded or function not available");
+                if (Object.keys(firebaseConfig).length === 0) {
+                    console.error("Firebase configuration missing.");
+                    state.isAuthReady = true;
+                    renderApp();
+                    return;
                 }
-            } catch (err) {
-                console.error('Failed to load ad:', err);
-                showNotification("Failed to load ad. Please try again.");
-                // Fallback ad
-                adPopup.innerHTML = `
-                    <div class="ad-text">Default Ad - Watch for rewards!</div>
-                    <div id="adCountdown">Ad will complete in 10 seconds</div>
-                    <button class="close-ad" id="closeAd">Close Ad</button>
-                `;
-                closeAdBtn = document.getElementById('closeAd');
-                closeAdBtn.addEventListener('click', closeAd);
-                adPopup.style.display = 'block';
-                adCountdownValue = 10;
-                adCountdown.textContent = `Ad will complete in ${adCountdownValue} seconds`;
                 
-                adCountdownInterval = setInterval(() => {
-                    adCountdownValue--;
-                    adCountdown.textContent = `Ad will complete in ${adCountdownValue} seconds`;
-                    if (adCountdownValue <= 0) {
-                        clearInterval(adCountdownInterval);
-                        completeAd();
+                app = initializeApp(firebaseConfig);
+                db = getFirestore(app);
+                auth = getAuth(app);
+                
+                const signIn = async () => {
+                    if (initialAuthToken) {
+                        await signInWithCustomToken(auth, initialAuthToken);
+                    } else {
+                        await signInAnonymously(auth);
                     }
-                }, 1000);
+                };
+
+                onAuthStateChanged(auth, async (user) => {
+                    if (user) {
+                        state.userId = user.uid;
+                        await setupUserDocument(user.uid);
+                        setupDataListeners();
+                        showAutoInterstitialAd(); // AUTHENTICATED হলে Auto Ad চালু
+                    } else if (!state.userId) {
+                        await signIn();
+                    }
+                    state.isAuthReady = true;
+                    renderApp(); 
+                });
+            } catch (error) {
+                console.error("Firebase Initialization or Auth Failed:", error);
+                state.isAuthReady = true;
+                renderApp();
             }
-        }
-        
-        // Close ad
-        function closeAd() {
-            clearInterval(adCountdownInterval);
-            adPopup.style.display = 'none';
-            showNotification("Ad closed early - no grip earned");
-        }
-        
-        // Complete watching ad
-        function completeAd() {
-            clearInterval(adCountdownInterval);
-            adPopup.style.display = 'none';
-            
-            gripCount++;
-            updateProgress();
-            updateProfileInfo();
-            
-            const now = new Date();
-            const dateStr = `${now.getFullYear()}-${(now.getMonth()+1).toString().padStart(2, '0')}-${now.getDate().toString().padStart(2, '0')} ${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
-            adHistory.unshift({ date: dateStr, status: "Completed" });
-            renderHistory();
-            
-            resetAdTimer();
-            
-            if (gripCount >= 10 && referralSection.style.display === 'none') {
-                referralSection.style.display = 'block';
-                showNotification("Referral section unlocked! Refer 3 friends to claim offers.");
-            }
-            
-            document.querySelectorAll('.claim-btn').forEach(updateClaimButton);
-            showNotification("Ad completed! +1 Grip ⛏️");
-        }
-        
-        // Update progress bar and text
-        function updateProgress() {
-            const progressPercentage = (gripCount % 10 / 10) * 100;
-            progressFill.style.width = `${progressPercentage}%`;
-            progressText.textContent = `${gripCount % 10}/10`;
-        }
-        
-        // Start the ad timer
-        function startAdTimer() {
-            updateTimerDisplay();
-            
-            timerInterval = setInterval(() => {
-                adTimer--;
-                updateTimerDisplay();
-                
-                if (adTimer <= 0) {
-                    watchAdBtn.disabled = false;
-                    watchAdBtn.textContent = "Watch Ad for 1 Grip ⛏️";
-                    timerElement.textContent = "Ad available now!";
+        };
+
+        // --- ডেটা লিসেনার্স ---
+        const setupDataListeners = () => {
+            // ... (setupDataListeners remains the same)
+            if (!db || !state.userId) return;
+
+            unsubscribeListeners.forEach(unsub => unsub());
+            unsubscribeListeners = [];
+
+            const userRef = getCollectionRef('user_data_doc');
+            const unsubUser = onSnapshot(userRef, (docSnap) => {
+                if (docSnap.exists()) {
+                    state.userData = docSnap.data();
+                    renderApp();
+                } else {
+                    console.error("User document missing!");
                 }
-            }, 1000);
-        }
+            });
+            unsubscribeListeners.push(unsubUser);
+
+            const transactionsCol = getCollectionRef('transactions');
+            const unsubTransactions = onSnapshot(transactionsCol, (snapshot) => {
+                const history = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                history.sort((a, b) => (b.timestamp?.seconds || 0) - (a.timestamp?.seconds || 0));
+                state.transactions = history;
+                if (state.currentPage === 'profile') renderApp();
+            });
+            unsubscribeListeners.push(unsubTransactions);
+
+            const newsCol = getCollectionRef('news');
+            const unsubNews = onSnapshot(newsCol, (snapshot) => {
+                const posts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                posts.sort((a, b) => (b.timestamp?.seconds || 0) - (a.timestamp?.seconds || 0));
+                state.newsPosts = posts;
+                if (state.currentPage === 'news') renderApp();
+            });
+            unsubscribeListeners.push(unsubNews);
+
+            fetchReferralData();
+        };
         
-        // Update timer display
-        function updateTimerDisplay() {
-            const minutes = Math.floor(adTimer / 60);
-            const seconds = adTimer % 60;
-            timerElement.textContent = `Next ad available in: ${minutes}:${seconds.toString().padStart(2, '0')}`;
-        }
-        
-        // Reset ad timer
-        function resetAdTimer() {
-            adTimer = 15; // 15 seconds
-            watchAdBtn.disabled = true;
-            updateTimerDisplay();
-        }
-        
-        // Render ad watch history
-        function renderHistory() {
-            historyList.innerHTML = '';
+        const fetchReferralData = async () => {
+             // ... (fetchReferralData remains the same)
+             if (!db || !state.userId) return;
+             const referralsCol = getCollectionRef('referrals');
+             const qReferrals = query(referralsCol, where('referrerId', '==', state.userId));
+             
+             try {
+                const referralSnap = await getDocs(qReferrals);
+                state.referrals = referralSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                if (state.currentPage === 'profile') renderApp();
+             } catch (e) {
+                 console.error("Error fetching referrals:", e);
+             }
+        };
+
+        // --- কোর লজিক: Grip/Tap ---
+        const distributeReferralCommission = async (transaction, currentUserData, baseCoinAmount) => {
+            // ... (distributeReferralCommission remains the same)
+            let currentReferrerId = currentUserData.referredBy;
+            let generation = 1;
+
+            while (currentReferrerId && generation <= 3) {
+                const commissionRate = REFERRAL_COMMISSION[generation];
+                const commissionAmount = Math.floor(baseCoinAmount * commissionRate);
+
+                if (commissionAmount > 0) {
+                    const referrerRef = getCollectionRef('user_data_doc', currentReferrerId);
+                    const referrerSnap = await transaction.get(referrerRef);
+
+                    if (referrerSnap.exists()) {
+                        const referrerData = referrerSnap.data();
+                        const newReferrerBalance = (referrerData.balance || 0) + commissionAmount;
+                        
+                        transaction.update(referrerRef, { balance: newReferrerBalance });
+
+                        const transactionRef = getCollectionRef('transactions', currentReferrerId);
+                        transaction.set(doc(transactionRef), {
+                            type: 'REFERRAL_COMMISSION',
+                            amount: commissionAmount,
+                            fromUser: state.userId,
+                            generationLevel: generation,
+                            timestamp: serverTimestamp(),
+                        });
+                        
+                        currentReferrerId = referrerData.referredBy; 
+                        generation++;
+                    } else {
+                        currentReferrerId = null; 
+                    }
+                } else {
+                    currentReferrerId = null;
+                }
+            }
+        };
+
+        const collectCoins = async () => {
+            // ... (collectCoins remains the same)
+            if (!db || !state.userId) return;
+            const finalAmount = state.coinsPerTick * state.coinMultiplier;
+
+            try {
+                await runTransaction(db, async (transaction) => {
+                    const userRef = getCollectionRef('user_data_doc');
+                    const userSnap = await transaction.get(userRef);
+
+                    if (!userSnap.exists()) {
+                        throw "User does not exist!";
+                    }
+
+                    const newBalance = (userSnap.data().balance || 0) + finalAmount;
+                    
+                    transaction.update(userRef, { balance: newBalance });
+
+                    const transactionRef = getCollectionRef('transactions');
+                    transaction.set(doc(transactionRef), {
+                        type: 'GRIP',
+                        amount: finalAmount,
+                        multiplier: state.coinMultiplier,
+                        timestamp: serverTimestamp(),
+                    });
+                    
+                    await distributeReferralCommission(transaction, userSnap.data(), finalAmount);
+                });
+            } catch (e) {
+                console.error("Grip Transaction failed: ", e);
+            }
+        };
+
+        let tapTimerRef;
+        const handleTapStart = () => {
+            // ... (handleTapStart remains the same)
+            if (state.isTapping || !state.userId) return;
+
+            state.isTapping = true;
             
-            if (adHistory.length === 0) {
-                historyList.innerHTML = '<p>No ad watch history yet.</p>';
+            state.tapInterval = setInterval(collectCoins, 1000);
+
+            tapTimerRef = setInterval(() => {
+                state.coinMultiplier = Math.min(5, state.coinMultiplier + 1);
+                renderApp();
+            }, 200); 
+
+            renderApp();
+        };
+
+        const handleTapEnd = () => {
+            // ... (handleTapEnd remains the same)
+            if (!state.isTapping) return;
+
+            state.isTapping = false;
+            clearInterval(state.tapInterval);
+            clearInterval(tapTimerRef);
+            
+            if (!state.adRewardActive) { 
+                state.coinMultiplier = 1;
+            }
+            renderApp();
+        };
+
+        // --- কোর লজিক: Ad Reward Integration (কোড ২) ---
+        /**
+         * Monetag Rewarded Interstitial (কোড ২) ব্যবহার করে বিজ্ঞাপন দেখায় এবং সফল হলে পুরস্কার দেয়।
+         */
+        const showMonetagRewardedAd = () => {
+            if (state.adRewardActive) {
+                updateStatusMessage('বোনাসটি এখনও সক্রিয় আছে।', true);
                 return;
             }
             
-            adHistory.forEach(item => {
-                const historyItem = document.createElement('div');
-                historyItem.className = 'history-item';
-                const statusClass = item.status === 'Completed' ? 'status-completed' : 'status-pending';
-                historyItem.innerHTML = `
-                    <div>${item.date}</div>
-                    <div class="history-date">
-                        Status: <span class="status ${statusClass}">${item.status}</span>
-                    </div>
-                `;
-                historyList.appendChild(historyItem);
-            });
-        }
-        
-        // Copy referral code
-        function copyReferralCode() {
-            const code = referralCode.textContent;
-            navigator.clipboard.writeText(code).then(() => {
-                showNotification("Referral code copied to clipboard!");
-            }).catch(err => {
-                console.error('Failed to copy:', err);
-                showNotification("Failed to copy referral code");
-            });
-        }
-        
-        // Copy referral link
-        function copyReferralLink() {
-            const link = referralLink.textContent;
-            navigator.clipboard.writeText(link).then(() => {
-                showNotification("Referral link copied to clipboard!");
-                // Simulate referral increase (in real app, track via Telegram bot)
-                referralCount++;
-                updateProfileInfo();
-                showNotification(`Referrals: ${referralCount}/3`);
-                document.querySelectorAll('.claim-btn').forEach(updateClaimButton);
-            }).catch(err => {
-                console.error('Failed to copy:', err);
-                showNotification("Failed to copy referral link");
-            });
-        }
-        
-        // Update referral link dynamically
-        function updateReferralLink() {
-            if (tg.initDataUnsafe && tg.initDataUnsafe.user) {
-                const userId = tg.initDataUnsafe.user.id;
-                referralLink.textContent = `https://t.me/HiGripBot?start=${userId}`;
-                referralCode.textContent = `${userId}`; // রেফারেল কোড হিসেবে ইউজার আইডি
-            } else {
-                showNotification("Unable to generate referral link!");
+            // Monetag ফাংশন উপলব্ধ আছে কি না তা পরীক্ষা করা
+            if (typeof show_10087307 !== 'function') {
+                updateStatusMessage('Monetag Ad Script লোড হয়নি। অনুগ্রহ করে `<head>` এ Monetag script যোগ করুন।', true);
+                return;
             }
-        }
 
-        // Real-time referral status check
-        async function checkReferralStatus() {
+            updateStatusMessage(`<i data-lucide="loader-2" class="animate-spin inline-block mr-2 h-4 w-4"></i> বিজ্ঞাপন লোড হচ্ছে...`);
+
+            // Monetag Rewarded Interstitial কোড ২ ব্যবহার
+            show_10087307().then(() => {
+                // SUCCESS: ব্যবহারকারী বিজ্ঞাপনটি দেখেছে/বন্ধ করেছে।
+                
+                // --- আপনার Reward ফাংশন এখানে শুরু ---
+                const duration = 5 * 60; // 5 মিনিটের জন্য পুরস্কার
+                state.coinMultiplier = 5;
+                state.adRewardActive = true;
+                state.adRewardDuration = duration;
+                
+                // পুরস্কারের সময় গোনা শুরু
+                const timer = setInterval(() => {
+                    state.adRewardDuration -= 1;
+                    if (state.adRewardDuration <= 0) {
+                        clearInterval(timer);
+                        state.adRewardActive = false;
+                        state.coinMultiplier = 1;
+                        updateStatusMessage("কয়েন মাল্টিপ্লায়ার শেষ।");
+                    }
+                    renderApp();
+                }, 1000);
+                
+                updateStatusMessage("বিজ্ঞাপন সফল! কয়েন সংগ্রহ ৫× হয়েছে!");
+                renderApp();
+                // --- Reward ফাংশন শেষ ---
+
+            }).catch(e => {
+                // FAILURE: Ad লোড হতে ব্যর্থ হয়েছে বা কোনো ত্রুটি হয়েছে।
+                console.error("Monetag Ad Failed:", e);
+                updateStatusMessage("বিজ্ঞাপন লোড হতে ব্যর্থ। কিছুক্ষণ পর আবার চেষ্টা করুন।", true);
+                renderApp();
+            });
+        };
+
+
+        // --- কোর লজিক: Transfer & News (Remains the same) ---
+        
+        const searchRecipient = async () => {
+            // ... (searchRecipient remains the same)
+            const recipientName = document.getElementById('transferRecipient').value;
+            state.transferRecipient = recipientName;
+            if (!db || !recipientName) {
+                updateStatusMessage('ইউজারনেম দিন।', true);
+                return;
+            }
+            state.recipientData = null;
+            updateStatusMessage(`<i data-lucide="loader-2" class="animate-spin inline-block mr-2 h-4 w-4"></i> ইউজার সার্চ করা হচ্ছে...`);
+            
             try {
-                const response = await fetch(`https://your-backend-api.com/referrals?userId=${tg.initDataUnsafe.user.id}`);
-                const data = await response.json();
-                referralCount = data.referralCount;
-                updateProfileInfo();
-                document.querySelectorAll('.claim-btn').forEach(updateClaimButton);
-            } catch (err) {
-                console.error('Failed to fetch referrals:', err);
-            }
-        }
+                const usersCol = collection(db, 'artifacts', appId, 'users');
+                const userQuerySnap = await getDocs(usersCol);
+                
+                const foundUser = userQuerySnap.docs
+                    .map(doc => ({ uid: doc.id, ...doc.data() }))
+                    .find(user => user.telegramUsername === recipientName && user.uid !== state.userId);
 
-        // Auto update data
-        function autoUpdateData() {
-            setInterval(async () => {
-                try {
-                    const response = await fetch(`https://your-backend-api.com/user?userId=${tg.initDataUnsafe.user.id}`);
-                    const data = await response.json();
-                    gripCount = data.gripCount;
-                    referralCount = data.referralCount;
-                    totalEarnedMB = data.totalEarnedMB;
-                    updateProfileInfo();
-                    updateProgress();
-                    document.querySelectorAll('.claim-btn').forEach(updateClaimButton);
-                } catch (err) {
-                    console.error('Failed to update data:', err);
+                if (foundUser) {
+                    state.recipientData = foundUser;
+                    updateStatusMessage(`ইউজার পাওয়া গেছে: ${foundUser.telegramUsername}`);
+                } else {
+                    updateStatusMessage('এই Telegram ইউজারনেম খুঁজে পাওয়া যায়নি।', true);
                 }
-            }, 30000); // প্রতি ৩০ সেকেন্ডে আপডেট
-        }
 
-        // Show loading spinner
-        function showLoading() {
-            document.body.insertAdjacentHTML('beforeend', '<div class="loading-spinner">Loading...</div>');
-        }
+            } catch (e) {
+                console.error("Recipient search failed:", e);
+                updateStatusMessage('সার্চ করতে সমস্যা হয়েছে।', true);
+            }
+            renderApp();
+        };
 
-        // Hide loading spinner
-        function hideLoading() {
-            document.querySelector('.loading-spinner')?.remove();
-        }
+        const confirmTransfer = async () => {
+            // ... (confirmTransfer remains the same)
+            const amount = parseFloat(document.getElementById('transferAmount').value);
+            if (!state.recipientData || !amount || amount <= 0 || amount > state.userData.balance) {
+                updateStatusMessage('টাকা বা ইউজারনেম সঠিক নয়।', true);
+                return;
+            }
+            
+            updateStatusMessage(`<i data-lucide="loader-2" class="animate-spin inline-block mr-2 h-4 w-4"></i> ট্রান্সফার প্রক্রিয়া চলছে...`);
+
+            try {
+                await runTransaction(db, async (transaction) => {
+                    const senderRef = getCollectionRef('user_data_doc', state.userId);
+                    const recipientRef = getCollectionRef('user_data_doc', state.recipientData.uid);
+                    
+                    const [senderSnap, recipientSnap] = await Promise.all([
+                        transaction.get(senderRef),
+                        transaction.get(recipientRef)
+                    ]);
+
+                    if (!senderSnap.exists() || !recipientSnap.exists()) {
+                        throw "Sender or Recipient document missing!";
+                    }
+
+                    const senderBalance = senderSnap.data().balance || 0;
+                    if (senderBalance < amount) {
+                        throw "Insufficient balance!";
+                    }
+
+                    const newSenderBalance = senderBalance - amount;
+                    const newRecipientBalance = (recipientSnap.data().balance || 0) + amount;
+                    
+                    transaction.update(senderRef, { balance: newSenderBalance });
+                    transaction.update(recipientRef, { balance: newRecipientBalance });
+
+                    const senderTxCol = getCollectionRef('transactions', state.userId);
+                    await addDoc(senderTxCol, {
+                        type: 'TRANSFER_SENT',
+                        amount: -amount,
+                        recipient: state.recipientData.uid,
+                        timestamp: serverTimestamp(),
+                    });
+                    
+                    const recipientTxCol = getCollectionRef('transactions', state.recipientData.uid);
+                    await addDoc(recipientTxCol, {
+                        type: 'TRANSFER_RECEIVED',
+                        amount: amount,
+                        sender: state.userId,
+                        timestamp: serverTimestamp(),
+                    });
+                });
+                
+                updateStatusMessage(`সফল! ${amount} কয়েন ${state.recipientData.telegramUsername}-কে পাঠানো হয়েছে।`);
+                state.transferAmount = '';
+                state.recipientData = null;
+                state.transferRecipient = '';
+                document.getElementById('transferRecipient').value = '';
+                document.getElementById('transferAmount').value = '';
+                renderApp();
+
+            } catch (e) {
+                console.error("Transfer Transaction failed: ", e);
+                updateStatusMessage(`ট্রান্সফার ব্যর্থ: ${e.toString()}`, true);
+                renderApp();
+            }
+        };
+
+        const handlePostNews = async () => {
+            // ... (handlePostNews remains the same)
+            const newPostTitle = document.getElementById('newPostTitle').value;
+            const newPostCaption = document.getElementById('newPostCaption').value;
+            const newPostLink = document.getElementById('newPostLink').value;
+
+            if (!db || state.userId !== ADMIN_UID || !newPostTitle || !newPostCaption || !newPostLink) {
+                updateStatusMessage('অ্যাডমিন নয় অথবা সব ফিল্ড পূরণ করা হয়নি।', true);
+                renderApp();
+                return;
+            }
+
+            updateStatusMessage(`<i data-lucide="loader-2" class="animate-spin inline-block mr-2 h-4 w-4"></i> পোস্ট করা হচ্ছে...`);
+            renderApp();
+
+            try {
+                const newsCol = getCollectionRef('news');
+                await addDoc(newsCol, {
+                    adminUid: state.userId,
+                    title: newPostTitle,
+                    caption: newPostCaption,
+                    buttonLink: newPostLink,
+                    timestamp: serverTimestamp(),
+                });
+                updateStatusMessage('নিউজ পোস্ট সফলভাবে হয়েছে!');
+                document.getElementById('newPostTitle').value = '';
+                document.getElementById('newPostCaption').value = '';
+                document.getElementById('newPostLink').value = '';
+            } catch (e) {
+                console.error("News post failed:", e);
+                updateStatusMessage('পোস্ট করতে সমস্যা হয়েছে।', true);
+            }
+            renderApp();
+        };
+
+
+        // --- রেন্ডারিং ফাংশন ---
+
+        const renderLoading = () => `
+            <div class="flex items-center justify-center h-full text-white/70">
+                <i data-lucide="loader-2" class="animate-spin h-8 w-8 mr-2"></i>
+                <p>অ্যাপ লোড হচ্ছে...</p>
+            </div>
+        `;
         
-        // Show notification
-        function showNotification(message) {
-            notification.textContent = message;
-            notification.classList.add('show');
-            setTimeout(() => {
-                notification.classList.remove('show');
-            }, 3000);
-        }
+        const renderGripPage = () => {
+            // ... (renderGripPage remains the same)
+            const { userData, coinMultiplier, coinsPerTick, isTapping, adRewardActive, adRewardDuration, statusMessage } = state;
+            
+            const minutes = Math.floor(adRewardDuration / 60);
+            const seconds = adRewardDuration % 60;
+            const formattedTime = `${minutes}মি ${seconds}সে`;
+            
+            return `
+                <div class="flex flex-col items-center p-4 h-full bg-slate-900 overflow-y-auto">
+                    <h2 class="text-2xl font-bold text-teal-400 mb-2 mt-4">কয়েন সংগ্রহ করুন</h2>
+                    <p class="text-sm text-gray-400 mb-6">
+                        দ্রুত ট্যাপ করুন! সর্বোচ্চ ${coinMultiplier}× স্পিড। প্রতি সেকেন্ডে ${coinsPerTick * coinMultiplier} কয়েন।
+                    </p>
+                    
+                    <!-- Ad Reward Status -->
+                    <div class="w-full max-w-sm p-3 mb-6 rounded-lg shadow-lg ${adRewardActive ? 'bg-green-700/50 border border-green-500' : 'bg-slate-800/50 border border-slate-700'}">
+                        <div class="flex justify-between items-center text-white">
+                            <p class="text-sm font-semibold">
+                                <i data-lucide="zap" class="inline-block h-4 w-4 mr-1 text-yellow-400"></i>
+                                ${adRewardActive ? '৫× স্পিড অ্যাক্টিভ!' : 'বিজ্ঞাপন দেখে বোনাস নিন'}
+                            </p>
+                            <span class="text-xs text-yellow-300">
+                                ${adRewardActive ? `সময় বাকি: ${formattedTime}` : 'নিষ্ক্রিয়'}
+                            </span>
+                        </div>
+                        <button 
+                            onclick="showMonetagRewardedAd()"
+                            ${adRewardActive ? 'disabled' : ''}
+                            class="w-full mt-2 py-2 text-sm font-bold rounded-md transition duration-200 
+                                bg-teal-600 hover:bg-teal-700 disabled:bg-slate-700 disabled:text-gray-400"
+                        >
+                            ${adRewardActive ? 'বোনাস চলছে...' : 'Rewarded Ad দেখুন (৫× মাল্টিপ্লায়ার)'}
+                        </button>
+                        <p class="text-xs text-center text-gray-400 mt-2">
+                            ${statusMessage ? statusMessage : ''}
+                        </p>
+                    </div>
+
+                    <!-- Tapping Zone -->
+                    <div 
+                        id="tapZone"
+                        ontouchstart="handleTapStart()"
+                        ontouchend="handleTapEnd()"
+                        onmousedown="handleTapStart()"
+                        onmouseup="handleTapEnd()"
+                        class="w-full max-w-xs aspect-square flex items-center justify-center rounded-full shadow-2xl transition-all duration-100 ease-out 
+                            ${isTapping ? 'bg-teal-700/80 scale-105' : 'bg-slate-800/80 hover:bg-slate-700/80'} 
+                            ${coinMultiplier > 1 ? 'border-4 border-yellow-400' : 'border border-slate-600'}"
+                    >
+                        <div class="text-center">
+                            <p class="text-6xl" role="img" aria-label="Fist">👊</p>
+                            <p class="text-2xl font-extrabold mt-2 ${coinMultiplier > 1 ? 'text-yellow-400 animate-pulse' : 'text-white'}">
+                                ${coinMultiplier}×
+                            </p>
+                            ${isTapping ? '<p class="text-sm text-gray-300 mt-1">কয়েন সংগ্রহ চলছে...</p>' : ''}
+                        </div>
+                    </div>
+
+                    <p class="mt-4 text-white text-3xl font-bold">
+                        ব্যালেন্স: ${formatBalance(userData?.balance)}
+                    </p>
+                    <p class="text-sm text-gray-500">ইউজার: ${state.userId || 'N/A'}</p>
+                </div>
+            `;
+        };
+
+        const renderTransferPage = () => {
+            // ... (renderTransferPage remains the same)
+            const { userData, transferRecipient, recipientData, statusMessage } = state;
+            const recipientUsername = recipientData ? recipientData.telegramUsername : '';
+
+            return `
+                <div class="p-4 h-full bg-slate-900 overflow-y-auto text-white">
+                    <h2 class="text-2xl font-bold text-teal-400 mb-6 mt-4">কয়েন ট্রান্সফার</h2>
+                    <div class="space-y-4 max-w-md mx-auto">
+                    
+                        <!-- ইউজার সার্চ -->
+                        <div class="p-4 bg-slate-800 rounded-lg shadow-xl">
+                            <label for="transferRecipient" class="block text-sm font-medium text-gray-300 mb-2">Telegram Username</label>
+                            <div class="flex space-x-2">
+                                <input
+                                    type="text"
+                                    id="transferRecipient"
+                                    value="${state.transferRecipient}"
+                                    oninput="state.transferRecipient = this.value"
+                                    placeholder="@username_to_send"
+                                    class="flex-grow p-2.5 rounded-md bg-slate-700 border border-slate-600 text-white placeholder-gray-500 focus:ring-teal-500 focus:border-teal-500"
+                                />
+                                <button
+                                    onclick="searchRecipient()"
+                                    class="px-4 py-2 bg-pink-600 rounded-md hover:bg-pink-700 transition duration-200 disabled:bg-slate-700"
+                                    ${!state.transferRecipient ? 'disabled' : ''}
+                                >
+                                    সার্চ
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- রিসিভার ডিসপ্লে -->
+                        ${recipientData ? `
+                            <div class="p-4 bg-slate-700 rounded-lg shadow-xl border border-teal-500/50">
+                                <h3 class="text-lg font-semibold text-teal-300">ট্রান্সফার প্রাপক:</h3>
+                                <p class="text-white mt-1">ইউজারনেম: <span class="font-bold">${recipientUsername}</span></p>
+                                <p class="text-xs text-gray-400">UID: ${recipientData.uid}</p>
+                            </div>
+                        ` : ''}
+                        
+                        <!-- ট্রান্সফার ফর্ম -->
+                        <div class="p-4 bg-slate-800 rounded-lg shadow-xl">
+                            <label for="transferAmount" class="block text-sm font-medium text-gray-300 mb-2">পরিমাণ (কয়েন)</label>
+                            <input
+                                type="number"
+                                id="transferAmount"
+                                value="${state.transferAmount}"
+                                oninput="state.transferAmount = this.value; renderApp()"
+                                placeholder="পরিমাণ"
+                                class="w-full p-2.5 rounded-md bg-slate-700 border border-slate-600 text-white placeholder-gray-500 focus:ring-teal-500 focus:border-teal-500 mb-4"
+                            />
+                            
+                            <p class="text-sm text-gray-400 mb-4">আপনার ব্যালেন্স: ${formatBalance(userData?.balance)}</p>
+
+                            <button
+                                onclick="confirmTransfer()"
+                                ${!recipientData || !state.transferAmount || parseFloat(state.transferAmount) <= 0 || parseFloat(state.transferAmount) > userData?.balance ? 'disabled' : ''}
+                                class="w-full py-3 text-lg font-bold rounded-md transition duration-200 
+                                    bg-teal-600 hover:bg-teal-700 disabled:bg-slate-700 disabled:text-gray-400"
+                            >
+                                ট্রান্সফার কনফার্ম
+                            </button>
+                        </div>
+                        
+                        <!-- স্ট্যাটাস -->
+                        ${statusMessage ? `
+                            <p class="text-center text-sm p-3 bg-slate-700/50 rounded-lg text-yellow-300">
+                                ${statusMessage}
+                            </p>
+                        ` : ''}
+                    </div>
+                </div>
+            `;
+        };
+
+        const renderNewsPage = () => {
+            // ... (renderNewsPage remains the same)
+            const isAdmin = state.userId === ADMIN_UID;
+            const { newsPosts, statusMessage } = state;
+            
+            return `
+                <div class="p-4 h-full bg-slate-900 overflow-y-auto text-white">
+                    <h2 class="text-2xl font-bold text-teal-400 mb-6 mt-4">খবর এবং আপডেট</h2>
+                    
+                    <!-- Admin Posting Form -->
+                    ${isAdmin ? `
+                        <div class="mb-8 p-4 bg-red-900/40 border border-red-700 rounded-lg max-w-lg mx-auto">
+                            <h3 class="text-xl font-semibold text-red-300 mb-3">অ্যাডমিন পোস্ট ফর্ম</h3>
+                            <input
+                                type="text"
+                                id="newPostTitle"
+                                placeholder="পোস্টের শিরোনাম"
+                                class="w-full p-2 mb-2 rounded-md bg-slate-700 border border-slate-600 text-white"
+                            />
+                            <textarea
+                                id="newPostCaption"
+                                placeholder="বিস্তারিত ক্যাপশন..."
+                                class="w-full p-2 mb-2 rounded-md bg-slate-700 border border-slate-600 text-white h-20"
+                            ></textarea>
+                            <input
+                                type="url"
+                                id="newPostLink"
+                                placeholder="Join/Check বাটন লিঙ্ক (https://...)"
+                                class="w-full p-2 mb-3 rounded-md bg-slate-700 border border-slate-600 text-white"
+                            />
+                            <button
+                                onclick="handlePostNews()"
+                                class="w-full py-2 bg-red-600 rounded-md hover:bg-red-700 font-semibold"
+                            >
+                                নিউজ পোস্ট করুন
+                            </button>
+                            ${statusMessage ? `
+                                <p class="text-center text-sm p-3 bg-slate-700/50 rounded-lg text-yellow-300 mt-3">
+                                    ${statusMessage}
+                                </p>
+                            ` : ''}
+                        </div>
+                    ` : ''}
+
+                    <!-- News Feed -->
+                    <div class="space-y-6 max-w-lg mx-auto">
+                        ${newsPosts.length > 0 ? 
+                            newsPosts.map(post => `
+                                <div class="p-4 bg-slate-800 rounded-xl shadow-2xl border border-slate-700 transition hover:border-teal-500/50">
+                                    <h3 class="text-xl font-bold text-teal-400 mb-2">${post.title}</h3>
+                                    <p class="text-gray-300 mb-3 text-sm">${post.caption}</p>
+                                    <div class="flex justify-between items-center">
+                                        <a 
+                                            href="${post.buttonLink}" 
+                                            target="_blank" 
+                                            rel="noopener noreferrer"
+                                            class="px-4 py-2 bg-pink-600 text-white text-sm font-semibold rounded-lg hover:bg-pink-700 transition"
+                                        >
+                                            Join/Check করুন
+                                        </a>
+                                        <p class="text-xs text-gray-500">${formatDate(post.timestamp)}</p>
+                                    </div>
+                                </div>
+                            `).join('')
+                        : `
+                            <p class="text-center text-gray-500 p-8">এখনও কোনো নিউজ পোস্ট হয়নি।</p>
+                        `}
+                    </div>
+                </div>
+            `;
+        };
+
+        const renderProfilePage = () => {
+            // ... (renderProfilePage remains the same)
+            const { userData, userId, transactions, referrals } = state;
+            
+            return `
+                <div class="p-4 h-full bg-slate-900 overflow-y-auto text-white">
+                    <h2 class="text-2xl font-bold text-teal-400 mb-6 mt-4">প্রোফাইল এবং হিস্টোরি</h2>
+                    
+                    <div class="max-w-xl mx-auto space-y-8">
+                        <!-- ইউজার ও ব্যালেন্স কার্ড -->
+                        <div class="p-6 bg-slate-800 rounded-xl shadow-2xl border border-teal-500/50">
+                            <div class="flex items-center space-x-4 mb-4">
+                                <i data-lucide="user" class="w-8 h-8 text-pink-400"></i>
+                                <div>
+                                    <p class="text-lg font-semibold text-gray-300">ইউজারনেম:</p>
+                                    <p class="text-2xl font-bold text-white">${userData?.telegramUsername || 'N/A'}</p>
+                                </div>
+                            </div>
+                            <div class="border-t border-slate-700 pt-4">
+                                <p class="text-lg font-semibold text-gray-300">বর্তমান ব্যালেন্স:</p>
+                                <p class="text-4xl font-extrabold text-teal-400">${formatBalance(userData?.balance)}</p>
+                                <p class="text-xs text-gray-500 mt-2 break-all">UID (রেফারেল কোড): ${userId || 'N/A'}</p>
+                            </div>
+                        </div>
+
+                        <!-- রেফারেল সিস্টেম -->
+                        <div class="p-6 bg-slate-800 rounded-xl shadow-2xl border border-slate-700">
+                            <h3 class="text-xl font-bold text-pink-400 mb-4">রেফারেল ড্যাশবোর্ড (Gen 1)</h3>
+                            <p class="text-sm text-gray-300 mb-4">
+                                কমিশন: Gen 1 (${REFERRAL_COMMISSION[1]*100}%), Gen 2 (${REFERRAL_COMMISSION[2]*100}%), Gen 3 (${REFERRAL_COMMISSION[3]*100}%)
+                            </p>
+                            
+                            <h4 class="font-semibold mt-4 text-gray-300">আপনার সরাসরি রেফারেল (${referrals.length} জন):</h4>
+                            <div class="h-40 overflow-y-auto mt-2 bg-slate-700 p-2 rounded-lg">
+                                ${referrals.length > 0 ? 
+                                    referrals.map(r => `
+                                        <p class="text-xs text-gray-300 border-b border-slate-600 py-1">
+                                            ${r.referredId} (Gen ${r.generationLevel})
+                                        </p>
+                                    `).join('')
+                                : `
+                                    <p class="text-center text-gray-500 p-4 text-sm">আপনি এখনও কাউকে রেফার করেননি।</p>
+                                `}
+                            </div>
+                        </div>
+                        
+                        <!-- লেনদেন হিস্টোরি -->
+                        <div class="p-6 bg-slate-800 rounded-xl shadow-2xl border border-slate-700">
+                            <h3 class="text-xl font-bold text-teal-400 mb-4">লেনদেন হিস্টোরি</h3>
+                            
+                            <div class="h-64 overflow-y-auto">
+                                <table class="min-w-full text-sm">
+                                    <thead>
+                                        <tr class="border-b border-slate-600 text-gray-400">
+                                            <th class="py-2 text-left">টাইপ</th>
+                                            <th class="py-2 text-right">পরিমাণ</th>
+                                            <th class="py-2 text-center">সময়</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        ${transactions.map(tx => `
+                                            <tr class="border-b border-slate-700 last:border-b-0">
+                                                <td class="py-2 text-left">
+                                                    ${tx.type === 'GRIP' ? 'সংগ্রহ' :
+                                                     tx.type === 'TRANSFER_SENT' ? 'প্রেরণ' :
+                                                     tx.type === 'TRANSFER_RECEIVED' ? 'গ্রহণ' :
+                                                     tx.type === 'REFERRAL_COMMISSION' ? 'রেফারেল' : 'অন্যান্য'}
+                                                    <span class="text-xs block text-gray-500">
+                                                        ${tx.type === 'TRANSFER_SENT' ? `কে: ${tx.recipient.substring(0, 8)}...` :
+                                                         tx.type === 'TRANSFER_RECEIVED' ? `থেকে: ${tx.sender.substring(0, 8)}...` :
+                                                         tx.type === 'REFERRAL_COMMISSION' ? `Gen ${tx.generationLevel} | From: ${tx.fromUser.substring(0, 8)}...` : ''}
+                                                    </span>
+                                                </td>
+                                                <td class="py-2 text-right font-semibold ${tx.amount > 0 ? 'text-green-400' : 'text-red-400'}">
+                                                    ${tx.amount > 0 ? `+${formatBalance(tx.amount)}` : formatBalance(tx.amount)}
+                                                </td>
+                                                <td class="py-2 text-center text-xs text-gray-400">${formatDate(tx.timestamp)}</td>
+                                            </tr>
+                                        `).join('')}
+                                    </tbody>
+                                </table>
+                                ${transactions.length === 0 ? '<p class="text-center text-gray-500 p-4">কোনো লেনদেন রেকর্ড নেই।</p>' : ''}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        };
+
+        const renderPage = (pageId) => {
+            switch (pageId) {
+                case 'grip': return renderGripPage();
+                case 'transfer': return renderTransferPage();
+                case 'news': return renderNewsPage();
+                case 'profile': return renderProfilePage();
+                default: return '<div>Page not found.</div>';
+            }
+        };
+
+        const renderNavBar = () => {
+            // ... (renderNavBar remains the same)
+            const navItems = [
+                { id: 'grip', label: 'Grip', icon: 'home' },
+                { id: 'transfer', label: 'Transfer', icon: 'send' },
+                { id: 'news', label: 'News', icon: 'newspaper' },
+                { id: 'profile', label: 'Profile', icon: 'user' },
+            ];
+
+            return `
+                <nav class="fixed bottom-0 left-0 right-0 h-16 bg-slate-800 border-t border-slate-700 shadow-2xl z-50">
+                    <div class="flex justify-around h-full max-w-lg mx-auto">
+                        ${navItems.map(item => `
+                            <button
+                                onclick="state.currentPage = '${item.id}'; updateStatusMessage(null); renderApp();"
+                                class="flex flex-col items-center justify-center p-2 text-xs transition-all duration-200 
+                                    ${state.currentPage === item.id ? 'text-teal-400 scale-110' : 'text-gray-400 hover:text-teal-300'}"
+                            >
+                                <i data-lucide="${item.icon}" class="w-6 h-6 mb-0.5"></i>
+                                <span class="font-medium">${item.label}</span>
+                            </button>
+                        `).join('')}
+                    </div>
+                </nav>
+            `;
+        };
+
+
+        // --- প্রধান রেন্ডারিং ফাংশন ---
+        const renderApp = () => {
+            const appContainer = document.getElementById('app-container');
+            const navContainer = document.getElementById('nav-container');
+
+            if (!state.isAuthReady) {
+                appContainer.innerHTML = renderLoading();
+            } else {
+                appContainer.innerHTML = renderPage(state.currentPage);
+            }
+            
+            navContainer.innerHTML = renderNavBar();
+            replaceIcons(); 
+        };
+
+        // --- উইন্ডো লোড হলে অ্যাপ শুরু করা ---
+        window.onload = () => {
+            initFirebaseAndAuth();
+            renderApp();
+        };
         
-        // Initialize the app
-        document.addEventListener('DOMContentLoaded', () => {
-            initApp();
-            updateReferralLink();
-            autoUpdateData();
-        });
+        // গ্লোবাল অ্যাক্সেসের জন্য ফাংশনগুলি উইন্ডো অবজেক্টে যোগ করা
+        window.showMonetagRewardedAd = showMonetagRewardedAd;
+        window.handleTapStart = handleTapStart;
+        window.handleTapEnd = handleTapEnd;
+        window.searchRecipient = searchRecipient;
+        window.confirmTransfer = confirmTransfer;
+        window.handlePostNews = handlePostNews;
+        window.state = state; 
+        window.renderApp = renderApp; 
+        window.updateStatusMessage = updateStatusMessage;
     </script>
+</head>
+<body class="bg-slate-950 font-sans min-h-screen text-white">
+    <div id="app" class="flex flex-col h-screen">
+        <!-- Main Content Area -->
+        <div id="app-container" class="flex-grow overflow-hidden pb-16">
+            <!-- Content will be rendered here -->
+        </div>
+
+        <!-- Navigation Bar Container -->
+        <div id="nav-container">
+            <!-- Navigation will be rendered here -->
+        </div>
+    </div>
 </body>
 </html>
