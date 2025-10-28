@@ -9,18 +9,16 @@
     <!-- Lucide Icons for aesthetic UI -->
     <script src="https://unpkg.com/lucide@latest"></script>
     
-    <!--
-    ========================================================================================
-    MONETAG SCRIPT SETUP - এখানে আপনার Monetag Loader Code (একটি <script> ট্যাগ) বসান
-    ========================================================================================
-    
-    আপনার কোডটি দেখতে এমন হতে পারে:
-    <script type="text/javascript" src="//some-monetag-domain.com/some-path/loader.js" async></script> 
-    
-    যদি আপনি এই লাইনটি না বসান, তবে show_10087307() ফাংশন কাজ করবে না।
-    
-    ========================================================================================
-    -->
+    <!-- Monetag Script -->
+    <script type="text/javascript">
+        (function() {
+            var script = document.createElement('script');
+            script.type = 'text/javascript';
+            script.src = '//monetag.com/some-path/loader.js';
+            script.async = true;
+            document.head.appendChild(script);
+        })();
+    </script>
 
     <!-- Firebase SDKs -->
     <script type="module">
@@ -29,9 +27,61 @@
         import { getFirestore, doc, setDoc, updateDoc, onSnapshot, collection, query, where, serverTimestamp, runTransaction, getDoc, addDoc, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
         
         // --- গ্লোবাল ভেরিয়েবল ---
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
-        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+        // টেলিগ্রাম Mini App থেকে ডেটা পাওয়ার জন্য
+        const tg = window.Telegram?.WebApp;
+        let appId = 'default-app-id';
+        let firebaseConfig = {};
+        let initialAuthToken = null;
+        
+        // টেলিগ্রাম থেকে ডেটা লোড করার ফাংশন
+        const loadTelegramData = () => {
+            if (tg) {
+                // টেলিগ্রাম থেকে ইউজার ডেটা পাওয়া যাচ্ছে
+                const user = tg.initDataUnsafe?.user;
+                const queryId = tg.initDataUnsafe?.query_id;
+                
+                if (user) {
+                    // টেলিগ্রাম ইউজারনেম এবং ID সেট করা
+                    state.userData.telegramUsername = user.username || `tg_user_${user.id}`;
+                    state.userData.telegramId = user.id;
+                    
+                    // Firebase কনফিগারেশন সেট করা (আপনার নিজের কনফিগারেশন ব্যবহার করুন)
+                    firebaseConfig = {
+                        apiKey: "your-api-key",
+                        authDomain: "your-project.firebaseapp.com",
+                        projectId: "your-project-id",
+                        storageBucket: "your-project.appspot.com",
+                        messagingSenderId: "123456789",
+                        appId: "your-app-id"
+                    };
+                    
+                    // টেলিগ্রাম ইউজার ID ব্যবহার করে অথেন্টিকেশন টোকেন তৈরি করা
+                    initialAuthToken = user.id.toString();
+                    
+                    appId = `telegram-${user.id}`;
+                }
+                
+                // টেলিগ্রাম থিম সাপোর্ট
+                if (tg.colorScheme === 'dark') {
+                    document.body.classList.add('bg-slate-950');
+                } else {
+                    document.body.classList.add('bg-gray-100');
+                    document.body.classList.remove('bg-slate-950');
+                }
+            } else {
+                console.warn("Telegram WebApp not detected, using default data");
+                // ডেভেলপমেন্টের জন্য ডিফল্ট ডেটা
+                firebaseConfig = {
+                    apiKey: "dev-api-key",
+                    authDomain: "dev-project.firebaseapp.com",
+                    projectId: "dev-project-id",
+                    storageBucket: "dev-project.appspot.com",
+                    messagingSenderId: "987654321",
+                    appId: "dev-app-id"
+                };
+                initialAuthToken = "dev-token-" + Date.now();
+            }
+        };
         
         // অ্যাডমিনের UID এবং কমিশন রেট
         const ADMIN_UID = "7243906826";
@@ -45,7 +95,11 @@
             userId: null,
             isAuthReady: false,
             currentPage: 'grip',
-            userData: { balance: 0, telegramUsername: 'Loading...' },
+            userData: { 
+                balance: 0, 
+                telegramUsername: 'Loading...',
+                telegramId: null
+            },
             transactions: [],
             newsPosts: [],
             referrals: [],
@@ -107,10 +161,9 @@
         // --- Monetag Integration ---
         
         /**
-         * আপনার দেওয়া In-App Interstitial কোড (কোড ১) ব্যবহার করে স্বয়ংক্রিয় বিজ্ঞাপন দেখায়।
+         * In-App Interstitial বিজ্ঞাপন দেখায় (কোড ১)
          */
         const showAutoInterstitialAd = () => {
-            // Monetag ফাংশন গ্লোবালি উপলব্ধ আছে কি না তা পরীক্ষা করা
             if (typeof show_10087307 === 'function') {
                 try {
                     // In-App Interstitial কোড ১
@@ -131,9 +184,106 @@
             }
         };
         
+        /**
+         * Rewarded Interstitial বিজ্ঞাপন দেখায় (কোড ২)
+         */
+        const showMonetagRewardedAd = () => {
+            if (state.adRewardActive) {
+                updateStatusMessage('বোনাসটি এখনও সক্রিয় আছে।', true);
+                return;
+            }
+            
+            if (typeof show_10087307 !== 'function') {
+                updateStatusMessage('Monetag Ad Script লোড হয়নি।', true);
+                return;
+            }
+
+            updateStatusMessage(`<i data-lucide="loader-2" class="animate-spin inline-block mr-2 h-4 w-4"></i> বিজ্ঞাপন লোড হচ্ছে...`);
+
+            // Rewarded interstitial (কোড ২)
+            show_10087307().then(() => {
+                // SUCCESS: ব্যবহারকারী বিজ্ঞাপনটি দেখেছে/বন্ধ করেছে।
+                const duration = 5 * 60; // 5 মিনিটের জন্য পুরস্কার
+                state.coinMultiplier = 5;
+                state.adRewardActive = true;
+                state.adRewardDuration = duration;
+                
+                // পুরস্কারের সময় গোনা শুরু
+                const timer = setInterval(() => {
+                    state.adRewardDuration -= 1;
+                    if (state.adRewardDuration <= 0) {
+                        clearInterval(timer);
+                        state.adRewardActive = false;
+                        state.coinMultiplier = 1;
+                        updateStatusMessage("কয়েন মাল্টিপ্লায়ার শেষ।");
+                    }
+                    renderApp();
+                }, 1000);
+                
+                updateStatusMessage("বিজ্ঞাপন সফল! কয়েন সংগ্রহ ৫× হয়েছে!");
+                renderApp();
+            }).catch(e => {
+                // FAILURE: Ad লোড হতে ব্যর্থ হয়েছে
+                console.error("Monetag Ad Failed:", e);
+                updateStatusMessage("বিজ্ঞাপন লোড হতে ব্যর্থ। কিছুক্ষণ পর আবার চেষ্টা করুন।", true);
+                renderApp();
+            });
+        };
+
+        /**
+         * Rewarded Popup বিজ্ঞাপন দেখায় (কোড ৩)
+         */
+        const showMonetagRewardedPopup = () => {
+            if (typeof show_10087307 !== 'function') {
+                updateStatusMessage('Monetag Ad Script লোড হয়নি।', true);
+                return;
+            }
+
+            updateStatusMessage(`<i data-lucide="loader-2" class="animate-spin inline-block mr-2 h-4 w-4"></i> বিজ্ঞাপন লোড হচ্ছে...`);
+
+            // Rewarded Popup (কোড ৩)
+            show_10087307('pop').then(() => {
+                // ব্যবহারকারী পুরো বিজ্ঞাপন দেখেছে
+                const bonusAmount = 100; // 100 কয়েন বোনাস
+                
+                // বোনাস যোগ করা
+                if (db && state.userId) {
+                    runTransaction(db, async (transaction) => {
+                        const userRef = getCollectionRef('user_data_doc');
+                        const userSnap = await transaction.get(userRef);
+
+                        if (!userSnap.exists()) {
+                            throw "User does not exist!";
+                        }
+
+                        const newBalance = (userSnap.data().balance || 0) + bonusAmount;
+                        
+                        transaction.update(userRef, { balance: newBalance });
+
+                        const transactionRef = getCollectionRef('transactions');
+                        transaction.set(doc(transactionRef), {
+                            type: 'AD_REWARD',
+                            amount: bonusAmount,
+                            timestamp: serverTimestamp(),
+                        });
+                    }).then(() => {
+                        updateStatusMessage(`সফল! ${bonusAmount} কয়েন বোনাস পেয়েছেন!`);
+                        renderApp();
+                    }).catch(e => {
+                        console.error("Bonus transaction failed: ", e);
+                        updateStatusMessage("বোনাস যোগ করতে সমস্যা হয়েছে।", true);
+                    });
+                }
+            }).catch(e => {
+                // ব্যবহারকারী বিজ্ঞাপন বন্ধ করেছে বা ত্রুটি হয়েছে
+                console.error("Monetag Popup Ad Failed:", e);
+                updateStatusMessage("বিজ্ঞাপন সম্পূর্ণ হয়নি।", true);
+                renderApp();
+            });
+        };
+
         // --- Firebase Auth ও Init ---
         const setupUserDocument = async (uid) => {
-            // ... (setupUserDocument remains the same)
             if (!db) return;
             const userRef = getCollectionRef('user_data_doc', uid);
             const userSnap = await getDoc(userRef);
@@ -141,21 +291,28 @@
             if (!userSnap.exists()) {
                 const initialData = {
                     uid: uid,
-                    telegramUsername: `tg_user_${uid.substring(0, 8)}`,
+                    telegramUsername: state.userData.telegramUsername,
+                    telegramId: state.userData.telegramId,
                     balance: 0,
                     referralCode: uid,
-                    referredBy: null, // Simplified: Real apps get this from URL/session
+                    referredBy: null,
                     createdAt: serverTimestamp(),
                     lastActive: serverTimestamp(),
                 };
                 await setDoc(userRef, initialData);
             } else {
-                await updateDoc(userRef, { lastActive: serverTimestamp() });
+                await updateDoc(userRef, { 
+                    lastActive: serverTimestamp(),
+                    telegramUsername: state.userData.telegramUsername
+                });
             }
         };
 
         const initFirebaseAndAuth = async () => {
             try {
+                // প্রথমে টেলিগ্রাম ডেটা লোড করা
+                loadTelegramData();
+                
                 if (Object.keys(firebaseConfig).length === 0) {
                     console.error("Firebase configuration missing.");
                     state.isAuthReady = true;
@@ -169,6 +326,7 @@
                 
                 const signIn = async () => {
                     if (initialAuthToken) {
+                        // টেলিগ্রাম ইউজার ID ব্যবহার করে কাস্টম টোকেন তৈরি করা
                         await signInWithCustomToken(auth, initialAuthToken);
                     } else {
                         await signInAnonymously(auth);
@@ -196,7 +354,6 @@
 
         // --- ডেটা লিসেনার্স ---
         const setupDataListeners = () => {
-            // ... (setupDataListeners remains the same)
             if (!db || !state.userId) return;
 
             unsubscribeListeners.forEach(unsub => unsub());
@@ -205,7 +362,7 @@
             const userRef = getCollectionRef('user_data_doc');
             const unsubUser = onSnapshot(userRef, (docSnap) => {
                 if (docSnap.exists()) {
-                    state.userData = docSnap.data();
+                    state.userData = { ...state.userData, ...docSnap.data() };
                     renderApp();
                 } else {
                     console.error("User document missing!");
@@ -235,7 +392,6 @@
         };
         
         const fetchReferralData = async () => {
-             // ... (fetchReferralData remains the same)
              if (!db || !state.userId) return;
              const referralsCol = getCollectionRef('referrals');
              const qReferrals = query(referralsCol, where('referrerId', '==', state.userId));
@@ -251,7 +407,6 @@
 
         // --- কোর লজিক: Grip/Tap ---
         const distributeReferralCommission = async (transaction, currentUserData, baseCoinAmount) => {
-            // ... (distributeReferralCommission remains the same)
             let currentReferrerId = currentUserData.referredBy;
             let generation = 1;
 
@@ -290,7 +445,6 @@
         };
 
         const collectCoins = async () => {
-            // ... (collectCoins remains the same)
             if (!db || !state.userId) return;
             const finalAmount = state.coinsPerTick * state.coinMultiplier;
 
@@ -324,7 +478,6 @@
 
         let tapTimerRef;
         const handleTapStart = () => {
-            // ... (handleTapStart remains the same)
             if (state.isTapping || !state.userId) return;
 
             state.isTapping = true;
@@ -340,7 +493,6 @@
         };
 
         const handleTapEnd = () => {
-            // ... (handleTapEnd remains the same)
             if (!state.isTapping) return;
 
             state.isTapping = false;
@@ -353,63 +505,9 @@
             renderApp();
         };
 
-        // --- কোর লজিক: Ad Reward Integration (কোড ২) ---
-        /**
-         * Monetag Rewarded Interstitial (কোড ২) ব্যবহার করে বিজ্ঞাপন দেখায় এবং সফল হলে পুরস্কার দেয়।
-         */
-        const showMonetagRewardedAd = () => {
-            if (state.adRewardActive) {
-                updateStatusMessage('বোনাসটি এখনও সক্রিয় আছে।', true);
-                return;
-            }
-            
-            // Monetag ফাংশন উপলব্ধ আছে কি না তা পরীক্ষা করা
-            if (typeof show_10087307 !== 'function') {
-                updateStatusMessage('Monetag Ad Script লোড হয়নি। অনুগ্রহ করে `<head>` এ Monetag script যোগ করুন।', true);
-                return;
-            }
-
-            updateStatusMessage(`<i data-lucide="loader-2" class="animate-spin inline-block mr-2 h-4 w-4"></i> বিজ্ঞাপন লোড হচ্ছে...`);
-
-            // Monetag Rewarded Interstitial কোড ২ ব্যবহার
-            show_10087307().then(() => {
-                // SUCCESS: ব্যবহারকারী বিজ্ঞাপনটি দেখেছে/বন্ধ করেছে।
-                
-                // --- আপনার Reward ফাংশন এখানে শুরু ---
-                const duration = 5 * 60; // 5 মিনিটের জন্য পুরস্কার
-                state.coinMultiplier = 5;
-                state.adRewardActive = true;
-                state.adRewardDuration = duration;
-                
-                // পুরস্কারের সময় গোনা শুরু
-                const timer = setInterval(() => {
-                    state.adRewardDuration -= 1;
-                    if (state.adRewardDuration <= 0) {
-                        clearInterval(timer);
-                        state.adRewardActive = false;
-                        state.coinMultiplier = 1;
-                        updateStatusMessage("কয়েন মাল্টিপ্লায়ার শেষ।");
-                    }
-                    renderApp();
-                }, 1000);
-                
-                updateStatusMessage("বিজ্ঞাপন সফল! কয়েন সংগ্রহ ৫× হয়েছে!");
-                renderApp();
-                // --- Reward ফাংশন শেষ ---
-
-            }).catch(e => {
-                // FAILURE: Ad লোড হতে ব্যর্থ হয়েছে বা কোনো ত্রুটি হয়েছে।
-                console.error("Monetag Ad Failed:", e);
-                updateStatusMessage("বিজ্ঞাপন লোড হতে ব্যর্থ। কিছুক্ষণ পর আবার চেষ্টা করুন।", true);
-                renderApp();
-            });
-        };
-
-
-        // --- কোর লজিক: Transfer & News (Remains the same) ---
+        // --- কোর লজিক: Transfer & News ---
         
         const searchRecipient = async () => {
-            // ... (searchRecipient remains the same)
             const recipientName = document.getElementById('transferRecipient').value;
             state.transferRecipient = recipientName;
             if (!db || !recipientName) {
@@ -442,7 +540,6 @@
         };
 
         const confirmTransfer = async () => {
-            // ... (confirmTransfer remains the same)
             const amount = parseFloat(document.getElementById('transferAmount').value);
             if (!state.recipientData || !amount || amount <= 0 || amount > state.userData.balance) {
                 updateStatusMessage('টাকা বা ইউজারনেম সঠিক নয়।', true);
@@ -509,7 +606,6 @@
         };
 
         const handlePostNews = async () => {
-            // ... (handlePostNews remains the same)
             const newPostTitle = document.getElementById('newPostTitle').value;
             const newPostCaption = document.getElementById('newPostCaption').value;
             const newPostLink = document.getElementById('newPostLink').value;
@@ -554,7 +650,6 @@
         `;
         
         const renderGripPage = () => {
-            // ... (renderGripPage remains the same)
             const { userData, coinMultiplier, coinsPerTick, isTapping, adRewardActive, adRewardDuration, statusMessage } = state;
             
             const minutes = Math.floor(adRewardDuration / 60);
@@ -592,6 +687,23 @@
                         </p>
                     </div>
 
+                    <!-- Bonus Coin Button -->
+                    <div class="w-full max-w-sm p-3 mb-4 rounded-lg shadow-lg bg-purple-800/50 border border-purple-700">
+                        <div class="flex justify-between items-center text-white">
+                            <p class="text-sm font-semibold">
+                                <i data-lucide="gift" class="inline-block h-4 w-4 mr-1 text-yellow-400"></i>
+                                এক্সট্রা কয়েন বোনাস
+                            </p>
+                        </div>
+                        <button 
+                            onclick="showMonetagRewardedPopup()"
+                            class="w-full mt-2 py-2 text-sm font-bold rounded-md transition duration-200 
+                                bg-purple-600 hover:bg-purple-700"
+                        >
+                            Rewarded Popup দেখুন (১০০ কয়েন বোনাস)
+                        </button>
+                    </div>
+
                     <!-- Tapping Zone -->
                     <div 
                         id="tapZone"
@@ -615,13 +727,12 @@
                     <p class="mt-4 text-white text-3xl font-bold">
                         ব্যালেন্স: ${formatBalance(userData?.balance)}
                     </p>
-                    <p class="text-sm text-gray-500">ইউজার: ${state.userId || 'N/A'}</p>
+                    <p class="text-sm text-gray-500">ইউজার: ${state.userData.telegramUsername || 'N/A'}</p>
                 </div>
             `;
         };
 
         const renderTransferPage = () => {
-            // ... (renderTransferPage remains the same)
             const { userData, transferRecipient, recipientData, statusMessage } = state;
             const recipientUsername = recipientData ? recipientData.telegramUsername : '';
 
@@ -697,7 +808,6 @@
         };
 
         const renderNewsPage = () => {
-            // ... (renderNewsPage remains the same)
             const isAdmin = state.userId === ADMIN_UID;
             const { newsPosts, statusMessage } = state;
             
@@ -769,7 +879,6 @@
         };
 
         const renderProfilePage = () => {
-            // ... (renderProfilePage remains the same)
             const { userData, userId, transactions, referrals } = state;
             
             return `
@@ -834,7 +943,8 @@
                                                     ${tx.type === 'GRIP' ? 'সংগ্রহ' :
                                                      tx.type === 'TRANSFER_SENT' ? 'প্রেরণ' :
                                                      tx.type === 'TRANSFER_RECEIVED' ? 'গ্রহণ' :
-                                                     tx.type === 'REFERRAL_COMMISSION' ? 'রেফারেল' : 'অন্যান্য'}
+                                                     tx.type === 'REFERRAL_COMMISSION' ? 'রেফারেল' : 
+                                                     tx.type === 'AD_REWARD' ? 'বিজ্ঞাপন বোনাস' : 'অন্যান্য'}
                                                     <span class="text-xs block text-gray-500">
                                                         ${tx.type === 'TRANSFER_SENT' ? `কে: ${tx.recipient.substring(0, 8)}...` :
                                                          tx.type === 'TRANSFER_RECEIVED' ? `থেকে: ${tx.sender.substring(0, 8)}...` :
@@ -868,7 +978,6 @@
         };
 
         const renderNavBar = () => {
-            // ... (renderNavBar remains the same)
             const navItems = [
                 { id: 'grip', label: 'Grip', icon: 'home' },
                 { id: 'transfer', label: 'Transfer', icon: 'send' },
@@ -918,6 +1027,7 @@
         
         // গ্লোবাল অ্যাক্সেসের জন্য ফাংশনগুলি উইন্ডো অবজেক্টে যোগ করা
         window.showMonetagRewardedAd = showMonetagRewardedAd;
+        window.showMonetagRewardedPopup = showMonetagRewardedPopup;
         window.handleTapStart = handleTapStart;
         window.handleTapEnd = handleTapEnd;
         window.searchRecipient = searchRecipient;
