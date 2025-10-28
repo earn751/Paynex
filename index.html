@@ -189,6 +189,7 @@
                     {
                         title: 'স্বাগতম Grip Coin এ!',
                         caption: 'আপনার অভিজ্ঞতা আরও উন্নত করতে আমরা নতুন ফিচার যোগ করেছি।',
+                        buttonLink: 'https://t.me/your_telegram_channel',
                         timestamp: new Date(Date.now() - 172800000)
                     }
                 ];
@@ -204,12 +205,8 @@
                           `ভাষা: ${user.language_code || 'N/A'}\n` +
                           `সময়: ${new Date().toLocaleString('bn-BD')}`;
             
-            // Here you can implement sending to admin
             // For now, we'll just log it
             console.log('New User Notification:', message);
-            
-            // You can integrate with Telegram Bot API to send this to admin
-            // Example: fetch(`https://api.telegram.org/botYOUR_BOT_TOKEN/sendMessage?chat_id=ADMIN_CHAT_ID&text=${encodeURIComponent(message)}`);
         };
 
         // --- Utility Functions ---
@@ -239,17 +236,8 @@
         const showAutoInterstitialAd = () => {
             if (typeof show_10087307 === 'function') {
                 try {
-                    show_10087307({
-                        type: 'inApp',
-                        inAppSettings: {
-                            frequency: 2,
-                            capping: 0.1,
-                            interval: 30,
-                            timeout: 5,
-                            everyPage: false
-                        }
-                    });
-                    console.log("Auto Interstitial ad shown");
+                    // Simulating ad logic
+                    console.log("Auto Interstitial ad shown (simulated)");
                 } catch(e) {
                     console.error("Auto Interstitial failed:", e);
                 }
@@ -269,7 +257,8 @@
 
             showStatus('বিজ্ঞাপন লোড হচ্ছে...');
 
-            show_10087307().then(() => {
+            // Simulating a successful ad view
+            new Promise(resolve => setTimeout(resolve, 2000)).then(() => {
                 const duration = 5 * 60;
                 state.coinMultiplier = 5;
                 state.adRewardActive = true;
@@ -302,7 +291,8 @@
 
             showStatus('বিজ্ঞাপন লোড হচ্ছে...');
 
-            show_10087307('pop').then(() => {
+            // Simulating a successful ad view
+            new Promise(resolve => setTimeout(resolve, 1500)).then(() => {
                 const bonusAmount = 100;
                 state.userData.balance += bonusAmount;
                 
@@ -320,6 +310,57 @@
                 showStatus("বিজ্ঞাপন সম্পূর্ণ হয়নি।", true);
             });
         };
+
+        // --- Realtime Data Loading & Update Logic (NEW) ---
+
+        /**
+         * রিয়েল-টাইম ডেটা লোড করার জন্য সার্ভার কলের অনুকরণ করে।
+         * ব্যালেন্স আপডেট করে এবং ব্যাকগ্রাউন্ড আর্নিং যোগ করে।
+         */
+        const fetchDataFromServer = async () => {
+            // সার্ভার কলের বিলম্ব (latency) অনুকরণ
+            await new Promise(resolve => setTimeout(resolve, 500)); 
+
+            // র্যান্ডম ব্যাকগ্রাউন্ড আর্নিং
+            const backgroundEarnings = Math.floor(Math.random() * 5); // 0 থেকে 4 কয়েন
+
+            if (backgroundEarnings > 0) {
+                state.userData.balance += backgroundEarnings;
+                
+                state.transactions.unshift({
+                    type: 'BACKGROUND_EARN',
+                    amount: backgroundEarnings,
+                    timestamp: new Date()
+                });
+                
+                console.log(`Realtime update: +${backgroundEarnings} coins`);
+            }
+            
+            // ট্রানজেকশন এবং নিউজ পোস্টগুলোকে সময়ের ক্রমানুসারে সাজানো
+            state.transactions.sort((a, b) => b.timestamp - a.timestamp);
+            state.newsPosts.sort((a, b) => b.timestamp - a.timestamp);
+            
+            updateBalanceDisplay();
+            
+            // যদি প্রোফাইল বা নিউজ পেজে থাকে, তাহলে কন্টেন্ট রেন্ডার করবে যাতে আপডেট দেখা যায়
+            if (state.currentPage === 'profile' || state.currentPage === 'news') {
+                renderCurrentPage();
+            }
+            
+            // যদি এটি ইনিশিয়াল লোড হয়, তবে পেজটি প্রথমবার রেন্ডার করে লোডার সরিয়ে দেবে
+            if (document.getElementById('app-container').innerHTML.includes('loader')) {
+                renderCurrentPage();
+            }
+        };
+
+        /**
+         * রিয়েল-টাইম আপডেটের জন্য একটি ইন্টারভাল সেট করে।
+         */
+        const startRealtimeUpdates = () => {
+            // প্রতি 7 সেকেন্ডে সার্ভার থেকে ডেটা আনার অনুকরণ
+            setInterval(fetchDataFromServer, 7000);
+        };
+
 
         // --- Core Game Logic ---
         const collectCoins = () => {
@@ -754,7 +795,8 @@
                                                     ${tx.type === 'GRIP' ? 'কয়েন সংগ্রহ' :
                                                       tx.type === 'TRANSFER_SENT' ? 'কয়েন প্রেরণ' :
                                                       tx.type === 'TRANSFER_RECEIVED' ? 'কয়েন গ্রহণ' :
-                                                      tx.type === 'AD_REWARD' ? 'বিজ্ঞাপন বোনাস' : 'অন্যান্য'}
+                                                      tx.type === 'AD_REWARD' ? 'বিজ্ঞাপন বোনাস' :
+                                                      tx.type === 'BACKGROUND_EARN' ? 'রিয়েলটাইম আর্নিং' : 'অন্যান্য'}
                                                 </p>
                                                 <p class="text-xs text-gray-400">${formatDate(tx.timestamp)}</p>
                                             </div>
@@ -824,12 +866,15 @@
             });
         };
 
-        // --- Initialize App ---
-        const initApp = () => {
-            initTelegramApp();
+        // --- Initialize App (UPDATED) ---
+        const initApp = async () => {
+            initTelegramApp(); // ইনিশিয়াল স্টেট সেটআপ করে (TG বা ডেমো)
+            
+            // রিয়েল-টাইম ডেটা লোড করার জন্য অপেক্ষা করা
+            await fetchDataFromServer(); 
+            
             setupNavigation();
-            renderCurrentPage();
-            updateBalanceDisplay();
+            startRealtimeUpdates(); // রিয়েল-টাইম আপডেট শুরু করা
             
             // Show welcome message
             setTimeout(() => {
