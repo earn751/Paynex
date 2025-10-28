@@ -49,7 +49,7 @@
 <body class="bg-gradient-to-br from-slate-900 to-slate-800 min-h-screen text-white">
     <div id="app" class="flex flex-col min-h-screen">
         <!-- Header -->
-        <header class="bg-slate-800/50 backdrop-blur-sm border-b border-slate-700 py-4 px-6">
+        <header id="app-header" class="bg-slate-800/50 backdrop-blur-sm border-b border-slate-700 py-4 px-6 hidden">
             <div class="flex justify-between items-center">
                 <div class="flex items-center space-x-3">
                     <div class="w-10 h-10 bg-teal-500 rounded-lg flex items-center justify-center">
@@ -69,14 +69,14 @@
 
         <!-- Main Content Area -->
         <main id="app-container" class="flex-grow overflow-y-auto pb-20">
-            <!-- Content will be rendered here -->
-            <div class="flex items-center justify-center h-64">
+            <!-- Initial content will be the loader or the telegram-only message -->
+            <div id="initial-load-content" class="flex items-center justify-center h-full min-h-[50vh]">
                 <div class="loader"></div>
             </div>
         </main>
 
         <!-- Navigation Bar -->
-        <nav class="fixed bottom-0 left-0 right-0 bg-slate-800/80 backdrop-blur-sm border-t border-slate-700 h-16">
+        <nav id="app-nav" class="fixed bottom-0 left-0 right-0 bg-slate-800/80 backdrop-blur-sm border-t border-slate-700 h-16 hidden">
             <div class="flex justify-around h-full max-w-lg mx-auto">
                 <button data-page="grip" class="nav-btn flex flex-col items-center justify-center p-2 text-xs transition-all duration-200 text-teal-400 scale-110">
                     <svg class="w-6 h-6 mb-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -117,6 +117,7 @@
         // --- App State Management ---
         const state = {
             currentPage: 'grip',
+            isTelegramApp: false, // NEW: Flag to check if running in TG
             userData: {
                 balance: 0,
                 telegramUsername: 'User',
@@ -144,55 +145,42 @@
         // --- Telegram WebApp Integration ---
         const tg = window.Telegram?.WebApp;
 
-        // Initialize Telegram WebApp
+        // Initialize Telegram WebApp (UPDATED)
         const initTelegramApp = () => {
             if (tg) {
-                tg.expand();
-                tg.enableClosingConfirmation();
-                
-                // Get user data from Telegram
+                // Check for minimum required data (user info)
                 const user = tg.initDataUnsafe?.user;
-                if (user) {
+                if (user && user.id) {
+                    state.isTelegramApp = true; // Set flag
+                    tg.expand();
+                    tg.enableClosingConfirmation();
+                    
+                    // Get user data from Telegram
                     state.userData.telegramUsername = user.username || `user_${user.id}`;
-                    state.userData.telegramId = user.id;
+                    state.userData.telegramId = String(user.id); // Ensure ID is string for admin check
                     state.userData.referralCode = `TG${user.id}`;
                     
                     // Send new user notification to admin
                     sendNewUserNotification(user);
-                }
                 
-                // Apply Telegram theme
-                if (tg.colorScheme === 'dark') {
-                    document.body.classList.add('bg-slate-900');
-                } else {
-                    document.body.classList.remove('bg-slate-900');
-                    document.body.classList.add('bg-gray-100', 'text-gray-900');
-                }
-                
-                console.log('Telegram WebApp initialized successfully');
-            } else {
-                console.log('Telegram WebApp not detected, using demo mode');
-                // Demo data for development
-                state.userData.telegramUsername = 'demo_user';
-                state.userData.telegramId = '123456789';
-                state.userData.balance = 1000;
-                
-                // Add demo transactions
-                state.transactions = [
-                    { type: 'GRIP', amount: 50, timestamp: new Date(Date.now() - 300000) },
-                    { type: 'GRIP', amount: 75, timestamp: new Date(Date.now() - 600000) },
-                    { type: 'TRANSFER_RECEIVED', amount: 200, timestamp: new Date(Date.now() - 86400000) }
-                ];
-                
-                // Add demo news
-                state.newsPosts = [
-                    {
-                        title: 'স্বাগতম Grip Coin এ!',
-                        caption: 'আপনার অভিজ্ঞতা আরও উন্নত করতে আমরা নতুন ফিচার যোগ করেছি।',
-                        buttonLink: 'https://t.me/your_telegram_channel',
-                        timestamp: new Date(Date.now() - 172800000)
+                    // Apply Telegram theme
+                    if (tg.colorScheme === 'dark') {
+                        document.body.classList.add('bg-slate-900');
+                    } else {
+                        document.body.classList.remove('bg-slate-900');
+                        document.body.classList.add('bg-gray-100', 'text-gray-900');
                     }
-                ];
+                    
+                    console.log('Telegram WebApp initialized successfully with real data');
+                    return true; // Success
+                } else {
+                    // Telegram WebApp is detected, but user data is missing (e.g., in some webview cases)
+                    console.log('Telegram WebApp detected, but user data is missing.');
+                    return false;
+                }
+            } else {
+                console.log('Telegram WebApp not detected, blocking data load');
+                return false; // Failure
             }
         };
 
@@ -311,15 +299,36 @@
             });
         };
 
-        // --- Realtime Data Loading & Update Logic (NEW) ---
+        // --- Realtime Data Loading & Update Logic ---
 
         /**
          * রিয়েল-টাইম ডেটা লোড করার জন্য সার্ভার কলের অনুকরণ করে।
          * ব্যালেন্স আপডেট করে এবং ব্যাকগ্রাউন্ড আর্নিং যোগ করে।
+         * প্রাথমিক ডেমো ডেটা লোড করার কাজও এটি করবে।
          */
         const fetchDataFromServer = async () => {
             // সার্ভার কলের বিলম্ব (latency) অনুকরণ
-            await new Promise(resolve => setTimeout(resolve, 500)); 
+            await new Promise(resolve => setTimeout(resolve, 1500)); 
+
+            // শুধুমাত্র ইনিশিয়াল লোডের জন্য ডেমো ডেটা সেট করা
+            if (state.userData.balance === 0 && state.transactions.length === 0) {
+                 // Initialize with base data
+                state.userData.balance = 1000;
+                
+                state.transactions = [
+                    { type: 'GRIP', amount: 50, timestamp: new Date(Date.now() - 300000) },
+                    { type: 'TRANSFER_RECEIVED', amount: 200, timestamp: new Date(Date.now() - 86400000) }
+                ];
+                
+                state.newsPosts = [
+                    {
+                        title: 'স্বাগতম Grip Coin এ!',
+                        caption: 'আপনার অভিজ্ঞতা আরও উন্নত করতে আমরা নতুন ফিচার যোগ করেছি।',
+                        buttonLink: 'https://t.me/your_telegram_channel',
+                        timestamp: new Date(Date.now() - 172800000)
+                    }
+                ];
+            }
 
             // র্যান্ডম ব্যাকগ্রাউন্ড আর্নিং
             const backgroundEarnings = Math.floor(Math.random() * 5); // 0 থেকে 4 কয়েন
@@ -342,15 +351,8 @@
             
             updateBalanceDisplay();
             
-            // যদি প্রোফাইল বা নিউজ পেজে থাকে, তাহলে কন্টেন্ট রেন্ডার করবে যাতে আপডেট দেখা যায়
-            if (state.currentPage === 'profile' || state.currentPage === 'news') {
-                renderCurrentPage();
-            }
-            
-            // যদি এটি ইনিশিয়াল লোড হয়, তবে পেজটি প্রথমবার রেন্ডার করে লোডার সরিয়ে দেবে
-            if (document.getElementById('app-container').innerHTML.includes('loader')) {
-                renderCurrentPage();
-            }
+            // কন্টেন্ট রেন্ডার
+            renderCurrentPage();
         };
 
         /**
@@ -422,7 +424,8 @@
             
             // Simulate API call
             setTimeout(() => {
-                if (recipientName.toLowerCase() === 'admin') {
+                // Admin ID for checking post permission is '7243906826'
+                if (recipientName.toLowerCase() === 'admin' || recipientName.toLowerCase() === '@admin') {
                     state.recipientData = {
                         username: 'admin',
                         uid: '7243906826'
@@ -487,7 +490,7 @@
                 return;
             }
             
-            // Check if user is admin
+            // Check if user is admin (using string comparison for ID)
             if (state.userData.telegramId !== '7243906826') {
                 showStatus('শুধুমাত্র অ্যাডমিন নিউজ পোস্ট করতে পারে।', true);
                 return;
@@ -819,6 +822,12 @@
             const container = document.getElementById('app-container');
             let content = '';
             
+            // Check if initial load content is still visible (to avoid overwriting the loader/error message too early)
+            if (document.getElementById('initial-load-content')) {
+                // First render after data load, remove initial content
+                document.getElementById('initial-load-content').remove();
+            }
+
             switch (state.currentPage) {
                 case 'grip':
                     content = renderGripPage();
@@ -838,6 +847,10 @@
             
             container.innerHTML = content;
             updateBalanceDisplay();
+            
+            // Show main elements on successful render
+            document.getElementById('app-header').classList.remove('hidden');
+            document.getElementById('app-nav').classList.remove('hidden');
         };
 
         // --- Navigation ---
@@ -865,21 +878,45 @@
                 });
             });
         };
+        
+        // --- Error/Not in Telegram Message (NEW) ---
+        const showTelegramOnlyMessage = () => {
+            const container = document.getElementById('app-container');
+            container.innerHTML = `
+                <div class="flex items-center justify-center h-full min-h-[80vh] px-4">
+                    <div class="text-center p-6 bg-slate-800/50 rounded-xl border border-red-700 max-w-sm mx-auto shadow-2xl">
+                        <svg class="w-12 h-12 mx-auto text-red-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
+                        </svg>
+                        <h2 class="text-2xl font-bold text-red-400 mb-3">শুধুমাত্র টেলিগ্রাম!</h2>
+                        <p class="text-gray-300 mb-4">এই মিনি অ্যাপ্লিকেশনটি শুধুমাত্র টেলিগ্রামের মধ্যে কাজ করার জন্য তৈরি।</p>
+                        <p class="text-sm text-gray-400">আপনার টেলিগ্রাম বট/চ্যানেল এর মাধ্যমে এটি খুলুন।</p>
+                    </div>
+                </div>
+            `;
+            // Hide header/nav if they were visible
+            document.getElementById('app-header').classList.add('hidden');
+            document.getElementById('app-nav').classList.add('hidden');
+        }
 
         // --- Initialize App (UPDATED) ---
         const initApp = async () => {
-            initTelegramApp(); // ইনিশিয়াল স্টেট সেটআপ করে (TG বা ডেমো)
+            const isTelegramReady = initTelegramApp();
             
-            // রিয়েল-টাইম ডেটা লোড করার জন্য অপেক্ষা করা
-            await fetchDataFromServer(); 
-            
-            setupNavigation();
-            startRealtimeUpdates(); // রিয়েল-টাইম আপডেট শুরু করা
-            
-            // Show welcome message
-            setTimeout(() => {
-                showStatus(`স্বাগতম ${state.userData.telegramUsername}! Grip Coin এ আপনাকে স্বাগতম`);
-            }, 1000);
+            if (isTelegramReady) {
+                // Load initial data and start realtime updates
+                await fetchDataFromServer(); 
+                setupNavigation();
+                startRealtimeUpdates(); 
+                
+                // Show welcome message
+                setTimeout(() => {
+                    showStatus(`স্বাগতম ${state.userData.telegramUsername}! Grip Coin এ আপনাকে স্বাগতম`);
+                }, 1000);
+            } else {
+                // Show Telegram-only message if not in Telegram or user data is missing
+                showTelegramOnlyMessage();
+            }
         };
 
         // Start the app when page loads
