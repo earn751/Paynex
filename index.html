@@ -2,1458 +2,852 @@
 <html lang="bn">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>HiGriP - Telegram Mini App</title>
-    <meta name="description" content="A modern, digital Telegram Mini Web App for coin gripping and transfer.">
-    <!-- Telegram WebApp API -->
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <!-- Monetag Integration -->
-    <script src="https.static.monetag.com/tag.js"></script>
-    <!-- Font Awesome for Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    
-    <!-- --- START: STYLE.CSS (Embedded) --- -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Grip Coin Mini App</title>
+    <!-- Tailwind CSS from CDN (production use) -->
+    <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        /* --- Global Variables (Telegram Theme Match) --- */
-        :root {
-            --tg-bg: var(--tg-theme-bg-color, #212121);
-            --tg-text: var(--tg-theme-text-color, #ffffff);
-            --tg-hint: var(--tg-theme-hint-color, #aaaaaa);
-            --tg-link: var(--tg-theme-link-color, #65b8eb);
-            --tg-button: var(--tg-theme-button-color, #54a9eb);
-            --tg-button-text: var(--tg-theme-button-text-color, #ffffff);
-            --accent-glow: #65b8eb;
-            --card-bg: rgba(255, 255, 255, 0.05);
-            --card-hover-bg: rgba(255, 255, 255, 0.1);
-            --shadow-color: rgba(0, 0, 0, 0.5);
-            --border-radius: 12px;
-        }
-
-        /* --- Base Styling --- */
+        @import url('https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&display=swap');
         * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+            font-family: 'Hind Siliguri', sans-serif;
         }
-
-        body {
-            background-color: var(--tg-bg);
-            color: var(--tg-text);
-            transition: background-color 0.3s, color 0.3s;
-            min-height: 100vh;
-            padding-bottom: 70px; /* Space for fixed nav-bar */
-            overscroll-behavior: none;
-        }
-
-        #app-container {
-            max-width: 500px;
-            margin: 0 auto;
-            width: 100%;
-        }
-
-        /* --- Loading Spinner --- */
-        .loading-spinner {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            text-align: center;
-            font-size: 1.5rem;
-            color: var(--tg-link);
-        }
-        .loading-spinner i {
-            animation: spin 1.5s linear infinite;
-            display: block;
-            margin-bottom: 10px;
+        .loader {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #0d9488;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
         }
         @keyframes spin {
-            to { transform: rotate(360deg); }
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
-
-        /* --- Typography and Structure --- */
-        h2, h3, h4 {
-            margin: 15px 0 10px 0;
-            color: var(--tg-text);
-        }
-        .section {
-            padding: 20px 15px;
-            display: none;
-            animation: fadeIn 0.3s ease-in-out;
-        }
-        .section.active {
-            display: block;
-        }
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        /* --- Utility Classes --- */
-        .card {
-            background-color: var(--card-bg);
-            padding: 15px;
-            border-radius: var(--border-radius);
-            margin-bottom: 10px;
-            box-shadow: 0 4px 8px var(--shadow-color);
-        }
-        .form-group {
-            margin-bottom: 15px;
-        }
-        .flex-row-end {
-            display: flex;
-            justify-content: flex-end;
-            margin-bottom: 15px;
-        }
-        .error-message {
-            color: #ff4d4f;
-            margin-top: 5px;
-            font-size: 0.9em;
-        }
-
-        /* --- Header & Profile --- */
-        header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 10px 15px;
-            border-bottom: 1px solid var(--card-bg);
-        }
-        .header-user-info {
-            display: flex;
-            align-items: center;
-            font-weight: bold;
-        }
-        .current-balance {
-            font-size: 1.1em;
-            font-weight: bold;
-            color: var(--accent-glow);
-        }
-        .round-profile-pic {
-            width: 35px;
-            height: 35px;
-            border-radius: 50%;
-            margin-right: 10px;
-            object-fit: cover;
-            border: 2px solid var(--tg-button);
-        }
-        .large-pic {
-            width: 80px;
-            height: 80px;
-            margin: 0 auto 10px auto;
-            display: block;
-        }
-        .profile-header {
-            text-align: center;
-            margin-bottom: 20px;
-        }
-
-        /* --- Inputs & Buttons --- */
-        .styled-input {
-            width: 100%;
-            padding: 12px;
-            margin-top: 5px;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: var(--border-radius);
-            background-color: var(--card-bg);
-            color: var(--tg-text);
-            font-size: 1em;
-            transition: border-color 0.3s, box-shadow 0.3s;
-        }
-        .styled-input:focus {
-            outline: none;
-            border-color: var(--tg-link);
-            box-shadow: 0 0 8px rgba(101, 184, 235, 0.5);
-        }
-        /* Placeholder color for dark mode */
-        .styled-input::placeholder {
-            color: var(--tg-hint);
-            opacity: 0.7;
-        }
-
-        button {
-            padding: 12px 20px;
-            border: none;
-            border-radius: var(--border-radius);
-            cursor: pointer;
-            font-weight: bold;
-            font-size: 1em;
-            transition: background-color 0.2s, transform 0.1s, box-shadow 0.2s;
-        }
-
-        .primary-btn {
-            background-color: var(--tg-button);
-            color: var(--tg-button-text);
-            box-shadow: 0 4px 8px rgba(84, 169, 235, 0.4);
-        }
-        .primary-btn:active {
-            transform: scale(0.98);
-            box-shadow: none;
-        }
-        .secondary-btn {
-            background-color: var(--card-bg);
-            color: var(--tg-text);
-            border: 1px solid var(--tg-button);
-        }
-        .secondary-btn:active {
-            transform: scale(0.98);
-        }
-        .glow-btn {
-            box-shadow: 0 0 10px var(--accent-glow);
-        }
-
-        /* --- Navigation Bar --- */
-        .nav-bar {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            display: flex;
-            justify-content: space-around;
-            align-items: center;
-            height: 60px;
-            background-color: var(--tg-bg);
-            border-top: 1px solid var(--card-bg);
-            box-shadow: 0 -2px 10px var(--shadow-color);
-            z-index: 10;
-            max-width: 500px;
-            margin: 0 auto;
-        }
-        .nav-btn {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            background: none;
-            color: var(--tg-hint);
-            padding: 0;
-            height: 100%;
-            flex-grow: 1;
-            border-radius: 0;
-            font-size: 0.75em;
-            transition: color 0.3s, text-shadow 0.3s;
-        }
-        .nav-btn i {
-            font-size: 1.2em;
-            margin-bottom: 2px;
-        }
-        .nav-btn.active {
-            color: var(--tg-link);
-            text-shadow: 0 0 5px var(--accent-glow);
-        }
-        .nav-btn:active {
-            transform: scale(0.95);
-        }
-
-        /* --- Grip Section Specifics --- */
-        .coin-counter-large {
-            text-align: center;
-            font-size: 2.5em;
-            font-weight: 900;
-            color: var(--tg-text);
-            margin-bottom: 20px;
-            text-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
-        }
-        .grip-area {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 250px;
-        }
-        .grip-button {
-            width: 150px;
-            height: 150px;
-            border-radius: 50%;
-            background-color: var(--tg-button);
-            color: var(--tg-button-text);
-            font-size: 4em;
-            line-height: 150px;
-            box-shadow: 0 0 20px var(--tg-button), inset 0 0 10px rgba(255, 255, 255, 0.5);
-            transition: transform 0.1s, box-shadow 0.3s;
-            border: 5px solid rgba(255, 255, 255, 0.2);
-            animation: pulse 2s infinite ease-in-out;
-        }
-        .grip-button:active {
-            transform: scale(0.95);
-            box-shadow: 0 0 5px var(--tg-button), inset 0 0 5px rgba(255, 255, 255, 0.3);
-            animation: none;
+        .pulse-animation {
+            animation: pulse 2s infinite;
         }
         @keyframes pulse {
-            0% { transform: scale(1); box-shadow: 0 0 20px var(--tg-button); }
-            50% { transform: scale(1.03); box-shadow: 0 0 30px var(--tg-button); }
-            100% { transform: scale(1); box-shadow: 0 0 20px var(--tg-button); }
-        }
-
-        .grip-info-bar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-top: 20px;
-            padding: 10px;
-            background-color: var(--card-bg);
-            border-radius: var(--border-radius);
-        }
-        .multiplier-display {
-            font-size: 1.1em;
-            font-weight: bold;
-        }
-        .glow-text {
-            color: var(--accent-glow);
-            text-shadow: 0 0 8px var(--accent-glow);
-        }
-
-        /* --- Particle Animation (CSS) --- */
-        .particle-container {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            width: 1px;
-            height: 1px;
-            pointer-events: none;
-            overflow: visible;
-        }
-        .coin-particle {
-            position: absolute;
-            width: 15px;
-            height: 15px;
-            font-size: 12px;
-            text-align: center;
-            line-height: 15px;
-            color: gold;
-            opacity: 0;
-            user-select: none;
-            pointer-events: none;
-            /* Initial position: center of the grip button */
-            transform: translate(-50%, -50%); 
-            animation: coinRise 1s ease-out forwards;
-        }
-
-        @keyframes coinRise {
-            0% { opacity: 1; transform: translate(-50%, -50%); }
-            20% { opacity: 1; }
-            100% { opacity: 0; transform: translate(calc(var(--rand-x) * 1px), calc(var(--rand-y) * 1px - 100px)) scale(0.5); }
-        }
-
-        /* --- News Feed --- */
-        .news-feed {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-            margin-top: 15px;
-        }
-        .news-card {
-            background-color: var(--card-bg);
-            padding: 15px;
-            border-radius: var(--border-radius);
-            box-shadow: 0 2px 5px var(--shadow-color);
-        }
-        .news-card h4 {
-            margin-top: 0;
-            color: var(--tg-link);
-        }
-        .news-card p {
-            margin: 10px 0;
-            color: var(--tg-hint);
-        }
-        .news-card .news-btn {
-            width: 100%;
-            margin-top: 10px;
-            background-color: var(--tg-link);
-            color: var(--tg-button-text);
-        }
-
-        /* --- Transfer Section --- */
-        .transfer-result-card {
-            margin-top: 15px;
-            padding: 15px;
-            background-color: var(--card-bg);
-            border-radius: var(--border-radius);
-        }
-        .transfer-result-card .result-info {
-            font-weight: bold;
-            color: var(--tg-text);
-            margin-bottom: 10px;
-            border-bottom: 1px dashed rgba(255, 255, 255, 0.1);
-            padding-bottom: 10px;
-        }
-        .transfer-form-card {
-            padding-top: 10px;
-        }
-        #confirm-transfer {
-            width: 100%;
-            margin-top: 10px;
-        }
-
-        /* --- Profile Specifics --- */
-        .ref-card, .history-card {
-            margin-top: 15px;
-        }
-        .ref-link-group {
-            display: flex;
-            gap: 10px;
-        }
-        .ref-link-group input {
-            flex-grow: 1;
-        }
-        .history-filters {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 10px;
-        }
-        .history-filters .filter-btn {
-            padding: 8px 15px;
-            font-size: 0.9em;
-            background-color: rgba(255, 255, 255, 0.1);
-            color: var(--tg-hint);
-        }
-        .history-filters .filter-btn.active {
-            background-color: var(--tg-button);
-            color: var(--tg-button-text);
-        }
-        .transaction-list {
-            max-height: 200px;
-            overflow-y: auto;
-            padding-right: 5px;
-        }
-        .transaction-list div {
-            padding: 5px 0;
-            border-bottom: 1px dotted rgba(255, 255, 255, 0.1);
-            font-size: 0.9em;
-        }
-        .ref-tree-view {
-            padding-left: 10px;
-        }
-        .ref-tree-view ul {
-            list-style: none;
-            padding-left: 15px;
-            border-left: 1px dashed var(--tg-hint);
-        }
-        .ref-tree-view li {
-            padding: 5px 0;
-            font-size: 0.9em;
-            color: var(--tg-hint);
-        }
-        .ref-tree-view li strong {
-            color: var(--tg-text);
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
         }
     </style>
-    <!-- --- END: STYLE.CSS (Embedded) --- -->
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <!-- Monetag Script -->
+    <script type="text/javascript">
+        (function() {
+            var script = document.createElement('script');
+            script.type = 'text/javascript';
+            script.src = '//monetag.com/some-path/loader.js';
+            script.async = true;
+            document.head.appendChild(script);
+        })();
+    </script>
 </head>
-<body>
-    <div id="app-container">
-        <!-- Loading Spinner (Initially Visible) -->
-        <div id="loading-spinner" class="loading-spinner">
-            <i class="fas fa-spinner fa-spin"></i>
-            <p>Loading Mini App...</p>
-        </div>
-
-        <!-- Main Content (Hidden until Telegram.WebApp.ready) -->
-        <div id="main-content" style="display: none;">
-
-            <!-- Header -->
-            <header>
-                <div class="header-user-info">
-                    <img id="header-profile-pic" src="" alt="P" class="round-profile-pic">
-                    <span id="header-username"></span>
+<body class="bg-gradient-to-br from-slate-900 to-slate-800 min-h-screen text-white">
+    <div id="app" class="flex flex-col min-h-screen">
+        <!-- Header -->
+        <header class="bg-slate-800/50 backdrop-blur-sm border-b border-slate-700 py-4 px-6">
+            <div class="flex justify-between items-center">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 bg-teal-500 rounded-lg flex items-center justify-center">
+                        <span class="text-xl font-bold">👊</span>
+                    </div>
+                    <div>
+                        <h1 class="text-xl font-bold text-teal-400">Grip Coin</h1>
+                        <p class="text-xs text-gray-400">টেলিগ্রাম Mini App</p>
+                    </div>
                 </div>
-                <div class="current-balance">
-                    <i class="fas fa-coins"></i> <span id="header-balance">0</span> কয়েন
+                <div id="user-balance" class="text-right">
+                    <p class="text-sm text-gray-400">ব্যালেন্স</p>
+                    <p class="text-xl font-bold text-white">0</p>
                 </div>
-            </header>
-            
-            <main>
-                <!-- 1. Grip Section (👊) -->
-                <section id="grip-section" class="section active">
-                    <div class="coin-counter-large">
-                        <span id="coin-counter-text">0</span> কয়েন
-                    </div>
-                    
-                    <div class="grip-area">
-                        <button id="grip-btn" class="grip-button">
-                            <i class="fas fa-hand-rock"></i>
-                        </button>
-                    </div>
+            </div>
+        </header>
 
-                    <div class="grip-info-bar">
-                        <div class="multiplier-display">
-                            Multiplier: <span id="multiplier-text" class="glow-text">1x</span>
-                        </div>
-                        <button id="watch-ad-btn" class="secondary-btn glow-btn" style="display:none">
-                            <i class="fas fa-video"></i> Watch Ad for 5x Boost
-                        </button>
-                    </div>
+        <!-- Main Content Area -->
+        <main id="app-container" class="flex-grow overflow-y-auto pb-20">
+            <!-- Content will be rendered here -->
+            <div class="flex items-center justify-center h-64">
+                <div class="loader"></div>
+            </div>
+        </main>
 
-                    <div id="particle-container" class="particle-container"></div>
-                </section>
-
-                <!-- 2. Transfer Section (🔄) -->
-                <section id="transfer-section" class="section">
-                    <h2><i class="fas fa-exchange-alt"></i> কয়েন ট্রান্সফার</h2>
-                    <div class="form-group">
-                        <input type="text" id="username-input" placeholder="@username বা ইউজার আইডি" class="styled-input" />
-                        <button id="search-btn" class="primary-btn"><i class="fas fa-search"></i> Search User</button>
-                    </div>
-                    
-                    <div id="user-result" class="transfer-result-card" style="display:none">
-                        <div class="result-info">
-                            <i class="fas fa-user-check"></i> Found: <span id="found-username"></span> (<span id="found-id"></span>)
-                        </div>
-                        <div id="transfer-form" class="transfer-form-card">
-                            <input type="number" id="amount-input" placeholder="কয়েন পরিমাণ" class="styled-input" />
-                            <button id="confirm-transfer" class="primary-btn"><i class="fas fa-paper-plane"></i> Transfer Now</button>
-                            <p class="error-message" id="transfer-error" style="display:none"></p>
-                        </div>
-                    </div>
-                </section>
-
-                <!-- 3. News Section (📰) -->
-                <section id="news-section" class="section">
-                    <div class="flex-row-end">
-                        <button id="admin-post-btn" class="primary-btn glow-btn" style="display:none">
-                            <i class="fas fa-plus"></i> Post News
-                        </button>
-                    </div>
-                    
-                    <div id="admin-post-form" class="card post-form" style="display:none">
-                        <h3>New Post</h3>
-                        <input type="text" id="post-title" placeholder="Title" class="styled-input">
-                        <textarea id="post-caption" placeholder="Caption" class="styled-input"></textarea>
-                        <input type="text" id="post-btn-text" placeholder="Button Text (Optional)" class="styled-input">
-                        <input type="url" id="post-btn-link" placeholder="Button Link (URL)" class="styled-input">
-                        <button id="save-post-btn" class="primary-btn">Save Post</button>
-                    </div>
-
-                    <div id="news-feed" class="news-feed">
-                        <!-- News cards will be inserted here -->
-                    </div>
-                    <button id="load-more-news" class="secondary-btn" style="display:none">Load More</button>
-                </section>
-
-                <!-- 4. Profile Section (👤) -->
-                <section id="profile-section" class="section">
-                    <div class="profile-header">
-                        <img src="" id="profile-pic" alt="Profile" class="round-profile-pic large-pic" />
-                        <h3 id="user-name">User Name</h3>
-                        <p id="profile-balance">Balance: 0 কয়েন</p>
-                    </div>
-
-                    <div class="card ref-card">
-                        <h4><i class="fas fa-user-friends"></i> Referral Link</h4>
-                        <div class="form-group ref-link-group">
-                            <input type="text" id="ref-link" readonly class="styled-input" />
-                            <button id="share-ref" class="primary-btn"><i class="fas fa-share-alt"></i> Share & Earn</button>
-                        </div>
-                    </div>
-
-                    <div class="card history-card">
-                        <h4><i class="fas fa-history"></i> Transaction History</h4>
-                        <div class="history-filters">
-                            <button class="filter-btn active" data-filter="all">All</button>
-                            <button class="filter-btn" data-filter="grip">Grip</button>
-                            <button class="filter-btn" data-filter="transfer">Transfer</button>
-                            <button class="filter-btn" data-filter="referral">Referral</button>
-                        </div>
-                        <div id="history-list" class="transaction-list">
-                            <!-- History will be inserted here -->
-                        </div>
-                    </div>
-
-                    <div class="card ref-card">
-                        <h4><i class="fas fa-tree"></i> Referral Dashboard</h4>
-                        <div id="ref-tree" class="ref-tree-view">
-                            <!-- Referral tree will be inserted here -->
-                        </div>
-                    </div>
-                </section>
-            </main>
-
-            <!-- Fixed Bottom Navigation Bar -->
-            <div class="nav-bar">
-                <button data-section="grip" class="nav-btn active">
-                    <i class="fas fa-hand-rock"></i>
-                    <span class="nav-label">Grip</span>
+        <!-- Navigation Bar -->
+        <nav class="fixed bottom-0 left-0 right-0 bg-slate-800/80 backdrop-blur-sm border-t border-slate-700 h-16">
+            <div class="flex justify-around h-full max-w-lg mx-auto">
+                <button data-page="grip" class="nav-btn flex flex-col items-center justify-center p-2 text-xs transition-all duration-200 text-teal-400 scale-110">
+                    <svg class="w-6 h-6 mb-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                    </svg>
+                    <span class="font-medium">Grip</span>
                 </button>
-                <button data-section="transfer" class="nav-btn">
-                    <i class="fas fa-exchange-alt"></i>
-                    <span class="nav-label">Transfer</span>
+                <button data-page="transfer" class="nav-btn flex flex-col items-center justify-center p-2 text-xs transition-all duration-200 text-gray-400 hover:text-teal-300">
+                    <svg class="w-6 h-6 mb-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
+                    </svg>
+                    <span class="font-medium">Transfer</span>
                 </button>
-                <button data-section="news" class="nav-btn">
-                    <i class="fas fa-newspaper"></i>
-                    <span class="nav-label">News</span>
+                <button data-page="news" class="nav-btn flex flex-col items-center justify-center p-2 text-xs transition-all duration-200 text-gray-400 hover:text-teal-300">
+                    <svg class="w-6 h-6 mb-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9"></path>
+                    </svg>
+                    <span class="font-medium">News</span>
                 </button>
-                <button data-section="profile" class="nav-btn">
-                    <i class="fas fa-user-circle"></i>
-                    <span class="nav-label">Profile</span>
+                <button data-page="profile" class="nav-btn flex flex-col items-center justify-center p-2 text-xs transition-all duration-200 text-gray-400 hover:text-teal-300">
+                    <svg class="w-6 h-6 mb-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                    </svg>
+                    <span class="font-medium">Profile</span>
                 </button>
+            </div>
+        </nav>
+
+        <!-- Status Message -->
+        <div id="status-message" class="fixed top-20 left-1/2 transform -translate-x-1/2 z-50 max-w-sm w-full px-4 hidden">
+            <div class="bg-slate-800/90 backdrop-blur-sm border border-slate-600 rounded-lg p-4 shadow-2xl">
+                <p id="status-text" class="text-center text-sm"></p>
             </div>
         </div>
     </div>
-    
-    <!-- --- START: SCRIPT.JS (Embedded) --- -->
+
     <script>
-        /**
-         * HiGriP - Telegram Mini Web App Script
-         * Full Stack Mobile Web Developer (Vanilla JS)
-         */
+        // --- App State Management ---
+        const state = {
+            currentPage: 'grip',
+            userData: {
+                balance: 0,
+                telegramUsername: 'User',
+                telegramId: null,
+                referralCode: 'REF123'
+            },
+            transactions: [],
+            newsPosts: [],
+            referrals: [],
+            
+            // Grip State
+            isTapping: false,
+            tapInterval: null,
+            coinMultiplier: 1,
+            coinsPerTick: 5,
+            adRewardActive: false,
+            adRewardDuration: 0,
 
-        // --- GLOBAL VARIABLES & CONSTANTS ---
-        const ADMIN_UID = 7243906826;
-        const DEFAULT_USER_ID = 999999999; // Fallback for local testing
-        const DEFAULT_USERNAME = "tester_dev";
-        const REFERRAL_COMMISSION = { L1: 0.10, L2: 0.05, L3: 0.02 };
-        const MONETAG_ZONE_ID = 10087307; // Placeholder Zone ID (Used in JS function names)
-        let user = null;
-        let currentMultiplier = 1;
-        let tapCount = 0;
-        let tapTimer = null;
-        let transferCount = 0;
-        let newsItems = [];
-        let displayedNewsCount = 5;
-
-        // --- DOM ELEMENTS ---
-        const elements = {
-            // App Control
-            appContainer: document.getElementById('app-container'),
-            mainContent: document.getElementById('main-content'),
-            loadingSpinner: document.getElementById('loading-spinner'),
-            // Navigation
-            navBar: document.querySelector('.nav-bar'),
-            sections: document.querySelectorAll('.section'),
-            // Header
-            headerBalance: document.getElementById('header-balance'),
-            headerUsername: document.getElementById('header-username'),
-            headerProfilePic: document.getElementById('header-profile-pic'),
-            // Grip
-            coinCounterText: document.getElementById('coin-counter-text'),
-            gripBtn: document.getElementById('grip-btn'),
-            multiplierText: document.getElementById('multiplier-text'),
-            watchAdBtn: document.getElementById('watch-ad-btn'),
-            particleContainer: document.getElementById('particle-container'),
-            // Transfer
-            usernameInput: document.getElementById('username-input'),
-            searchBtn: document.getElementById('search-btn'),
-            userResult: document.getElementById('user-result'),
-            foundUsername: document.getElementById('found-username'),
-            foundId: document.getElementById('found-id'),
-            amountInput: document.getElementById('amount-input'),
-            confirmTransferBtn: document.getElementById('confirm-transfer'),
-            transferError: document.getElementById('transfer-error'),
-            // News
-            adminPostBtn: document.getElementById('admin-post-btn'),
-            adminPostForm: document.getElementById('admin-post-form'),
-            savePostBtn: document.getElementById('save-post-btn'),
-            newsFeed: document.getElementById('news-feed'),
-            loadMoreNewsBtn: document.getElementById('load-more-news'),
-            // Profile
-            profilePic: document.getElementById('profile-pic'),
-            userName: document.getElementById('user-name'),
-            profileBalance: document.getElementById('balance'),
-            refLinkInput: document.getElementById('ref-link'),
-            shareRefBtn: document.getElementById('share-ref'),
-            historyList: document.getElementById('history-list'),
-            refTree: document.getElementById('ref-tree'),
-            filterButtons: document.querySelectorAll('.filter-btn'),
+            // Transfer State
+            transferRecipient: '',
+            transferAmount: '',
+            recipientData: null
         };
 
-        // --- LOCAL STORAGE & DATA HANDLING ---
+        // --- Telegram WebApp Integration ---
+        const tg = window.Telegram?.WebApp;
 
-        /**
-         * Loads data from localStorage or initializes a default value.
-         * @param {string} key - The localStorage key.
-         * @param {*} defaultValue - The value to use if key is not found.
-         * @returns {*} The parsed data or default value.
-         */
-        function loadData(key, defaultValue) {
-            const data = localStorage.getItem(key);
-            try {
-                return data ? JSON.parse(data) : defaultValue;
-            } catch (e) {
-                console.error(`Error loading localStorage key: ${key}`, e);
-                return defaultValue;
-            }
-        }
-
-        /**
-         * Saves data to localStorage.
-         * @param {string} key - The localStorage key.
-         * @param {*} data - The data to save.
-         */
-        function saveData(key, data) {
-            localStorage.setItem(key, JSON.stringify(data));
-        }
-
-        let users = loadData('users', {});
-        newsItems = loadData('news', []);
-        let transfers = loadData('transfers', []);
-
-        // --- TELEGRAM API WRAPPER & INITIALIZATION ---
-
-        /**
-         * Initializes the Telegram Mini App environment.
-         */
-        function initTelegram() {
-            if (!window.Telegram || !Telegram.WebApp) {
-                console.warn("Running outside Telegram environment. Using mock data.");
-                // Mock initDataUnsafe for local testing
-                window.Telegram = {
-                    WebApp: {
-                        initDataUnsafe: {
-                            user: {
-                                id: DEFAULT_USER_ID,
-                                username: DEFAULT_USERNAME,
-                                first_name: "Mock Dev",
-                                photo_url: "https://i.imgur.com/4QzFp4f.png" // Placeholder image
-                            },
-                            start_param: new URLSearchParams(window.location.search).get('start') || null
-                        },
-                        themeParams: {
-                            bg_color: '#212121',
-                            text_color: '#ffffff',
-                            hint_color: '#aaaaaa',
-                            link_color: '#65b8eb',
-                            button_color: '#54a9eb',
-                            button_text_color: '#ffffff',
-                        },
-                        ready: () => { console.log("Mock WebApp ready."); initApp(); },
-                        MainButton: {
-                            isVisible: false,
-                            show: () => { console.log("Mock MainButton show"); },
-                            hide: () => { console.log("Mock MainButton hide"); },
-                            setText: (text) => { console.log(`Mock MainButton text: ${text}`); },
-                            onClick: (callback) => { /* Mock */ },
-                        },
-                        showAlert: (message) => alert(message),
-                        showConfirm: (message, callback) => callback(confirm(message)),
-                        HapticFeedback: {
-                            selectionChanged: () => console.log("Haptic: selectionChanged"),
-                            impactOccurred: (style) => console.log(`Haptic: impactOccurred (${style})`),
-                            notificationOccurred: (type) => console.log(`Haptic: notificationOccurred (${type})`),
-                        },
-                        shareUrl: (url) => console.log(`Sharing URL: ${url}`),
-                        openLink: (url) => window.open(url, '_blank'),
-                        onEvent: (event, callback) => { /* Mock */ },
-                        expand: () => { /* Mock */ },
-                        isClosingConfirmationEnabled: true,
-                    }
-                };
-                // Use setTimeout to simulate the async nature of ready()
-                setTimeout(Telegram.WebApp.ready, 100);
-                return;
-            }
-
-            Telegram.WebApp.ready();
-            Telegram.WebApp.onEvent('themeChanged', applyTheme);
-            Telegram.WebApp.expand();
-            Telegram.WebApp.isClosingConfirmationEnabled = true;
-            
-            initApp();
-        }
-
-        /**
-         * Applies Telegram's theme parameters to CSS variables.
-         */
-        function applyTheme() {
-            const params = Telegram.WebApp.themeParams;
-            const root = document.documentElement;
-
-            root.style.setProperty('--tg-bg', params.bg_color || '#212121');
-            root.style.setProperty('--tg-text', params.text_color || '#ffffff');
-            root.style.setProperty('--tg-hint', params.hint_color || '#aaaaaa');
-            root.style.setProperty('--tg-link', params.link_color || '#65b8eb');
-            root.style.setProperty('--tg-button', params.button_color || '#54a9eb');
-            root.style.setProperty('--tg-button-text', params.button_text_color || '#ffffff');
-            root.style.setProperty('--accent-glow', params.link_color || '#65b8eb');
-        }
-
-        /**
-         * Main application initialization function.
-         */
-        function initApp() {
-            applyTheme();
-            user = initUser();
-            
-            // Set initial display
-            elements.loadingSpinner.style.display = 'none';
-            elements.mainContent.style.display = 'block';
-
-            // UI Updates
-            updateHeaderUI();
-            renderSection('grip'); // Default section
-            
-            // Event Listeners
-            setupListeners();
-        }
-
-        /**
-         * Initializes the current user or loads existing data.
-         * @returns {object} The user object.
-         */
-        function initUser() {
-            const tgUser = Telegram.WebApp.initDataUnsafe.user;
-            const userId = tgUser.id;
-            let currentUser = users[userId];
-
-            if (!currentUser) {
-                // New user setup
-                const startParam = Telegram.WebApp.initDataUnsafe.start_param;
-                const referredByCode = startParam && startParam !== 'HiGriP_bot' ? startParam : null;
-
-                currentUser = {
-                    id: userId,
-                    username: tgUser.username || `user${userId}`,
-                    first_name: tgUser.first_name || "New User",
-                    photo_url: tgUser.photo_url || "",
-                    balance: 50, // Initial bonus
-                    referral_code: `CODE${userId}`,
-                    referred_by: null,
-                    history: [{ timestamp: Date.now(), amount: 50, type: 'Initial Bonus', note: 'Welcome bonus' }],
-                    referrals: { L1: [], L2: [], L3: [] }, // { L1: [{id, username, earnings}], ... }
-                    total_ref_earnings: 0,
-                    transfer_count: 0,
-                };
-                users[userId] = currentUser;
+        // Initialize Telegram WebApp
+        const initTelegramApp = () => {
+            if (tg) {
+                tg.expand();
+                tg.enableClosingConfirmation();
                 
-                // Handle referral link
-                if (referredByCode) {
-                    const referrer = Object.values(users).find(u => u.referral_code === referredByCode);
-                    if (referrer) {
-                        currentUser.referred_by = referrer.id;
-                        addReferral(referrer.id, userId);
-                    }
+                // Get user data from Telegram
+                const user = tg.initDataUnsafe?.user;
+                if (user) {
+                    state.userData.telegramUsername = user.username || `user_${user.id}`;
+                    state.userData.telegramId = user.id;
+                    state.userData.referralCode = `TG${user.id}`;
+                    
+                    // Send new user notification to admin
+                    sendNewUserNotification(user);
                 }
                 
-                saveData('users', users);
-            }
-
-            // Ensure initial balance and transfer count is synced to global state
-            transferCount = currentUser.transfer_count || 0;
-            
-            return currentUser;
-        }
-
-        /**
-         * Updates the user interface elements (Header/Balance).
-         */
-        function updateHeaderUI() {
-            elements.headerBalance.textContent = user.balance.toLocaleString();
-            elements.coinCounterText.textContent = user.balance.toLocaleString(); // Update grip section counter
-            elements.headerUsername.textContent = user.first_name;
-            elements.headerProfilePic.src = user.photo_url || 'https://i.imgur.com/4QzFp4f.png'; // Fallback
-            
-            // Update Profile section elements
-            elements.userName.textContent = user.first_name;
-            elements.profilePic.src = user.photo_url || 'https://i.imgur.com/4QzFp4f.png';
-            elements.profileBalance.textContent = `Balance: ${user.balance.toLocaleString()} কয়েন`;
-            elements.refLinkInput.value = `t.me/YourCoinBot?start=${user.referral_code}`;
-        }
-
-        // --- CORE UTILITY FUNCTIONS ---
-
-        /**
-         * Adds coins to the user's balance and logs the transaction.
-         * @param {number} amount - Amount to add/subtract.
-         * @param {string} type - Transaction type (Grip, Referral, Transfer).
-         * @param {string} [note=''] - Optional note for the history log.
-         */
-        function addCoins(amount, type, note = '') {
-            user.balance += amount;
-            user.history.unshift({
-                timestamp: Date.now(),
-                amount: amount,
-                type: type,
-                note: note
-            });
-            saveData('users', users);
-            updateHeaderUI();
-        }
-
-        /**
-         * Creates and animates a coin particle.
-         * @param {string} text - The text to display (e.g., "+1").
-         */
-        function createCoinParticle(text) {
-            const particle = document.createElement('div');
-            particle.classList.add('coin-particle');
-            particle.textContent = text;
-            
-            // Randomize position and animation target for better scattering
-            const randX = (Math.random() - 0.5) * 100; // -50 to 50
-            const randY = (Math.random() - 0.5) * 50;  // -25 to 25
-
-            particle.style.setProperty('--rand-x', randX);
-            particle.style.setProperty('--rand-y', randY);
-
-            elements.particleContainer.appendChild(particle);
-
-            // Remove after animation (1s defined in CSS)
-            setTimeout(() => {
-                elements.particleContainer.removeChild(particle);
-            }, 1000);
-        }
-
-        // --- NAVIGATION & EVENT LISTENERS ---
-
-        /**
-         * Sets up all main event listeners.
-         */
-        function setupListeners() {
-            elements.navBar.addEventListener('click', handleNavClick);
-            elements.gripBtn.addEventListener('click', handleGripTap);
-            elements.watchAdBtn.addEventListener('click', handleWatchAd);
-            elements.searchBtn.addEventListener('click', handleUserSearch);
-            elements.confirmTransferBtn.addEventListener('click', handleConfirmTransfer);
-            elements.adminPostBtn.addEventListener('click', () => {
-                elements.adminPostForm.style.display = elements.adminPostForm.style.display === 'none' ? 'block' : 'none';
-                Telegram.WebApp.HapticFeedback.selectionChanged();
-            });
-            elements.savePostBtn.addEventListener('click', handleSavePost);
-            elements.loadMoreNewsBtn.addEventListener('click', () => renderNewsFeed(false));
-            elements.shareRefBtn.addEventListener('click', handleShareRef);
-            elements.filterButtons.forEach(btn => btn.addEventListener('click', handleHistoryFilter));
-        }
-
-        /**
-         * Handles navigation clicks (bottom bar).
-         * @param {Event} e 
-         */
-        function handleNavClick(e) {
-            const btn = e.target.closest('.nav-btn');
-            if (btn) {
-                const sectionId = btn.getAttribute('data-section');
-                renderSection(sectionId);
-                Telegram.WebApp.HapticFeedback.selectionChanged();
-            }
-        }
-
-        /**
-         * Renders the active section and updates nav bar.
-         * @param {string} sectionId - The ID of the section to show.
-         */
-        function renderSection(sectionId) {
-            // Update sections
-            elements.sections.forEach(section => {
-                section.classList.remove('active');
-                if (section.id === `${sectionId}-section`) {
-                    section.classList.add('active');
-                }
-            });
-
-            // Update nav buttons
-            document.querySelectorAll('.nav-btn').forEach(btn => {
-                btn.classList.remove('active');
-                if (btn.getAttribute('data-section') === sectionId) {
-                    btn.classList.add('active');
-                }
-            });
-
-            // Specific section renders
-            if (sectionId === 'profile') renderProfile();
-            if (sectionId === 'news') renderNewsFeed(true);
-        }
-
-        // --- 1. GRIP SECTION LOGIC ---
-
-        /**
-         * Starts the 5x multiplier boost for a given duration.
-         * @param {number} seconds - Duration in seconds.
-         */
-        function start5xBoost(seconds) {
-            currentMultiplier = 5;
-            elements.multiplierText.textContent = '5x (Boost)';
-            elements.watchAdBtn.style.display = 'none';
-
-            setTimeout(() => {
-                currentMultiplier = 1;
-                elements.multiplierText.textContent = '1x';
-            }, seconds * 1000);
-        }
-
-        /**
-         * Handles the main grip button tap action.
-         */
-        function handleGripTap() {
-            Telegram.WebApp.HapticFeedback.impactOccurred('light');
-
-            // 1. Multiplier Detection (Quick Tap)
-            tapCount++;
-            if (tapTimer) clearTimeout(tapTimer);
-
-            if (tapCount >= 3 && currentMultiplier < 5) {
-                currentMultiplier = 5;
-                elements.multiplierText.textContent = '5x (Quick)';
-            }
-
-            tapTimer = setTimeout(() => {
-                tapCount = 0;
-                if (elements.multiplierText.textContent.includes('Quick')) {
-                    currentMultiplier = 1;
-                    elements.multiplierText.textContent = '1x';
-                }
-            }, 500); // 500ms window
-
-            // 2. Coin Generation
-            const baseCoins = 1;
-            const coinsEarned = baseCoins * currentMultiplier;
-            addCoins(coinsEarned, 'Grip', `Tapped for ${coinsEarned} coins`);
-
-            // Use Gold Coin emoji (Lottie fallback to CSS particle with text)
-            createCoinParticle(`+${coinsEarned}`); 
-
-            // 3. Referral Commission
-            creditReferrers(coinsEarned);
-
-            // 4. Monetag Ad Button Logic (Show ad button every 100 coins)
-            if (user.balance % 100 < coinsEarned && !elements.multiplierText.textContent.includes('Boost')) {
-                elements.watchAdBtn.style.display = 'block';
-            } else if (user.balance % 100 > 5 && elements.watchAdBtn.style.display !== 'none' && !elements.multiplierText.textContent.includes('Boost')) {
-                elements.watchAdBtn.style.display = 'none';
-            }
-        }
-
-        /**
-         * Credits the referrers based on the current Grip earnings.
-         * @param {number} earned - Coins earned by the current user.
-         */
-        function creditReferrers(earned) {
-            let currentReferrerId = user.referred_by;
-            let level = 1;
-
-            while (currentReferrerId && level <= 3) {
-                const referrer = users[currentReferrerId];
-                if (!referrer) break;
-
-                const commissionRate = REFERRAL_COMMISSION[`L${level}`];
-                const commission = Math.floor(earned * commissionRate);
-
-                if (commission > 0) {
-                    referrer.total_ref_earnings = (referrer.total_ref_earnings || 0) + commission;
-                    
-                    // Add coins to referrer and log
-                    referrer.balance += commission;
-                    referrer.history.unshift({ timestamp: Date.now(), amount: commission, type: 'Referral', note: `L${level} commission from ${user.username}` });
-                    
-                    // Update the referrer's referral list for the tree view
-                    if (!referrer.referrals[`L${level}`]) referrer.referrals[`L${level}`] = [];
-                    
-                    const refEntry = referrer.referrals[`L${level}`].find(r => r.id === user.id);
-                    if (!refEntry) {
-                         referrer.referrals[`L${level}`].push({ id: user.id, username: user.username, earnings: commission });
-                    } else {
-                         refEntry.earnings += commission;
-                    }
-
-                    // Save the referrer's updated data
-                    users[currentReferrerId] = referrer;
-                    
-                    // Move to the next level's referrer
-                    currentReferrerId = referrer.referred_by;
-                    level++;
+                // Apply Telegram theme
+                if (tg.colorScheme === 'dark') {
+                    document.body.classList.add('bg-slate-900');
                 } else {
-                    break;
+                    document.body.classList.remove('bg-slate-900');
+                    document.body.classList.add('bg-gray-100', 'text-gray-900');
                 }
-            }
-            saveData('users', users);
-        }
-
-        /**
-         * Handles the "Watch Ad for 5x Boost" button click.
-         */
-        function handleWatchAd() {
-            // Monetag Rewarded Popup
-            Telegram.WebApp.HapticFeedback.impactOccurred('medium');
-            
-            // Monetag ad function (dynamically created by the monetag script)
-            const monetagShowFunc = window[`show_${MONETAG_ZONE_ID}`]; 
-            
-            if (typeof monetagShowFunc === 'function') {
-                monetagShowFunc('pop').then(() => {
-                    // Reward granted - start the boost
-                    start5xBoost(30); // 30 seconds boost
-                    Telegram.WebApp.showAlert('5x বুস্ট চালু! ৩০ সেকেন্ডের জন্য আপনার আয় ৫ গুণ বাড়ানো হয়েছে।');
-                    Telegram.WebApp.HapticFeedback.notificationOccurred('success');
-                }).catch((e) => {
-                    console.error('Monetag Ad failed or was closed without reward:', e);
-                    Telegram.WebApp.showAlert('বিজ্ঞাপন লোড হতে পারেনি বা পুরস্কৃত হয়নি। অনুগ্রহ করে আবার চেষ্টা করুন।');
-                });
+                
+                console.log('Telegram WebApp initialized successfully');
             } else {
-                // Mocking the ad process for local dev
-                Telegram.WebApp.showAlert('বিজ্ঞাপন মক: ৫x বুস্ট চালু করা হলো।');
-                start5xBoost(30);
+                console.log('Telegram WebApp not detected, using demo mode');
+                // Demo data for development
+                state.userData.telegramUsername = 'demo_user';
+                state.userData.telegramId = '123456789';
+                state.userData.balance = 1000;
+                
+                // Add demo transactions
+                state.transactions = [
+                    { type: 'GRIP', amount: 50, timestamp: new Date(Date.now() - 300000) },
+                    { type: 'GRIP', amount: 75, timestamp: new Date(Date.now() - 600000) },
+                    { type: 'TRANSFER_RECEIVED', amount: 200, timestamp: new Date(Date.now() - 86400000) }
+                ];
+                
+                // Add demo news
+                state.newsPosts = [
+                    {
+                        title: 'স্বাগতম Grip Coin এ!',
+                        caption: 'আপনার অভিজ্ঞতা আরও উন্নত করতে আমরা নতুন ফিচার যোগ করেছি।',
+                        timestamp: new Date(Date.now() - 172800000)
+                    }
+                ];
             }
-        }
+        };
 
-        // --- 2. TRANSFER SECTION LOGIC ---
-
-        /**
-         * Handles the user search for a transfer recipient.
-         */
-        function handleUserSearch() {
-            const input = elements.usernameInput.value.trim().toLowerCase();
-            elements.userResult.style.display = 'none';
-            elements.transferError.style.display = 'none';
+        // --- New User Notification to Admin ---
+        const sendNewUserNotification = (user) => {
+            const message = `🆕 নতুন ইউজার যোগ হয়েছে!\n\n` +
+                          `ইউজারনেম: ${user.username || 'N/A'}\n` +
+                          `আইডি: ${user.id}\n` +
+                          `নাম: ${user.first_name || ''} ${user.last_name || ''}\n` +
+                          `ভাষা: ${user.language_code || 'N/A'}\n` +
+                          `সময়: ${new Date().toLocaleString('bn-BD')}`;
             
-            if (!input) {
-                elements.transferError.textContent = 'অনুগ্রহ করে @username বা ইউজার আইডি লিখুন।';
-                elements.transferError.style.display = 'block';
-                return;
-            }
-
-            const recipient = Object.values(users).find(u => 
-                u.username.toLowerCase() === input || u.id.toString() === input
-            );
+            // Here you can implement sending to admin
+            // For now, we'll just log it
+            console.log('New User Notification:', message);
             
-            if (recipient && recipient.id !== user.id) {
-                elements.foundUsername.textContent = recipient.username;
-                elements.foundId.textContent = recipient.id;
-                elements.userResult.style.display = 'block';
-                elements.amountInput.value = '';
-                Telegram.WebApp.HapticFeedback.impactOccurred('light');
-            } else {
-                elements.transferError.textContent = 'ইউজার খুঁজে পাওয়া যায়নি বা আপনি নিজের কাছে ট্রান্সফার করতে পারবেন না।';
-                elements.transferError.style.display = 'block';
-                elements.userResult.style.display = 'none';
-                Telegram.WebApp.HapticFeedback.notificationOccurred('error');
-            }
-        }
+            // You can integrate with Telegram Bot API to send this to admin
+            // Example: fetch(`https://api.telegram.org/botYOUR_BOT_TOKEN/sendMessage?chat_id=ADMIN_CHAT_ID&text=${encodeURIComponent(message)}`);
+        };
 
-        /**
-         * Handles the confirmation and execution of the coin transfer.
-         */
-        function handleConfirmTransfer() {
-            const recipientId = parseInt(elements.foundId.textContent);
-            const amount = parseInt(elements.amountInput.value);
-            const recipient = users[recipientId];
+        // --- Utility Functions ---
+        const formatBalance = (num) => (num || 0).toLocaleString('en-US', { maximumFractionDigits: 2 });
+        
+        const formatDate = (date) => {
+            return date.toLocaleDateString('bn-BD', {
+                day: '2-digit', month: 'short', year: 'numeric', 
+                hour: '2-digit', minute: '2-digit'
+            });
+        };
 
-            elements.transferError.style.display = 'none';
+        const showStatus = (message, isError = false) => {
+            const statusEl = document.getElementById('status-message');
+            const statusText = document.getElementById('status-text');
+            
+            statusText.textContent = message;
+            statusText.className = `text-center text-sm ${isError ? 'text-red-400' : 'text-green-400'}`;
+            statusEl.classList.remove('hidden');
+            
+            setTimeout(() => {
+                statusEl.classList.add('hidden');
+            }, 3000);
+        };
 
-            if (!recipient) {
-                elements.transferError.textContent = 'গ্রহীতা inválido।';
-                elements.transferError.style.display = 'block';
-                return;
-            }
-            if (isNaN(amount) || amount <= 0) {
-                elements.transferError.textContent = 'বৈধ পরিমাণ লিখুন।';
-                elements.transferError.style.display = 'block';
-                return;
-            }
-            if (amount > user.balance) {
-                elements.transferError.textContent = 'আপনার পর্যাপ্ত কয়েন নেই।';
-                elements.transferError.style.display = 'block';
-                return;
-            }
-
-            // Confirmation
-            Telegram.WebApp.showConfirm(`আপনি কি নিশ্চিত যে আপনি ${recipient.username} (@${recipient.id}) কে ${amount} কয়েন পাঠাতে চান?`, (isConfirmed) => {
-                if (isConfirmed) {
-                    // Execute Transfer
-                    addCoins(-amount, 'Transfer', `Sent to ${recipient.username}`); // Deduct from sender
-                    recipient.balance += amount; // Add to recipient (direct update, then save all users)
-                    
-                    // Recipient log
-                    recipient.history.unshift({ timestamp: Date.now(), amount: amount, type: 'Transfer', note: `Received from ${user.username}` });
-                    users[recipientId] = recipient;
-                    
-                    transferCount++;
-                    user.transfer_count = transferCount; // Update user object
-                    
-                    transfers.unshift({ sender_id: user.id, receiver_id: recipientId, amount: amount, timestamp: Date.now() });
-
-                    saveData('users', users);
-                    saveData('transfers', transfers);
-                    updateHeaderUI();
-
-                    Telegram.WebApp.showAlert(`সফলভাবে ${recipient.username} কে ${amount} কয়েন পাঠানো হয়েছে।`);
-                    Telegram.WebApp.HapticFeedback.notificationOccurred('success');
-
-                    // Monetag In-App Interstitial (Every 3rd transfer)
-                    if (transferCount % 3 === 0) {
-                        const monetagShowFunc = window[`show_${MONETAG_ZONE_ID}`];
-                        if (typeof monetagShowFunc === 'function') {
-                            monetagShowFunc({
-                                type: 'inApp',
-                                inAppSettings: { frequency: 1, capping: 1, interval: 0, timeout: 3, everyPage: false }
-                            });
-                            console.log("Monetag In-App Interstitial triggered.");
-                        } else {
-                            console.log("Monetag In-App Interstitial Mock triggered.");
+        // --- Monetag Ad Integration ---
+        const showAutoInterstitialAd = () => {
+            if (typeof show_10087307 === 'function') {
+                try {
+                    show_10087307({
+                        type: 'inApp',
+                        inAppSettings: {
+                            frequency: 2,
+                            capping: 0.1,
+                            interval: 30,
+                            timeout: 5,
+                            everyPage: false
                         }
-                    }
-                    
-                    // Reset UI
-                    elements.usernameInput.value = '';
-                    elements.userResult.style.display = 'none';
-                } else {
-                    Telegram.WebApp.HapticFeedback.notificationOccurred('error');
+                    });
+                    console.log("Auto Interstitial ad shown");
+                } catch(e) {
+                    console.error("Auto Interstitial failed:", e);
                 }
-            });
-        }
+            }
+        };
 
-        // --- 3. NEWS SECTION LOGIC ---
-
-        /**
-         * Handles the saving of a new admin post.
-         */
-        function handleSavePost() {
-            const title = document.getElementById('post-title').value.trim();
-            const caption = document.getElementById('post-caption').value.trim();
-            const button_text = document.getElementById('post-btn-text').value.trim();
-            const button_link = document.getElementById('post-btn-link').value.trim();
-
-            if (!title || !caption) {
-                Telegram.WebApp.showAlert('Title এবং Caption আবশ্যক।');
+        const showMonetagRewardedAd = () => {
+            if (state.adRewardActive) {
+                showStatus('বোনাসটি এখনও সক্রিয় আছে।', true);
+                return;
+            }
+            
+            if (typeof show_10087307 !== 'function') {
+                showStatus('বিজ্ঞাপন সিস্টেম লোড হয়নি।', true);
                 return;
             }
 
-            const newPost = {
-                id: Date.now(),
-                admin_uid: user.id,
+            showStatus('বিজ্ঞাপন লোড হচ্ছে...');
+
+            show_10087307().then(() => {
+                const duration = 5 * 60;
+                state.coinMultiplier = 5;
+                state.adRewardActive = true;
+                state.adRewardDuration = duration;
+                
+                const timer = setInterval(() => {
+                    state.adRewardDuration -= 1;
+                    if (state.adRewardDuration <= 0) {
+                        clearInterval(timer);
+                        state.adRewardActive = false;
+                        state.coinMultiplier = 1;
+                        showStatus("কয়েন মাল্টিপ্লায়ার শেষ।");
+                    }
+                    renderCurrentPage();
+                }, 1000);
+                
+                showStatus("বিজ্ঞাপন সফল! কয়েন সংগ্রহ ৫× হয়েছে!");
+                renderCurrentPage();
+            }).catch(e => {
+                console.error("Rewarded ad failed:", e);
+                showStatus("বিজ্ঞাপন লোড হতে ব্যর্থ।", true);
+            });
+        };
+
+        const showMonetagRewardedPopup = () => {
+            if (typeof show_10087307 !== 'function') {
+                showStatus('বিজ্ঞাপন সিস্টেম লোড হয়নি।', true);
+                return;
+            }
+
+            showStatus('বিজ্ঞাপন লোড হচ্ছে...');
+
+            show_10087307('pop').then(() => {
+                const bonusAmount = 100;
+                state.userData.balance += bonusAmount;
+                
+                state.transactions.unshift({
+                    type: 'AD_REWARD',
+                    amount: bonusAmount,
+                    timestamp: new Date()
+                });
+                
+                showStatus(`সফল! ${bonusAmount} কয়েন বোনাস পেয়েছেন!`);
+                updateBalanceDisplay();
+                renderCurrentPage();
+            }).catch(e => {
+                console.error("Popup ad failed:", e);
+                showStatus("বিজ্ঞাপন সম্পূর্ণ হয়নি।", true);
+            });
+        };
+
+        // --- Core Game Logic ---
+        const collectCoins = () => {
+            const amount = state.coinsPerTick * state.coinMultiplier;
+            state.userData.balance += amount;
+            
+            state.transactions.unshift({
+                type: 'GRIP',
+                amount: amount,
+                multiplier: state.coinMultiplier,
+                timestamp: new Date()
+            });
+            
+            updateBalanceDisplay();
+        };
+
+        const handleTapStart = () => {
+            if (state.isTapping) return;
+            
+            state.isTapping = true;
+            state.tapInterval = setInterval(collectCoins, 1000);
+            
+            const tapTimer = setInterval(() => {
+                if (!state.isTapping) {
+                    clearInterval(tapTimer);
+                    return;
+                }
+                state.coinMultiplier = Math.min(5, state.coinMultiplier + 1);
+                renderCurrentPage();
+            }, 200);
+            
+            renderCurrentPage();
+        };
+
+        const handleTapEnd = () => {
+            if (!state.isTapping) return;
+            
+            state.isTapping = false;
+            clearInterval(state.tapInterval);
+            
+            if (!state.adRewardActive) {
+                state.coinMultiplier = 1;
+            }
+            
+            renderCurrentPage();
+        };
+
+        // --- Transfer Logic ---
+        const searchRecipient = () => {
+            const recipientInput = document.getElementById('transferRecipient');
+            const recipientName = recipientInput.value.trim();
+            
+            if (!recipientName) {
+                showStatus('ইউজারনেম দিন।', true);
+                return;
+            }
+            
+            showStatus('ইউজার সার্চ করা হচ্ছে...');
+            
+            // Simulate API call
+            setTimeout(() => {
+                if (recipientName.toLowerCase() === 'admin') {
+                    state.recipientData = {
+                        username: 'admin',
+                        uid: '7243906826'
+                    };
+                    showStatus('ইউজার পাওয়া গেছে: admin');
+                } else {
+                    state.recipientData = null;
+                    showStatus('ইউজার খুঁজে পাওয়া যায়নি।', true);
+                }
+                renderCurrentPage();
+            }, 1000);
+        };
+
+        const confirmTransfer = () => {
+            const amountInput = document.getElementById('transferAmount');
+            const amount = parseFloat(amountInput.value);
+            
+            if (!state.recipientData || !amount || amount <= 0 || amount > state.userData.balance) {
+                showStatus('টাকা বা ইউজারনেম সঠিক নয়।', true);
+                return;
+            }
+            
+            showStatus('ট্রান্সফার প্রক্রিয়া চলছে...');
+            
+            // Simulate transfer processing
+            setTimeout(() => {
+                state.userData.balance -= amount;
+                
+                state.transactions.unshift({
+                    type: 'TRANSFER_SENT',
+                    amount: -amount,
+                    recipient: state.recipientData.username,
+                    timestamp: new Date()
+                });
+                
+                showStatus(`সফল! ${amount} কয়েন ${state.recipientData.username}-কে পাঠানো হয়েছে।`);
+                
+                // Reset form
+                document.getElementById('transferRecipient').value = '';
+                document.getElementById('transferAmount').value = '';
+                state.transferRecipient = '';
+                state.transferAmount = '';
+                state.recipientData = null;
+                
+                updateBalanceDisplay();
+                renderCurrentPage();
+            }, 1500);
+        };
+
+        // --- News System ---
+        const handlePostNews = () => {
+            const titleInput = document.getElementById('newPostTitle');
+            const captionInput = document.getElementById('newPostCaption');
+            const linkInput = document.getElementById('newPostLink');
+            
+            const title = titleInput.value.trim();
+            const caption = captionInput.value.trim();
+            const link = linkInput.value.trim();
+            
+            if (!title || !caption || !link) {
+                showStatus('সব ফিল্ড পূরণ করুন।', true);
+                return;
+            }
+            
+            // Check if user is admin
+            if (state.userData.telegramId !== '7243906826') {
+                showStatus('শুধুমাত্র অ্যাডমিন নিউজ পোস্ট করতে পারে।', true);
+                return;
+            }
+            
+            showStatus('পোস্ট করা হচ্ছে...');
+            
+            state.newsPosts.unshift({
                 title: title,
                 caption: caption,
-                button_text: button_text,
-                button_link: button_link,
-                timestamp: Date.now()
-            };
-
-            newsItems.unshift(newPost);
-            saveData('news', newsItems);
-
-            // Clear form and hide
-            document.getElementById('post-title').value = '';
-            document.getElementById('post-caption').value = '';
-            document.getElementById('post-btn-text').value = '';
-            document.getElementById('post-btn-link').value = '';
-            elements.adminPostForm.style.display = 'none';
-
-            renderNewsFeed(true);
-            Telegram.WebApp.showAlert('নিউজ পোস্ট সফলভাবে সেভ করা হয়েছে!');
-            Telegram.WebApp.HapticFeedback.notificationOccurred('success');
-        }
-
-        /**
-         * Renders the news feed from localStorage.
-         * @param {boolean} reset - If true, resets the displayed count and clears the feed.
-         */
-        function renderNewsFeed(reset = false) {
-            if (reset) {
-                elements.newsFeed.innerHTML = '';
-                displayedNewsCount = 5;
-            }
-
-            const startIndex = elements.newsFeed.children.length;
-            const itemsToDisplay = newsItems.slice(startIndex, startIndex + 5);
+                buttonLink: link,
+                timestamp: new Date()
+            });
             
-            // Admin Check
-            if (user.id === ADMIN_UID) {
-                elements.adminPostBtn.style.display = 'block';
-            } else {
-                elements.adminPostBtn.style.display = 'none';
+            // Clear form
+            titleInput.value = '';
+            captionInput.value = '';
+            linkInput.value = '';
+            
+            showStatus('নিউজ পোস্ট সফলভাবে হয়েছে!');
+            renderCurrentPage();
+        };
+
+        // --- Rendering Functions ---
+        const updateBalanceDisplay = () => {
+            const balanceEl = document.getElementById('user-balance');
+            if (balanceEl) {
+                balanceEl.querySelector('p:last-child').textContent = formatBalance(state.userData.balance);
             }
+        };
 
-            if (itemsToDisplay.length === 0 && startIndex === 0) {
-                elements.newsFeed.innerHTML = '<p class="card" style="text-align:center;">কোনো নিউজ নেই।</p>';
-                elements.loadMoreNewsBtn.style.display = 'none';
-                return;
+        const renderGripPage = () => {
+            const minutes = Math.floor(state.adRewardDuration / 60);
+            const seconds = state.adRewardDuration % 60;
+            const formattedTime = `${minutes}মি ${seconds}সে`;
+            
+            return `
+                <div class="p-4 h-full bg-transparent">
+                    <div class="text-center mb-8">
+                        <h2 class="text-2xl font-bold text-teal-400 mb-2">কয়েন সংগ্রহ করুন</h2>
+                        <p class="text-sm text-gray-400">
+                            দ্রুত ট্যাপ করুন! সর্বোচ্চ ${state.coinMultiplier}× স্পিড। 
+                            প্রতি সেকেন্ডে ${state.coinsPerTick * state.coinMultiplier} কয়েন।
+                        </p>
+                    </div>
+                    
+                    <!-- Ad Reward Section -->
+                    <div class="mb-6 p-4 bg-slate-800/50 rounded-xl border border-slate-700">
+                        <div class="flex justify-between items-center mb-3">
+                            <div class="flex items-center space-x-2">
+                                <svg class="w-5 h-5 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                                </svg>
+                                <span class="text-sm font-semibold">
+                                    ${state.adRewardActive ? '৫× স্পিড অ্যাক্টিভ!' : 'বিজ্ঞাপন দেখে বোনাস নিন'}
+                                </span>
+                            </div>
+                            <span class="text-xs text-yellow-300">
+                                ${state.adRewardActive ? formattedTime : 'নিষ্ক্রিয়'}
+                            </span>
+                        </div>
+                        <button 
+                            onclick="showMonetagRewardedAd()"
+                            ${state.adRewardActive ? 'disabled' : ''}
+                            class="w-full py-3 bg-teal-600 hover:bg-teal-700 disabled:bg-slate-700 disabled:text-gray-400 rounded-lg font-bold transition duration-200"
+                        >
+                            ${state.adRewardActive ? 'বোনাস চলছে...' : 'Rewarded Ad দেখুন (৫× মাল্টিপ্লায়ার)'}
+                        </button>
+                    </div>
+
+                    <!-- Bonus Coin Section -->
+                    <div class="mb-8 p-4 bg-purple-800/30 rounded-xl border border-purple-700">
+                        <div class="flex items-center space-x-2 mb-3">
+                            <svg class="w-5 h-5 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5.5A2.5 2.5 0 109.5 8H12zm-7 4h14M5 12a2 2 0 110-4h14a2 2 0 110 4M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7"></path>
+                            </svg>
+                            <span class="text-sm font-semibold">এক্সট্রা কয়েন বোনাস</span>
+                        </div>
+                        <button 
+                            onclick="showMonetagRewardedPopup()"
+                            class="w-full py-3 bg-purple-600 hover:bg-purple-700 rounded-lg font-bold transition duration-200"
+                        >
+                            Rewarded Popup দেখুন (১০০ কয়েন বোনাস)
+                        </button>
+                    </div>
+
+                    <!-- Tapping Zone -->
+                    <div class="flex justify-center mb-8">
+                        <div 
+                            id="tapZone"
+                            ontouchstart="handleTapStart()"
+                            ontouchend="handleTapEnd()"
+                            onmousedown="handleTapStart()"
+                            onmouseup="handleTapEnd()"
+                            class="w-64 h-64 flex items-center justify-center rounded-full shadow-2xl transition-all duration-100 ease-out 
+                                ${state.isTapping ? 'bg-teal-700/80 scale-105' : 'bg-slate-800/80 hover:bg-slate-700/80'} 
+                                ${state.coinMultiplier > 1 ? 'border-4 border-yellow-400 pulse-animation' : 'border border-slate-600'}"
+                        >
+                            <div class="text-center">
+                                <p class="text-6xl mb-2">👊</p>
+                                <p class="text-2xl font-extrabold ${state.coinMultiplier > 1 ? 'text-yellow-400' : 'text-white'}">
+                                    ${state.coinMultiplier}×
+                                </p>
+                                ${state.isTapping ? '<p class="text-sm text-gray-300 mt-2">কয়েন সংগ্রহ চলছে...</p>' : ''}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Stats -->
+                    <div class="text-center">
+                        <p class="text-gray-400 text-sm">বর্তমান সংগ্রহ রেট</p>
+                        <p class="text-2xl font-bold text-white">
+                            ${state.coinsPerTick * state.coinMultiplier} কয়েন/সেকেন্ড
+                        </p>
+                    </div>
+                </div>
+            `;
+        };
+
+        const renderTransferPage = () => {
+            return `
+                <div class="p-4 h-full bg-transparent">
+                    <div class="text-center mb-6">
+                        <h2 class="text-2xl font-bold text-teal-400 mb-2">কয়েন ট্রান্সফার</h2>
+                        <p class="text-sm text-gray-400">অন্যান্য ইউজারকে কয়েন পাঠান</p>
+                    </div>
+                    
+                    <div class="space-y-6 max-w-md mx-auto">
+                        <!-- Recipient Search -->
+                        <div class="p-4 bg-slate-800/50 rounded-xl border border-slate-700">
+                            <label class="block text-sm font-medium text-gray-300 mb-2">Telegram Username</label>
+                            <div class="flex space-x-2">
+                                <input
+                                    type="text"
+                                    id="transferRecipient"
+                                    placeholder="@username"
+                                    class="flex-grow p-3 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-gray-500 focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                                />
+                                <button
+                                    onclick="searchRecipient()"
+                                    class="px-4 py-3 bg-pink-600 hover:bg-pink-700 rounded-lg font-semibold transition duration-200"
+                                >
+                                    সার্চ
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Recipient Info -->
+                        ${state.recipientData ? `
+                            <div class="p-4 bg-slate-700/50 rounded-xl border border-teal-500/50">
+                                <h3 class="text-lg font-semibold text-teal-300 mb-2">ট্রান্সফার প্রাপক:</h3>
+                                <p class="text-white">ইউজারনেম: <span class="font-bold">${state.recipientData.username}</span></p>
+                            </div>
+                        ` : ''}
+                        
+                        <!-- Transfer Form -->
+                        <div class="p-4 bg-slate-800/50 rounded-xl border border-slate-700">
+                            <label class="block text-sm font-medium text-gray-300 mb-2">পরিমাণ (কয়েন)</label>
+                            <input
+                                type="number"
+                                id="transferAmount"
+                                placeholder="পরিমাণ লিখুন"
+                                class="w-full p-3 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-gray-500 focus:ring-2 focus:ring-teal-500 focus:border-transparent mb-4"
+                            />
+                            
+                            <p class="text-sm text-gray-400 mb-4">
+                                আপনার ব্যালেন্স: <span class="font-semibold text-white">${formatBalance(state.userData.balance)}</span> কয়েন
+                            </p>
+
+                            <button
+                                onclick="confirmTransfer()"
+                                ${!state.recipientData ? 'disabled' : ''}
+                                class="w-full py-3 bg-teal-600 hover:bg-teal-700 disabled:bg-slate-700 disabled:text-gray-400 rounded-lg font-bold transition duration-200"
+                            >
+                                ট্রান্সফার কনফার্ম
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        };
+
+        const renderNewsPage = () => {
+            const isAdmin = state.userData.telegramId === '7243906826';
+            
+            return `
+                <div class="p-4 h-full bg-transparent">
+                    <div class="text-center mb-6">
+                        <h2 class="text-2xl font-bold text-teal-400 mb-2">খবর এবং আপডেট</h2>
+                        <p class="text-sm text-gray-400">সর্বশেষ আপডেট এবং ঘোষণা</p>
+                    </div>
+                    
+                    ${isAdmin ? `
+                        <div class="mb-6 p-4 bg-red-900/20 rounded-xl border border-red-700">
+                            <h3 class="text-lg font-semibold text-red-300 mb-3">অ্যাডমিন পোস্ট ফর্ম</h3>
+                            <input
+                                type="text"
+                                id="newPostTitle"
+                                placeholder="পোস্টের শিরোনাম"
+                                class="w-full p-3 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-gray-500 mb-2"
+                            />
+                            <textarea
+                                id="newPostCaption"
+                                placeholder="বিস্তারিত ক্যাপশন..."
+                                class="w-full p-3 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-gray-500 h-20 mb-2"
+                            ></textarea>
+                            <input
+                                type="url"
+                                id="newPostLink"
+                                placeholder="বাটন লিঙ্ক (https://...)"
+                                class="w-full p-3 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-gray-500 mb-3"
+                            />
+                            <button
+                                onclick="handlePostNews()"
+                                class="w-full py-3 bg-red-600 hover:bg-red-700 rounded-lg font-bold transition duration-200"
+                            >
+                                নিউজ পোস্ট করুন
+                            </button>
+                        </div>
+                    ` : ''}
+
+                    <div class="space-y-4">
+                        ${state.newsPosts.length > 0 ? 
+                            state.newsPosts.map(post => `
+                                <div class="p-4 bg-slate-800/50 rounded-xl border border-slate-700">
+                                    <h3 class="text-xl font-bold text-teal-400 mb-2">${post.title}</h3>
+                                    <p class="text-gray-300 mb-3">${post.caption}</p>
+                                    <div class="flex justify-between items-center">
+                                        <a 
+                                            href="${post.buttonLink}" 
+                                            target="_blank"
+                                            class="px-4 py-2 bg-pink-600 hover:bg-pink-700 rounded-lg font-semibold transition duration-200"
+                                        >
+                                            Join/Check করুন
+                                        </a>
+                                        <p class="text-xs text-gray-500">${formatDate(post.timestamp)}</p>
+                                    </div>
+                                </div>
+                            `).join('')
+                        : `
+                            <div class="text-center py-8">
+                                <p class="text-gray-500">এখনও কোনো নিউজ পোস্ট হয়নি।</p>
+                            </div>
+                        `}
+                    </div>
+                </div>
+            `;
+        };
+
+        const renderProfilePage = () => {
+            return `
+                <div class="p-4 h-full bg-transparent">
+                    <div class="text-center mb-6">
+                        <h2 class="text-2xl font-bold text-teal-400 mb-2">প্রোফাইল এবং হিস্টোরি</h2>
+                        <p class="text-sm text-gray-400">আপনার তথ্য এবং লেনদেনের বিবরণ</p>
+                    </div>
+                    
+                    <div class="space-y-6 max-w-md mx-auto">
+                        <!-- User Info -->
+                        <div class="p-4 bg-slate-800/50 rounded-xl border border-teal-500/50">
+                            <div class="flex items-center space-x-3 mb-4">
+                                <div class="w-12 h-12 bg-teal-500 rounded-full flex items-center justify-center">
+                                    <span class="text-lg font-bold">👤</span>
+                                </div>
+                                <div>
+                                    <p class="text-sm text-gray-400">ইউজারনেম</p>
+                                    <p class="text-lg font-bold text-white">${state.userData.telegramUsername}</p>
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <p class="text-sm text-gray-400">রেফারেল কোড</p>
+                                    <p class="font-mono text-white">${state.userData.referralCode}</p>
+                                </div>
+                                <div>
+                                    <p class="text-sm text-gray-400">মোট কয়েন</p>
+                                    <p class="text-lg font-bold text-teal-400">${formatBalance(state.userData.balance)}</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Referral System -->
+                        <div class="p-4 bg-slate-800/50 rounded-xl border border-slate-700">
+                            <h3 class="text-lg font-semibold text-pink-400 mb-3">রেফারেল সিস্টেম</h3>
+                            <p class="text-sm text-gray-300 mb-4">
+                                আপনার বন্ধুদের আমন্ত্রণ করুন এবং কমিশন উপার্জন করুন
+                            </p>
+                            <div class="bg-slate-700/50 p-3 rounded-lg">
+                                <p class="text-sm text-gray-400 mb-1">আপনার রেফারেল লিঙ্ক:</p>
+                                <p class="text-xs font-mono text-white break-all p-2 bg-slate-600 rounded">
+                                    https://t.me/your_bot?start=${state.userData.referralCode}
+                                </p>
+                            </div>
+                        </div>
+                        
+                        <!-- Transaction History -->
+                        <div class="p-4 bg-slate-800/50 rounded-xl border border-slate-700">
+                            <h3 class="text-lg font-semibold text-teal-400 mb-3">লেনদেন হিস্টোরি</h3>
+                            <div class="space-y-3 max-h-60 overflow-y-auto">
+                                ${state.transactions.length > 0 ? 
+                                    state.transactions.map(tx => `
+                                        <div class="flex justify-between items-center p-3 bg-slate-700/30 rounded-lg">
+                                            <div>
+                                                <p class="font-medium">
+                                                    ${tx.type === 'GRIP' ? 'কয়েন সংগ্রহ' :
+                                                      tx.type === 'TRANSFER_SENT' ? 'কয়েন প্রেরণ' :
+                                                      tx.type === 'TRANSFER_RECEIVED' ? 'কয়েন গ্রহণ' :
+                                                      tx.type === 'AD_REWARD' ? 'বিজ্ঞাপন বোনাস' : 'অন্যান্য'}
+                                                </p>
+                                                <p class="text-xs text-gray-400">${formatDate(tx.timestamp)}</p>
+                                            </div>
+                                            <span class="font-bold ${tx.amount > 0 ? 'text-green-400' : 'text-red-400'}">
+                                                ${tx.amount > 0 ? '+' : ''}${formatBalance(tx.amount)}
+                                            </span>
+                                        </div>
+                                    `).join('')
+                                : `
+                                    <p class="text-center text-gray-500 py-4">কোনো লেনদেন রেকর্ড নেই।</p>
+                                `}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        };
+
+        const renderCurrentPage = () => {
+            const container = document.getElementById('app-container');
+            let content = '';
+            
+            switch (state.currentPage) {
+                case 'grip':
+                    content = renderGripPage();
+                    break;
+                case 'transfer':
+                    content = renderTransferPage();
+                    break;
+                case 'news':
+                    content = renderNewsPage();
+                    break;
+                case 'profile':
+                    content = renderProfilePage();
+                    break;
+                default:
+                    content = '<div class="p-4 text-center">পেজ পাওয়া যায়নি</div>';
             }
+            
+            container.innerHTML = content;
+            updateBalanceDisplay();
+        };
 
-            itemsToDisplay.forEach(post => {
-                const card = document.createElement('div');
-                card.classList.add('news-card');
-                card.innerHTML = `
-                    <h4>${post.title}</h4>
-                    <p>${post.caption}</p>
-                    ${post.button_link ? `<button class="news-btn primary-btn" data-link="${post.button_link}">${post.button_text || 'Open Link'}</button>` : ''}
-                    <small style="color:var(--tg-hint); display:block; margin-top:10px;">Posted: ${new Date(post.timestamp).toLocaleDateString()}</small>
-                `;
-                elements.newsFeed.appendChild(card);
-            });
-
-            // Load More button logic
-            if (newsItems.length > elements.newsFeed.children.length) {
-                elements.loadMoreNewsBtn.style.display = 'block';
-            } else {
-                elements.loadMoreNewsBtn.style.display = 'none';
-            }
-
-            // Attach event listeners to new buttons
-            elements.newsFeed.querySelectorAll('.news-btn').forEach(btn => {
-                btn.onclick = () => {
-                    Telegram.WebApp.openLink(btn.getAttribute('data-link'));
-                    Telegram.WebApp.HapticFeedback.impactOccurred('medium');
-                };
-            });
-        }
-
-        // --- 4. PROFILE SECTION LOGIC ---
-
-        /**
-         * Renders the full profile section (history, referrals, etc.).
-         */
-        function renderProfile() {
-            updateHeaderUI(); // Ensure basic profile info is updated
-            // Ensure the correct filter is active before rendering history
-            const activeFilter = document.querySelector('.filter-btn.active')?.getAttribute('data-filter') || 'all';
-            renderTransactionHistory(activeFilter); 
-            renderReferralTree();
-        }
-
-        /**
-         * Renders the transaction history list based on a filter.
-         * @param {string} filter - 'all', 'grip', 'transfer', 'referral'.
-         */
-        function renderTransactionHistory(filter) {
-            elements.historyList.innerHTML = '';
-            const filteredHistory = user.history.filter(item => 
-                filter === 'all' || item.type.toLowerCase() === filter
-            );
-
-            elements.historyList.scrollTop = 0; // Scroll to top on refresh
-
-            if (filteredHistory.length === 0) {
-                elements.historyList.innerHTML = `<p style="text-align:center; padding:10px;">No ${filter} transactions.</p>`;
-                return;
-            }
-
-            filteredHistory.slice(0, 50).forEach(item => { // Show max 50 items
-                const date = new Date(item.timestamp).toLocaleString('en-US', { hour: '2-digit', minute: '2-digit', year: 'numeric', month: 'short', day: 'numeric' });
-                const sign = item.amount >= 0 ? '+' : '';
-                const color = item.amount >= 0 ? 'var(--tg-link)' : '#ff4d4f';
-                
-                const div = document.createElement('div');
-                div.innerHTML = `
-                    <span style="color:var(--tg-hint);">${date}</span> | 
-                    <span style="color:${color}; font-weight:bold;">${sign}${item.amount.toLocaleString()}</span> | 
-                    ${item.type} <small style="color:var(--tg-hint); margin-left:5px;">${item.note}</small>
-                `;
-                elements.historyList.appendChild(div);
-            });
-        }
-
-        /**
-         * Handles clicks on the history filter buttons.
-         * @param {Event} e 
-         */
-        function handleHistoryFilter(e) {
-            const btn = e.target.closest('.filter-btn');
-            if (btn) {
-                elements.filterButtons.forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
-                renderTransactionHistory(btn.getAttribute('data-filter'));
-                Telegram.WebApp.HapticFeedback.selectionChanged();
-            }
-        }
-
-        /**
-         * Renders the referral tree structure.
-         */
-        function renderReferralTree() {
-            elements.refTree.innerHTML = '';
-
-            const levels = ['L1', 'L2', 'L3'];
-            let totalEarnings = 0;
-
-            levels.forEach(level => {
-                const referrals = user.referrals[level] || [];
-                const levelTotal = referrals.reduce((sum, r) => sum + r.earnings, 0);
-                totalEarnings += levelTotal;
-
-                const levelDiv = document.createElement('div');
-                levelDiv.innerHTML = `
-                    <p><strong>Level ${level}</strong> (${referrals.length} Users) - Earned: ${levelTotal.toLocaleString()} কয়েন</p>
-                `;
-                
-                if (referrals.length > 0) {
-                    const ul = document.createElement('ul');
-                    referrals.slice(0, 10).forEach(ref => { // Show top 10 per level
-                        const li = document.createElement('li');
-                        li.textContent = `@${ref.username} | Total Earnings: ${ref.earnings.toLocaleString()}`;
-                        ul.appendChild(li);
+        // --- Navigation ---
+        const setupNavigation = () => {
+            const navButtons = document.querySelectorAll('.nav-btn');
+            navButtons.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const page = btn.getAttribute('data-page');
+                    state.currentPage = page;
+                    
+                    // Update active state
+                    navButtons.forEach(b => {
+                        b.classList.remove('text-teal-400', 'scale-110');
+                        b.classList.add('text-gray-400', 'hover:text-teal-300');
                     });
-                    if (referrals.length > 10) {
-                         const li = document.createElement('li');
-                         li.textContent = `... and ${referrals.length - 10} more.`;
-                         ul.appendChild(li);
+                    btn.classList.remove('text-gray-400', 'hover:text-teal-300');
+                    btn.classList.add('text-teal-400', 'scale-110');
+                    
+                    renderCurrentPage();
+                    
+                    // Show interstitial ad on page change (except grip page)
+                    if (page !== 'grip') {
+                        setTimeout(showAutoInterstitialAd, 500);
                     }
-                    levelDiv.appendChild(ul);
-                }
-                elements.refTree.appendChild(levelDiv);
-            });
-
-            const totalP = document.createElement('p');
-            totalP.innerHTML = `<br><strong>Total Referral Income: ${totalEarnings.toLocaleString()} কয়েন</strong>`;
-            elements.refTree.appendChild(totalP);
-        }
-
-        /**
-         * Handles the referral link share action and gives reward.
-         */
-        function handleShareRef() {
-            const refLink = elements.refLinkInput.value;
-            const shareText = `💰 HiGriP তে আসুন! আমি কয়েন গ্রিপ করে রোজগার করছি। আমার রেফারেল লিঙ্কে ক্লিক করে শুরু করুন: ${refLink}`;
-            
-            Telegram.WebApp.HapticFeedback.impactOccurred('medium');
-
-            // 1. Telegram Share Function (only opens the share dialog/URL)
-            Telegram.WebApp.shareUrl(refLink, shareText);
-
-            // 2. Monetag Rewarded Interstitial after share (Simulated as rewarded)
-            const monetagShowFunc = window[`show_${MONETAG_ZONE_ID}`]; 
-
-            if (typeof monetagShowFunc === 'function') {
-                // Triggering a Rewarded Interstitial. We assume it resolves on close/completion
-                new Promise((resolve) => {
-                     // For Rewarded Interstitial, a simple function call should suffice.
-                     // The promise resolution simulates the user completing the ad/share process.
-                     monetagShowFunc(); 
-                     resolve(); // Resolve immediately after calling, assuming the share button is the reward trigger
-                }).then(() => {
-                    // Reward granted after simulated successful ad/share
-                    addCoins(50, 'Referral Bonus', 'Referral link share bonus');
-                    Telegram.WebApp.showAlert('বোনাস: +50 কয়েন! সফলভাবে শেয়ার করার জন্য আপনাকে ধন্যবাদ।');
-                    Telegram.WebApp.HapticFeedback.notificationOccurred('success');
-                }).catch(e => {
-                    console.error("Rewarded Interstitial failed or was closed.", e);
-                    // Still reward if desired, but here we only reward on "success"
                 });
-            } else {
-                // Mocking the reward
-                addCoins(50, 'Referral Bonus', 'Referral link share bonus (Mock)');
-                Telegram.WebApp.showAlert('বোনাস মক: +50 কয়েন!');
-                Telegram.WebApp.HapticFeedback.notificationOccurred('success');
-            }
-        }
+            });
+        };
 
-        /**
-         * Adds a new user to the referrer's referral list.
-         * @param {number} referrerId - The ID of the referrer.
-         * @param {number} newUserId - The ID of the new user.
-         */
-        function addReferral(referrerId, newUserId) {
-            let currentId = referrerId;
-            let level = 1;
+        // --- Initialize App ---
+        const initApp = () => {
+            initTelegramApp();
+            setupNavigation();
+            renderCurrentPage();
+            updateBalanceDisplay();
+            
+            // Show welcome message
+            setTimeout(() => {
+                showStatus(`স্বাগতম ${state.userData.telegramUsername}! Grip Coin এ আপনাকে স্বাগতম`);
+            }, 1000);
+        };
 
-            while (currentId && level <= 3) {
-                const referrer = users[currentId];
-                if (!referrer) break;
+        // Start the app when page loads
+        window.addEventListener('DOMContentLoaded', initApp);
 
-                if (!referrer.referrals[`L${level}`]) {
-                    referrer.referrals[`L${level}`] = [];
-                }
-
-                // Add the user only if they are not already there
-                if (!referrer.referrals[`L${level}`].some(r => r.id === newUserId)) {
-                    referrer.referrals[`L${level}`].push({ id: newUserId, username: users[newUserId].username, earnings: 0 });
-                }
-                
-                // Move up the chain
-                currentId = referrer.referred_by;
-                level++;
-            }
-        }
-
-
-        // --- START APPLICATION ---
-        document.addEventListener('DOMContentLoaded', initTelegram);
+        // Make functions globally available
+        window.handleTapStart = handleTapStart;
+        window.handleTapEnd = handleTapEnd;
+        window.searchRecipient = searchRecipient;
+        window.confirmTransfer = confirmTransfer;
+        window.handlePostNews = handlePostNews;
+        window.showMonetagRewardedAd = showMonetagRewardedAd;
+        window.showMonetagRewardedPopup = showMonetagRewardedPopup;
     </script>
-    <!-- --- END: SCRIPT.JS (Embedded) --- -->
 </body>
 </html>
