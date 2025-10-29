@@ -13,19 +13,23 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     
     <style>
-        /* --- Global Variables (Telegram Theme Match) --- */
+        /* --- Global Variables (Telegram Premium Theme) --- */
         :root {
-            --tg-bg: var(--tg-theme-bg-color, #212121);
+            --tg-bg: var(--tg-theme-bg-color, #0f0f0f);
+            --tg-secondary-bg: var(--tg-theme-secondary-bg-color, #1a1a1a);
             --tg-text: var(--tg-theme-text-color, #ffffff);
-            --tg-hint: var(--tg-theme-hint-color, #aaaaaa);
-            --tg-link: var(--tg-theme-link-color, #65b8eb);
-            --tg-button: var(--tg-theme-button-color, #54a9eb);
+            --tg-hint: var(--tg-theme-hint-color, #8e8e93);
+            --tg-link: var(--tg-theme-link-color, #6ab2ff);
+            --tg-button: var(--tg-theme-button-color, #40a7e3);
             --tg-button-text: var(--tg-theme-button-text-color, #ffffff);
-            --accent-glow: #65b8eb;
-            --card-bg: rgba(255, 255, 255, 0.05);
-            --card-hover-bg: rgba(255, 255, 255, 0.1);
-            --shadow-color: rgba(0, 0, 0, 0.5);
-            --border-radius: 12px;
+            --accent-glow: #6ab2ff;
+            --accent-secondary: #ffd43b;
+            --card-bg: rgba(255, 255, 255, 0.08);
+            --card-hover-bg: rgba(255, 255, 255, 0.12);
+            --shadow-color: rgba(0, 0, 0, 0.3);
+            --border-radius: 16px;
+            --border-radius-small: 10px;
+            --transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
         }
 
         /* --- Base Styling --- */
@@ -39,16 +43,21 @@
         body {
             background-color: var(--tg-bg);
             color: var(--tg-text);
-            transition: background-color 0.3s, color 0.3s;
+            transition: var(--transition);
             min-height: 100vh;
             padding-bottom: 70px;
             overscroll-behavior: none;
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(106, 178, 255, 0.05) 0%, transparent 20%),
+                radial-gradient(circle at 90% 80%, rgba(255, 212, 59, 0.05) 0%, transparent 20%);
         }
 
         #app-container {
             max-width: 500px;
             margin: 0 auto;
             width: 100%;
+            position: relative;
+            overflow-x: hidden;
         }
 
         /* --- Loading Spinner --- */
@@ -60,11 +69,13 @@
             text-align: center;
             font-size: 1.5rem;
             color: var(--tg-link);
+            z-index: 1000;
         }
         .loading-spinner i {
             animation: spin 1.5s linear infinite;
             display: block;
             margin-bottom: 10px;
+            font-size: 2rem;
         }
         @keyframes spin {
             to { transform: rotate(360deg); }
@@ -74,30 +85,38 @@
         h2, h3, h4 {
             margin: 15px 0 10px 0;
             color: var(--tg-text);
+            font-weight: 600;
         }
         .section {
             padding: 20px 15px;
             display: none;
-            animation: fadeIn 0.3s ease-in-out;
+            animation: fadeIn 0.4s ease-out;
         }
         .section.active {
             display: block;
         }
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
+            from { opacity: 0; transform: translateY(20px); }
             to { opacity: 1; transform: translateY(0); }
         }
 
         /* --- Utility Classes --- */
         .card {
             background-color: var(--card-bg);
-            padding: 15px;
+            padding: 18px;
             border-radius: var(--border-radius);
-            margin-bottom: 10px;
-            box-shadow: 0 4px 8px var(--shadow-color);
+            margin-bottom: 15px;
+            box-shadow: 0 4px 12px var(--shadow-color);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            transition: var(--transition);
+        }
+        .card:hover {
+            background-color: var(--card-hover-bg);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px var(--shadow-color);
         }
         .form-group {
-            margin-bottom: 15px;
+            margin-bottom: 18px;
         }
         .flex-row-end {
             display: flex;
@@ -109,60 +128,76 @@
             margin-top: 5px;
             font-size: 0.9em;
         }
+        .success-message {
+            color: #52c41a;
+            margin-top: 5px;
+            font-size: 0.9em;
+        }
 
         /* --- Header & Profile --- */
         header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 10px 15px;
-            border-bottom: 1px solid var(--card-bg);
+            padding: 15px;
+            background-color: var(--tg-secondary-bg);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            backdrop-filter: blur(10px);
         }
         .header-user-info {
             display: flex;
             align-items: center;
-            font-weight: bold;
+            font-weight: 600;
         }
         .current-balance {
             font-size: 1.1em;
-            font-weight: bold;
-            color: var(--accent-glow);
+            font-weight: 700;
+            color: var(--accent-secondary);
+            display: flex;
+            align-items: center;
+            gap: 5px;
         }
         .round-profile-pic {
-            width: 35px;
-            height: 35px;
+            width: 40px;
+            height: 40px;
             border-radius: 50%;
-            margin-right: 10px;
+            margin-right: 12px;
             object-fit: cover;
             border: 2px solid var(--tg-button);
+            box-shadow: 0 0 10px rgba(106, 178, 255, 0.3);
         }
         .large-pic {
-            width: 80px;
-            height: 80px;
-            margin: 0 auto 10px auto;
+            width: 90px;
+            height: 90px;
+            margin: 0 auto 15px auto;
             display: block;
+            border-width: 3px;
         }
         .profile-header {
             text-align: center;
-            margin-bottom: 20px;
+            margin-bottom: 25px;
         }
 
         /* --- Inputs & Buttons --- */
         .styled-input {
             width: 100%;
-            padding: 12px;
+            padding: 14px 16px;
             margin-top: 5px;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: var(--border-radius);
-            background-color: var(--card-bg);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: var(--border-radius-small);
+            background-color: rgba(255, 255, 255, 0.05);
             color: var(--tg-text);
             font-size: 1em;
-            transition: border-color 0.3s, box-shadow 0.3s;
+            transition: var(--transition);
         }
         .styled-input:focus {
             outline: none;
             border-color: var(--tg-link);
-            box-shadow: 0 0 8px rgba(101, 184, 235, 0.5);
+            box-shadow: 0 0 0 2px rgba(106, 178, 255, 0.2);
+            background-color: rgba(255, 255, 255, 0.08);
         }
         .styled-input::placeholder {
             color: var(--tg-hint);
@@ -170,34 +205,69 @@
         }
 
         button {
-            padding: 12px 20px;
+            padding: 14px 20px;
             border: none;
-            border-radius: var(--border-radius);
+            border-radius: var(--border-radius-small);
             cursor: pointer;
-            font-weight: bold;
+            font-weight: 600;
             font-size: 1em;
-            transition: background-color 0.2s, transform 0.1s, box-shadow 0.2s;
+            transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+        }
+        button::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 5px;
+            height: 5px;
+            background: rgba(255, 255, 255, 0.5);
+            opacity: 0;
+            border-radius: 100%;
+            transform: scale(1, 1) translate(-50%);
+            transform-origin: 50% 50%;
+        }
+        button:focus:not(:active)::after {
+            animation: ripple 1s ease-out;
+        }
+        @keyframes ripple {
+            0% {
+                transform: scale(0, 0);
+                opacity: 0.5;
+            }
+            100% {
+                transform: scale(20, 20);
+                opacity: 0;
+            }
         }
 
         .primary-btn {
             background-color: var(--tg-button);
             color: var(--tg-button-text);
-            box-shadow: 0 4px 8px rgba(84, 169, 235, 0.4);
+            box-shadow: 0 4px 12px rgba(64, 167, 227, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
         .primary-btn:active {
-            transform: scale(0.98);
-            box-shadow: none;
+            transform: translateY(2px);
+            box-shadow: 0 2px 6px rgba(64, 167, 227, 0.3);
         }
         .secondary-btn {
-            background-color: var(--card-bg);
+            background-color: rgba(255, 255, 255, 0.08);
             color: var(--tg-text);
-            border: 1px solid var(--tg-button);
+            border: 1px solid rgba(255, 255, 255, 0.15);
         }
         .secondary-btn:active {
-            transform: scale(0.98);
+            transform: translateY(2px);
         }
         .glow-btn {
-            box-shadow: 0 0 10px var(--accent-glow);
+            box-shadow: 0 0 15px var(--accent-glow);
+            animation: glowPulse 2s infinite ease-in-out;
+        }
+        @keyframes glowPulse {
+            0% { box-shadow: 0 0 10px var(--accent-glow); }
+            50% { box-shadow: 0 0 20px var(--accent-glow); }
+            100% { box-shadow: 0 0 10px var(--accent-glow); }
         }
 
         /* --- Navigation Bar --- */
@@ -209,13 +279,14 @@
             display: flex;
             justify-content: space-around;
             align-items: center;
-            height: 60px;
-            background-color: var(--tg-bg);
-            border-top: 1px solid var(--card-bg);
-            box-shadow: 0 -2px 10px var(--shadow-color);
+            height: 65px;
+            background-color: var(--tg-secondary-bg);
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            box-shadow: 0 -4px 12px var(--shadow-color);
             z-index: 10;
             max-width: 500px;
             margin: 0 auto;
+            backdrop-filter: blur(10px);
         }
         .nav-btn {
             display: flex;
@@ -229,15 +300,27 @@
             flex-grow: 1;
             border-radius: 0;
             font-size: 0.75em;
-            transition: color 0.3s, text-shadow 0.3s;
+            transition: var(--transition);
+            position: relative;
         }
         .nav-btn i {
-            font-size: 1.2em;
-            margin-bottom: 2px;
+            font-size: 1.3em;
+            margin-bottom: 4px;
+            transition: var(--transition);
         }
         .nav-btn.active {
             color: var(--tg-link);
-            text-shadow: 0 0 5px var(--accent-glow);
+        }
+        .nav-btn.active::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 30px;
+            height: 3px;
+            background-color: var(--tg-link);
+            border-radius: 0 0 3px 3px;
         }
         .nav-btn:active {
             transform: scale(0.95);
@@ -246,39 +329,68 @@
         /* --- Grip Section Specifics --- */
         .coin-counter-large {
             text-align: center;
-            font-size: 2.5em;
+            font-size: 2.8em;
             font-weight: 900;
-            color: var(--tg-text);
-            margin-bottom: 20px;
-            text-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
+            color: var(--accent-secondary);
+            margin-bottom: 25px;
+            text-shadow: 0 0 15px rgba(255, 212, 59, 0.3);
+            animation: float 3s infinite ease-in-out;
+        }
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-5px); }
+            100% { transform: translateY(0px); }
         }
         .grip-area {
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 250px;
+            height: 280px;
+            position: relative;
         }
         .grip-button {
-            width: 150px;
-            height: 150px;
+            width: 170px;
+            height: 170px;
             border-radius: 50%;
-            background-color: var(--tg-button);
+            background: linear-gradient(145deg, var(--tg-button), #2d8cc9);
             color: var(--tg-button-text);
-            font-size: 4em;
-            line-height: 150px;
-            box-shadow: 0 0 20px var(--tg-button), inset 0 0 10px rgba(255, 255, 255, 0.5);
-            transition: transform 0.1s, box-shadow 0.3s;
+            font-size: 4.5em;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 
+                0 0 25px var(--tg-button),
+                inset 0 0 15px rgba(255, 255, 255, 0.3);
+            transition: var(--transition);
             border: 5px solid rgba(255, 255, 255, 0.2);
             animation: pulse 2s infinite ease-in-out;
+            position: relative;
+            overflow: hidden;
+        }
+        .grip-button::before {
+            content: '';
+            position: absolute;
+            top: -10px;
+            left: -10px;
+            right: -10px;
+            bottom: -10px;
+            background: radial-gradient(circle, rgba(255,255,255,0.2) 0%, transparent 70%);
+            opacity: 0;
+            transition: opacity 0.3s;
         }
         .grip-button:active {
-            transform: scale(0.95);
-            box-shadow: 0 0 5px var(--tg-button), inset 0 0 5px rgba(255, 255, 255, 0.3);
+            transform: scale(0.92);
+            box-shadow: 
+                0 0 10px var(--tg-button),
+                inset 0 0 10px rgba(255, 255, 255, 0.2);
             animation: none;
+        }
+        .grip-button:active::before {
+            opacity: 1;
         }
         @keyframes pulse {
             0% { transform: scale(1); box-shadow: 0 0 20px var(--tg-button); }
-            50% { transform: scale(1.03); box-shadow: 0 0 30px var(--tg-button); }
+            50% { transform: scale(1.05); box-shadow: 0 0 35px var(--tg-button); }
             100% { transform: scale(1); box-shadow: 0 0 20px var(--tg-button); }
         }
 
@@ -286,18 +398,19 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-top: 20px;
-            padding: 10px;
+            margin-top: 25px;
+            padding: 15px;
             background-color: var(--card-bg);
             border-radius: var(--border-radius);
+            border: 1px solid rgba(255, 255, 255, 0.05);
         }
         .multiplier-display {
-            font-size: 1.1em;
-            font-weight: bold;
+            font-size: 1.2em;
+            font-weight: 600;
         }
         .glow-text {
             color: var(--accent-glow);
-            text-shadow: 0 0 8px var(--accent-glow);
+            text-shadow: 0 0 10px var(--accent-glow);
         }
 
         /* --- Particle Animation (CSS) --- */
@@ -309,85 +422,105 @@
             height: 1px;
             pointer-events: none;
             overflow: visible;
+            z-index: 5;
         }
         .coin-particle {
             position: absolute;
-            width: 15px;
-            height: 15px;
-            font-size: 12px;
+            width: 20px;
+            height: 20px;
+            font-size: 14px;
             text-align: center;
-            line-height: 15px;
+            line-height: 20px;
             color: gold;
             opacity: 0;
             user-select: none;
             pointer-events: none;
             transform: translate(-50%, -50%); 
-            animation: coinRise 1s ease-out forwards;
+            animation: coinRise 1.2s ease-out forwards;
+            text-shadow: 0 0 5px rgba(255, 215, 0, 0.7);
         }
 
         @keyframes coinRise {
-            0% { opacity: 1; transform: translate(-50%, -50%); }
+            0% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
             20% { opacity: 1; }
-            100% { opacity: 0; transform: translate(calc(var(--rand-x) * 1px), calc(var(--rand-y) * 1px - 100px)) scale(0.5); }
+            100% { opacity: 0; transform: translate(calc(var(--rand-x) * 1px), calc(var(--rand-y) * 1px - 120px)) scale(0.3); }
         }
 
         /* --- News Feed --- */
         .news-feed {
             display: flex;
             flex-direction: column;
-            gap: 15px;
-            margin-top: 15px;
+            gap: 18px;
+            margin-top: 18px;
         }
         .news-card {
             background-color: var(--card-bg);
-            padding: 15px;
+            padding: 18px;
             border-radius: var(--border-radius);
-            box-shadow: 0 2px 5px var(--shadow-color);
+            box-shadow: 0 4px 12px var(--shadow-color);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            transition: var(--transition);
+        }
+        .news-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 16px var(--shadow-color);
         }
         .news-card h4 {
             margin-top: 0;
             color: var(--tg-link);
+            font-weight: 600;
         }
         .news-card p {
-            margin: 10px 0;
-            color: var(--tg-hint);
+            margin: 12px 0;
+            color: var(--tg-text);
+            line-height: 1.5;
         }
         .news-card .news-btn {
             width: 100%;
-            margin-top: 10px;
+            margin-top: 12px;
             background-color: var(--tg-link);
             color: var(--tg-button-text);
+            border: none;
         }
 
         /* --- Transfer Section --- */
         .transfer-result-card {
-            margin-top: 15px;
-            padding: 15px;
+            margin-top: 18px;
+            padding: 18px;
             background-color: var(--card-bg);
             border-radius: var(--border-radius);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            transition: var(--transition);
+        }
+        .transfer-result-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px var(--shadow-color);
         }
         .transfer-result-card .result-info {
-            font-weight: bold;
+            font-weight: 600;
             color: var(--tg-text);
-            margin-bottom: 10px;
+            margin-bottom: 12px;
             border-bottom: 1px dashed rgba(255, 255, 255, 0.1);
-            padding-bottom: 10px;
+            padding-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
         .transfer-form-card {
-            padding-top: 10px;
+            padding-top: 12px;
         }
         #confirm-transfer {
             width: 100%;
-            margin-top: 10px;
+            margin-top: 12px;
         }
 
         /* --- Profile Specifics --- */
         .ref-card, .history-card {
-            margin-top: 15px;
+            margin-top: 18px;
         }
         .ref-link-group {
             display: flex;
-            gap: 10px;
+            gap: 12px;
         }
         .ref-link-group input {
             flex-grow: 1;
@@ -395,27 +528,44 @@
         .history-filters {
             display: flex;
             gap: 10px;
-            margin-bottom: 10px;
+            margin-bottom: 12px;
+            flex-wrap: wrap;
         }
         .history-filters .filter-btn {
-            padding: 8px 15px;
-            font-size: 0.9em;
-            background-color: rgba(255, 255, 255, 0.1);
+            padding: 10px 15px;
+            font-size: 0.85em;
+            background-color: rgba(255, 255, 255, 0.08);
             color: var(--tg-hint);
+            border-radius: 20px;
+            transition: var(--transition);
         }
         .history-filters .filter-btn.active {
             background-color: var(--tg-button);
             color: var(--tg-button-text);
+            box-shadow: 0 2px 8px rgba(64, 167, 227, 0.3);
         }
         .transaction-list {
-            max-height: 200px;
+            max-height: 250px;
             overflow-y: auto;
             padding-right: 5px;
         }
+        .transaction-list::-webkit-scrollbar {
+            width: 4px;
+        }
+        .transaction-list::-webkit-scrollbar-thumb {
+            background-color: rgba(255, 255, 255, 0.2);
+            border-radius: 2px;
+        }
         .transaction-list div {
-            padding: 5px 0;
+            padding: 10px 0;
             border-bottom: 1px dotted rgba(255, 255, 255, 0.1);
             font-size: 0.9em;
+            transition: var(--transition);
+        }
+        .transaction-list div:hover {
+            background-color: rgba(255, 255, 255, 0.03);
+            padding-left: 5px;
+            border-radius: 5px;
         }
         .ref-tree-view {
             padding-left: 10px;
@@ -426,12 +576,64 @@
             border-left: 1px dashed var(--tg-hint);
         }
         .ref-tree-view li {
-            padding: 5px 0;
+            padding: 8px 0;
             font-size: 0.9em;
             color: var(--tg-hint);
+            position: relative;
+        }
+        .ref-tree-view li::before {
+            content: '';
+            position: absolute;
+            left: -15px;
+            top: 15px;
+            width: 10px;
+            height: 1px;
+            background-color: var(--tg-hint);
         }
         .ref-tree-view li strong {
             color: var(--tg-text);
+        }
+
+        /* --- Ad Container --- */
+        .ad-container {
+            margin: 20px 0;
+            padding: 15px;
+            background-color: var(--card-bg);
+            border-radius: var(--border-radius);
+            text-align: center;
+            border: 1px dashed rgba(255, 255, 255, 0.1);
+        }
+        .ad-label {
+            font-size: 0.8em;
+            color: var(--tg-hint);
+            margin-bottom: 8px;
+        }
+
+        /* --- Auto Grip Indicator --- */
+        .auto-grip-indicator {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 15px;
+            padding: 10px;
+            background-color: rgba(106, 178, 255, 0.1);
+            border-radius: var(--border-radius-small);
+            border: 1px solid rgba(106, 178, 255, 0.2);
+        }
+        .auto-grip-indicator .progress-bar {
+            flex-grow: 1;
+            height: 6px;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+        .auto-grip-indicator .progress {
+            height: 100%;
+            background: linear-gradient(90deg, var(--tg-link), #8ac6ff);
+            border-radius: 3px;
+            width: 0%;
+            transition: width 0.5s linear;
         }
     </style>
 </head>
@@ -440,7 +642,7 @@
         <!-- Loading Spinner (Initially Visible) -->
         <div id="loading-spinner" class="loading-spinner">
             <i class="fas fa-spinner fa-spin"></i>
-            <p>Loading Mini App...</p>
+            <p>Loading HiGriP...</p>
         </div>
 
         <!-- Main Content (Hidden until Telegram.WebApp.ready) -->
@@ -453,7 +655,7 @@
                     <span id="header-username"></span>
                 </div>
                 <div class="current-balance">
-                    <i class="fas fa-coins"></i> <span id="header-balance">0</span> কয়েন
+                    <i class="fas fa-coins"></i> <span id="header-balance">0</span>
                 </div>
             </header>
             
@@ -461,13 +663,21 @@
                 <!-- 1. Grip Section (👊) -->
                 <section id="grip-section" class="section active">
                     <div class="coin-counter-large">
-                        <span id="coin-counter-text">0</span> কয়েন
+                        <span id="coin-counter-text">0</span>
                     </div>
                     
                     <div class="grip-area">
                         <button id="grip-btn" class="grip-button">
                             <i class="fas fa-hand-rock"></i>
                         </button>
+                    </div>
+
+                    <div class="auto-grip-indicator">
+                        <i class="fas fa-clock"></i>
+                        <span>Auto Grip in: <span id="countdown">15</span>s</span>
+                        <div class="progress-bar">
+                            <div class="progress" id="auto-grip-progress"></div>
+                        </div>
                     </div>
 
                     <div class="grip-info-bar">
@@ -588,13 +798,14 @@
     <script>
         /**
          * HiGriP - Telegram Mini Web App Script
-         * Full Stack Mobile Web Developer (Vanilla JS)
+         * Premium Telegram-Style UI with Auto Grip Feature
          */
 
         // --- GLOBAL VARIABLES & CONSTANTS ---
         const ADMIN_UID = 7243906826;
         const REFERRAL_COMMISSION = { L1: 0.10, L2: 0.05, L3: 0.02 };
         const MONETAG_ZONE_ID = 10087307;
+        const AUTO_GRIP_INTERVAL = 15000; // 15 seconds
 
         let user = null;
         let currentMultiplier = 1;
@@ -603,6 +814,9 @@
         let transferCount = 0;
         let newsItems = [];
         let displayedNewsCount = 5;
+        let autoGripTimer = null;
+        let autoGripCountdown = 15;
+        let lastGripTime = 0;
 
         // Monetag Ad Manager
         const AdManager = {
@@ -711,6 +925,8 @@
             historyList: document.getElementById('history-list'),
             refTree: document.getElementById('ref-tree'),
             filterButtons: document.querySelectorAll('.filter-btn'),
+            countdown: document.getElementById('countdown'),
+            autoGripProgress: document.getElementById('auto-grip-progress')
         };
 
         // --- LOCAL STORAGE & DATA HANDLING ---
@@ -741,7 +957,7 @@
                 elements.loadingSpinner.innerHTML = `
                     <i class="fas fa-exclamation-triangle"></i>
                     <p>এই অ্যাপটি শুধুমাত্র Telegram-এ কাজ করে</p>
-                    <p style="font-size: 0.8em; margin-top: 10px;">Telegram-এ @YourBotName খুলে试用 করুন</p>
+                    <p style="font-size: 0.8em; margin-top: 10px;">Telegram-এ @HiGriP_bot খুলে试用 করুন</p>
                 `;
                 return;
             }
@@ -758,13 +974,14 @@
             const params = Telegram.WebApp.themeParams;
             const root = document.documentElement;
 
-            root.style.setProperty('--tg-bg', params.bg_color || '#212121');
+            root.style.setProperty('--tg-bg', params.bg_color || '#0f0f0f');
+            root.style.setProperty('--tg-secondary-bg', params.secondary_bg_color || '#1a1a1a');
             root.style.setProperty('--tg-text', params.text_color || '#ffffff');
-            root.style.setProperty('--tg-hint', params.hint_color || '#aaaaaa');
-            root.style.setProperty('--tg-link', params.link_color || '#65b8eb');
-            root.style.setProperty('--tg-button', params.button_color || '#54a9eb');
+            root.style.setProperty('--tg-hint', params.hint_color || '#8e8e93');
+            root.style.setProperty('--tg-link', params.link_color || '#6ab2ff');
+            root.style.setProperty('--tg-button', params.button_color || '#40a7e3');
             root.style.setProperty('--tg-button-text', params.button_text_color || '#ffffff');
-            root.style.setProperty('--accent-glow', params.link_color || '#65b8eb');
+            root.style.setProperty('--accent-glow', params.link_color || '#6ab2ff');
         }
 
         function initApp() {
@@ -792,6 +1009,7 @@
             renderSection('grip');
             
             setupListeners();
+            startAutoGripTimer();
             
             // 🔥 App খোলার পর প্রথম ইন্টারস্টিশিয়াল এড
             setTimeout(() => {
@@ -892,14 +1110,14 @@
                 elements.profilePic.src = user.photo_url;
             } else {
                 // ডিফল্ট অ্যাভাটার
-                const defaultAvatar = `https://ui-avatars.com/api/?name=${encodeURIComponent(user.first_name)}&background=54a9eb&color=fff&size=128`;
+                const defaultAvatar = `https://ui-avatars.com/api/?name=${encodeURIComponent(user.first_name)}&background=40a7e3&color=fff&size=128`;
                 elements.headerProfilePic.src = defaultAvatar;
                 elements.profilePic.src = defaultAvatar;
             }
             
             elements.userName.textContent = user.first_name + (user.last_name ? ` ${user.last_name}` : '');
             elements.profileBalance.textContent = `Balance: ${user.balance.toLocaleString()} কয়েন`;
-            elements.refLinkInput.value = `https://t.me/YourBotName?start=${user.referral_code}`;
+            elements.refLinkInput.value = `https://t.me/HiGriP_bot?start=${user.referral_code}`;
         }
 
         // --- CORE UTILITY FUNCTIONS ---
@@ -939,7 +1157,54 @@
                 if (elements.particleContainer.contains(particle)) {
                     elements.particleContainer.removeChild(particle);
                 }
+            }, 1200);
+        }
+
+        // --- AUTO GRIP TIMER ---
+        function startAutoGripTimer() {
+            if (autoGripTimer) clearInterval(autoGripTimer);
+            
+            autoGripCountdown = 15;
+            elements.countdown.textContent = autoGripCountdown;
+            elements.autoGripProgress.style.width = '0%';
+            
+            autoGripTimer = setInterval(() => {
+                autoGripCountdown--;
+                elements.countdown.textContent = autoGripCountdown;
+                elements.autoGripProgress.style.width = `${(15 - autoGripCountdown) * (100/15)}%`;
+                
+                if (autoGripCountdown <= 0) {
+                    performAutoGrip();
+                    autoGripCountdown = 15;
+                    elements.countdown.textContent = autoGripCountdown;
+                    elements.autoGripProgress.style.width = '0%';
+                }
             }, 1000);
+        }
+
+        function performAutoGrip() {
+            const now = Date.now();
+            // Only auto grip if user hasn't manually gripped in the last 5 seconds
+            if (now - lastGripTime > 5000) {
+                const baseCoins = 1;
+                const coinsEarned = baseCoins * currentMultiplier;
+                addCoins(coinsEarned, 'Auto Grip', `Auto grip for ${coinsEarned} coins`);
+                
+                createCoinParticle(`+${coinsEarned}`);
+                creditReferrers(coinsEarned);
+                
+                // Show a subtle notification
+                Telegram.WebApp.showPopup({
+                    title: 'Auto Grip!',
+                    message: `You received ${coinsEarned} coins automatically.`,
+                    buttons: [{ type: 'ok' }]
+                });
+                
+                // Show ad every 3rd auto grip
+                if (user.balance % 30 < coinsEarned) {
+                    AdManager.showInterstitial();
+                }
+            }
         }
 
         // --- NAVIGATION & EVENT LISTENERS ---
@@ -1003,6 +1268,7 @@
 
         function handleGripTap() {
             Telegram.WebApp.HapticFeedback.impactOccurred('light');
+            lastGripTime = Date.now();
 
             tapCount++;
             if (tapTimer) clearTimeout(tapTimer);
