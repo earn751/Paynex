@@ -7,307 +7,351 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap');
-        body { font-family: 'Inter', sans-serif; background-color: #f7f9fc; color: #1f2937; }
-        .header-bg { background-image: linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%); }
-        .card-shadow { box-shadow: 0 5px 15px -3px rgba(0,0,0,0.1); }
-        .bKash-color { background-color: #e2136e; }
-        .Nagad-color { background-color: #f6941d; }
-        .bKash-color-btn { @apply bg-pink-600 hover:bg-pink-700; }
-        .Nagad-color-btn { @apply bg-yellow-600 hover:bg-yellow-700; }
+        body { font-family: 'Inter', sans-serif; background: #f7f9fc; color: #1f2937; }
+        .header { background: linear-gradient(135deg, #0f172a, #1e3a8a); }
+        .card { box-shadow: 0 5px 15px -3px rgba(0,0,0,0.1); }
+        .bKash { @apply bg-pink-600 text-white; }
+        .Nagad { @apply bg-yellow-600 text-white; }
+        .tier-gold { @apply bg-yellow-500 text-black; }
+        .tier-silver { @apply bg-gray-400 text-white; }
+        .tier-bronze { @apply bg-amber-800 text-white; }
     </style>
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
 </head>
 <body class="min-h-screen flex flex-col">
 
+    <!-- Loading -->
+    <div id="loading" class="fixed inset-0 bg-gray-900 flex items-center justify-center z-50">
+        <div class="text-white text-center">
+            <svg class="animate-spin h-10 w-10 mx-auto mb-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            <p>লোড হচ্ছে...</p>
+        </div>
+    </div>
+
     <div id="app" class="flex flex-col flex-grow hidden">
+
         <!-- Header -->
-        <header class="header-bg text-white p-4 rounded-b-xl">
+        <header class="header text-white p-4 rounded-b-xl">
             <div class="flex items-center space-x-4">
-                <img id="profile-pic" class="w-12 h-12 rounded-full border-2 border-yellow-400" src="" alt="User">
-                <div class="flex-grow">
-                    <p class="text-lg font-bold" id="user-name">Loading...</p>
-                    <p class="text-xs text-gray-300" id="user-uid">UID: ...</p>
+                <img id="pic" class="w-12 h-12 rounded-full border-2 border-yellow-400" src="" alt="">
+                <div class="flex-1">
+                    <p class="font-bold" id="name">...</p>
+                    <p class="text-xs text-gray-300">UID: <span id="uid">...</span></p>
                 </div>
             </div>
             <div class="mt-3 flex justify-between items-center">
                 <div class="flex items-baseline space-x-1">
-                    <span class="text-3xl font-extrabold text-yellow-300" id="user-coins">0</span>
+                    <span class="text-3xl font-extrabold text-yellow-300" id="coins">0</span>
                     <span class="text-sm">কয়েন</span>
                 </div>
-                <div id="tier-badge" class="px-3 py-1 text-sm font-bold rounded-full bg-amber-800 text-white">Bronze</div>
+                <div id="tier" class="px-3 py-1 text-sm font-bold rounded-full tier-bronze">Bronze</div>
             </div>
         </header>
 
         <main class="p-4 flex-grow overflow-y-auto">
+
             <!-- Earn Tab -->
             <div id="tab-earn">
-                <h2 class="text-xl font-bold mb-4">কয়েন উপার্জন করুন</h2>
+                <h2 class="text-xl font-bold mb-4">উপার্জন করুন</h2>
 
-                <!-- Ad Watch -->
-                <div class="bg-white p-5 rounded-xl card-shadow mb-6">
-                    <div class="flex justify-between items-center mb-3">
-                        <p class="text-lg font-semibold">ভিডিও বিজ্ঞাপন দেখুন</p>
+                <!-- Ad -->
+                <div class="bg-white p-5 rounded-xl card mb-6">
+                    <div class="flex justify-between mb-3">
+                        <p class="font-semibold">ভিডিও বিজ্ঞাপন দেখুন</p>
                         <span class="text-green-600 font-bold">+10 কয়েন</span>
                     </div>
-                    <button id="ad-button" class="w-full py-3 rounded-lg text-white font-bold bg-blue-600">বিজ্ঞাপন দেখুন</button>
-                    <div id="ad-cooldown" class="mt-3 text-center text-sm text-gray-600 hidden">
-                        <div class="w-full bg-gray-200 rounded-full h-2.5 mb-1"><div id="progress" class="bg-red-600 h-2.5 rounded-full w-0"></div></div>
-                        <span id="timer">৬০ সেকেন্ড বাকি</span>
+                    <button id="adBtn" class="w-full py-3 bg-blue-600 text-white font-bold rounded-lg">দেখুন</button>
+                    <div id="cooldown" class="mt-3 text-center text-sm text-gray-600 hidden">
+                        <div class="w-full bg-gray-200 rounded-full h-2.5"><div id="bar" class="bg-red-600 h-2.5 rounded-full w-0"></div></div>
+                        <span id="timer">৬০ সেকেন্ড</span>
                     </div>
                 </div>
 
                 <!-- Refer -->
-                <div class="bg-white p-5 rounded-xl card-shadow">
-                    <p class="text-lg font-semibold mb-3">রেফার করুন</p>
-                    <p class="text-sm text-gray-600 mb-4">প্রতি রেফারে <strong>+50 কয়েন</strong></p>
-                    <div class="flex items-center justify-between bg-gray-100 p-3 rounded-lg mb-4">
-                        <p class="text-sm truncate" id="ref-link">t.me/HiGriP_bot?start=ref_...</p>
-                        <button id="copy-btn" class="text-blue-600 font-bold text-sm">কপি</button>
+                <div class="bg-white p-5 rounded-xl card">
+                    <p class="font-semibold mb-2">রেফার করুন</p>
+                    <p class="text-sm text-gray-600 mb-3">প্রতি রেফারে +৫০ কয়েন</p>
+                    <div class="flex justify-between items-center bg-gray-100 p-3 rounded-lg mb-2">
+                        <p class="text-sm truncate" id="refLink">t.me/...</p>
+                        <button id="copyBtn" class="text-blue-600 font-bold text-sm">কপি</button>
                     </div>
-                    <p class="text-sm">রেফার: <strong id="ref-count">0</strong> জন</p>
-                    <p id="ref-lock" class="text-xs text-red-600 mt-2 hidden">রিডিমের জন্য আরও <span id="needed">5</span> জন লাগবে</p>
+                    <p class="text-sm">রেফার: <strong id="refCount">0</strong> জন</p>
+                    <p id="refLock" class="text-xs text-red-600 mt-2 hidden">রিডিমের জন্য আরও <span id="needed">5</span> জন লাগবে</p>
                 </div>
             </div>
 
             <!-- Redeem Tab -->
             <div id="tab-redeem" class="hidden">
                 <h2 class="text-xl font-bold mb-4">রিডিম করুন</h2>
-                <div class="space-y-4">
-                    <!-- bKash -->
-                    <div class="bg-gradient-to-r from-pink-600 to-pink-700 text-white p-4 rounded-xl card-shadow">
+
+                <!-- Offers -->
+                <div class="space-y-4 mb-6">
+                    <div class="bg-gradient-to-r from-pink-600 to-pink-700 p-4 rounded-xl text-white">
                         <p class="text-4xl font-bold text-center">৳100</p>
-                        <p class="text-center text-sm">1,000 কয়েন</p>
-                        <button data-amount="100" data-coins="1000" data-type="bKash" class="redeem-btn w-full mt-3 bg-white text-pink-700 font-bold py-2 rounded-lg">রিডিম</button>
+                        <p class="text-center">1,000 কয়েন</p>
+                        <button data-type="bKash" data-amount="100" data-coins="1000" class="redeemBtn w-full mt-3 bg-white text-pink-700 font-bold py-2 rounded-lg">রিডিম</button>
                     </div>
-                    <!-- Nagad -->
-                    <div class="bg-gradient-to-r from-yellow-600 to-yellow-700 text-white p-4 rounded-xl card-shadow">
+                    <div class="bg-gradient-to-r from-yellow-600 to-yellow-700 p-4 rounded-xl text-white">
                         <p class="text-4xl font-bold text-center">৳100</p>
-                        <p class="text-center text-sm">1,000 কয়েন</p>
-                        <button data-amount="100" data-coins="1000" data-type="Nagad" class="redeem-btn w-full mt-3 bg-white text-yellow-700 font-bold py-2 rounded-lg">রিডিম</button>
+                        <p class="text-center">1,000 কয়েন</p>
+                        <button data-type="Nagad" data-amount="100" data-coins="1000" class="redeemBtn w-full mt-3 bg-white text-yellow-700 font-bold py-2 rounded-lg">রিডিম</button>
                     </div>
+                </div>
+
+                <!-- History -->
+                <h3 class="text-lg font-semibold mb-3">রিডিম ইতিহাস</h3>
+                <div id="history" class="space-y-2">
+                    <p class="text-gray-500 text-sm">কোনো রিডিম নেই</p>
+                </div>
+            </div>
+
+            <!-- Feed Tab -->
+            <div id="tab-feed" class="hidden">
+                <h2 class="text-xl font-bold mb-4">লিডারবোর্ড</h2>
+                <div id="leaderboard" class="space-y-3">
+                    <p class="text-gray-500 text-sm">লোড হচ্ছে...</p>
                 </div>
             </div>
         </main>
 
-        <!-- Bottom Nav -->
-        <nav class="bg-white border-t border-gray-200 sticky bottom-0">
+        <!-- Nav -->
+        <nav class="bg-white border-t sticky bottom-0">
             <div class="flex justify-around py-2">
-                <button data-tab="redeem" class="nav-btn text-gray-600">
+                <button data-tab="redeem" class="navBtn text-gray-600">
                     <svg class="w-6 h-6 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 8c-2.485 0-4 .933-4 2.5v.5H7a2 2 0 00-2 2v3a2 2 0 002 2h10a2 2 0 002-2v-3a2 2 0 00-2-2h-1v-.5c0-1.567-1.515-2.5-4-2.5z"/></svg>
                     <span class="text-xs">রিডিম</span>
                 </button>
-                <button data-tab="earn" class="nav-btn text-blue-600">
+                <button data-tab="earn" class="navBtn text-blue-600">
                     <svg class="w-6 h-6 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z"/><path d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z"/></svg>
                     <span class="text-xs">উপার্জন</span>
+                </button>
+                <button data-tab="feed" class="navBtn text-gray-600">
+                    <svg class="w-6 h-6 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 6h16M4 12h16m-7 6h7"/></svg>
+                    <span class="text-xs">ফিড</span>
                 </button>
             </div>
         </nav>
     </div>
 
-    <!-- Redeem Modal -->
+    <!-- Modal -->
     <div id="modal" class="fixed inset-0 bg-black bg-opacity-70 hidden flex items-center justify-center p-4 z-50">
         <div class="bg-white rounded-xl p-6 w-full max-w-sm">
-            <h3 class="text-xl font-bold mb-4" id="modal-title">bKash রিডিম</h3>
-            <p class="text-sm mb-4">৳<span id="modal-amount">100</span> পেতে ১১ ডিজিট নাম্বার দিন</p>
+            <h3 class="text-xl font-bold mb-4" id="mTitle">রিডিম</h3>
+            <p class="text-sm mb-4">৳<span id="mAmount">100</span> পেতে নাম্বার দিন</p>
             <input type="text" id="phone" placeholder="01XXXXXXXXX" class="w-full p-3 border rounded-lg mb-4" maxlength="11">
             <div class="flex space-x-3">
-                <button id="cancel-btn" class="flex-1 py-2 bg-gray-300 rounded-lg font-bold">বাতিল</button>
-                <button id="submit-btn" class="flex-1 py-2 bg-green-600 text-white rounded-lg font-bold">পাঠান</button>
+                <button id="cancel" class="flex-1 py-2 bg-gray-300 rounded-lg font-bold">বাতিল</button>
+                <button id="submit" class="flex-1 py-2 bg-green-600 text-white rounded-lg font-bold">পাঠান</button>
             </div>
         </div>
     </div>
 
     <script>
+        // Firebase Config
+        const firebaseConfig = {
+            apiKey: "AIzaSyCho5RtEIoXnNlNNrpBg65BmTpJY23Se7Y",
+            authDomain: "maillbeex.firebaseapp.com",
+            databaseURL: "https://maillbeex-default-rtdb.firebaseio.com",
+            projectId: "maillbeex",
+            storageBucket: "maillbeex.firebasestorage.app",
+            messagingSenderId: "5938669413",
+            appId: "1:5938669413:web:34b6bbbbb0e81628a2a38c"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+        const auth = firebase.auth();
+
         const tg = window.Telegram.WebApp;
         tg.ready(); tg.expand();
 
-        const user = tg.initDataUnsafe?.user || { id: Date.now(), first_name: 'টেস্ট' };
-        const uid = user.id.toString();
-        const STORAGE_KEY = `higrip_${uid}`;
+        let uid = null, userRef = null, userData = {};
 
-        // Load from localStorage
-        const saved = JSON.parse(localStorage.getItem(STORAGE_KEY)) || {
-            coins: 0,
-            referrals: [],
-            lastAd: 0
-        };
+        async function init() {
+            try {
+                const cred = await auth.signInAnonymously();
+                uid = cred.user.uid;
 
-        let state = {
-            coins: saved.coins,
-            referrals: saved.referrals,
-            lastAd: saved.lastAd,
-            get refCount() { return this.referrals.length; }
-        };
+                const tgUser = tg.initDataUnsafe?.user;
+                if (!tgUser) throw new Error("Telegram User not found");
 
-        // Save to localStorage
-        const save = () => localStorage.setItem(STORAGE_KEY, JSON.stringify({
-            coins: state.coins,
-            referrals: state.referrals,
-            lastAd: state.lastAd
-        }));
+                userRef = db.ref('users/' + uid);
+                userRef.update({
+                    name: tgUser.first_name,
+                    photo: tgUser.photo_url || '',
+                    lastSeen: Date.now()
+                });
 
-        // UI Elements
-        const els = {
-            coins: document.getElementById('user-coins'),
-            name: document.getElementById('user-name'),
-            uid: document.getElementById('user-uid'),
-            pic: document.getElementById('profile-pic'),
-            refLink: document.getElementById('ref-link'),
-            refCount: document.getElementById('ref-count'),
-            refLock: document.getElementById('ref-lock'),
-            needed: document.getElementById('needed'),
-            tier: document.getElementById('tier-badge'),
-            adBtn: document.getElementById('ad-button'),
-            cooldown: document.getElementById('ad-cooldown'),
-            progress: document.getElementById('progress'),
-            timer: document.getElementById('timer'),
-            modal: document.getElementById('modal'),
-            modalTitle: document.getElementById('modal-title'),
-            modalAmount: document.getElementById('modal-amount'),
-            phone: document.getElementById('phone'),
-            submit: document.getElementById('submit-btn'),
-            cancel: document.getElementById('cancel-btn')
-        };
+                userRef.on('value', s => {
+                    userData = s.val() || { coins: 0, referrals: [], lastAd: 0 };
+                    updateUI();
+                });
 
-        // Init UI
-        els.name.textContent = user.first_name || 'ইউজার';
-        els.uid.textContent = `UID: ${uid.slice(-6)}`;
-        els.pic.src = user.photo_url || `https://ui-avatars.com/api/?name=${user.first_name}&background=6b7280&color=fff`;
-        els.refLink.textContent = `t.me/HiGriP_bot?start=ref_${uid}`;
-        updateUI();
+                // Referral
+                const refId = new URLSearchParams(location.search).get('start')?.replace('ref_', '');
+                if (refId && refId !== uid && !userData.referrals?.includes(refId)) {
+                    const refUser = db.ref('users/' + refId);
+                    refUser.once('value').then(s => {
+                        if (s.exists()) {
+                            userRef.child('referrals').transaction(a => (a || []).concat(refId));
+                            db.ref('users/' + refId + '/referred').transaction(a => (a || []).concat(uid));
+                            userRef.child('coins').transaction(c => c + 50);
+                            tg.showAlert('রেফার সফল! +50 কয়েন');
+                        }
+                    });
+                }
 
-        // Check referral from URL
-        const urlRef = new URLSearchParams(location.search).get('start')?.replace('ref_', '');
-        if (urlRef && urlRef !== uid && !state.referrals.includes(urlRef)) {
-            state.referrals.push(urlRef);
-            state.coins += 50;
-            save();
-            tg.showAlert('রেফার সফল! +50 কয়েন');
+                loadLeaderboard();
+                loadHistory();
+
+                document.getElementById('loading').classList.add('hidden');
+                document.getElementById('app').classList.remove('hidden');
+            } catch (e) {
+                alert("Error: " + e.message);
+            }
         }
 
         function updateUI() {
-            els.coins.textContent = state.coins.toLocaleString();
-            els.refCount.textContent = state.refCount;
-            const needed = Math.max(0, 5 - state.refCount);
+            document.getElementById('name').textContent = userData.name || 'ইউজার';
+            document.getElementById('uid').textContent = uid.slice(-6);
+            document.getElementById('pic').src = userData.photo || `https://ui-avatars.com/api/?name=${userData.name}`;
+            document.getElementById('coins').textContent = userData.coins || 0;
+            document.getElementById('refCount').textContent = (userData.referrals || []).length;
+            document.getElementById('refLink').textContent = `t.me/HiGriP_bot?start=ref_${uid}`;
+
+            const tier = userData.coins >= 5000 ? 'Gold' : userData.coins >= 1000 ? 'Silver' : 'Bronze';
+            const t = document.getElementById('tier');
+            t.textContent = tier + ' Tier';
+            t.className = `px-3 py-1 text-sm font-bold rounded-full tier-${tier.toLowerCase()}`;
+
+            const needed = Math.max(0, 5 - (userData.referrals || []).length);
+            const lock = document.getElementById('refLock');
             if (needed > 0) {
-                els.refLock.classList.remove('hidden');
-                els.needed.textContent = needed;
-            } else {
-                els.refLock.classList.add('hidden');
-            }
-            const tier = state.coins >= 5000 ? 'Gold' : state.coins >= 1000 ? 'Silver' : 'Bronze';
-            els.tier.textContent = `${tier} Tier`;
-            els.tier.className = `px-3 py-1 text-sm font-bold rounded-full ${tier === 'Gold' ? 'bg-yellow-500 text-black' : tier === 'Silver' ? 'bg-gray-400' : 'bg-amber-800'} text-white`;
+                lock.classList.remove('hidden');
+                document.getElementById('needed').textContent = needed;
+            } else lock.classList.add('hidden');
 
-            document.querySelectorAll('.redeem-btn').forEach(btn => {
-                const req = parseInt(btn.dataset.coins);
-                if (state.refCount < 5) {
-                    btn.disabled = true; btn.textContent = 'রেফার লক';
-                } else if (state.coins < req) {
-                    btn.disabled = true; btn.textContent = 'কয়েন কম';
-                } else {
-                    btn.disabled = false; btn.textContent = 'রিডিম';
-                }
+            // Ad
+            const now = Date.now();
+            if (now - (userData.lastAd || 0) < 60000) startCooldown(userData.lastAd);
+
+            // Redeem buttons
+            document.querySelectorAll('.redeemBtn').forEach(b => {
+                const req = +b.dataset.coins;
+                b.disabled = needed > 0 || userData.coins < req;
+                b.textContent = b.disabled ? (userData.coins < req ? 'কয়েন কম' : 'রেফার লক') : 'রিডিম';
             });
-
-            save();
         }
 
-        // Ad Watch
-        els.adBtn.onclick = () => {
-            if (Date.now() - state.lastAd < 60000) {
-                startCooldown();
-                return;
-            }
-            els.adBtn.disabled = true;
-            els.adBtn.textContent = 'বিজ্ঞাপন চলছে...';
+        // Ad
+        document.getElementById('adBtn').onclick = () => {
+            const btn = document.getElementById('adBtn');
+            btn.disabled = true; btn.textContent = 'চলছে...';
             setTimeout(() => {
-                state.coins += 10;
-                state.lastAd = Date.now();
-                updateUI();
-                els.adBtn.textContent = 'বিজ্ঞাপন দেখুন';
-                els.adBtn.disabled = false;
-                tg.showAlert('+10 কয়েন যোগ হয়েছে!');
-                startCooldown();
+                userRef.child('coins').transaction(c => c + 10);
+                userRef.child('lastAd').set(Date.now());
+                tg.showAlert('+10 কয়েন!');
             }, 5000);
         };
 
-        function startCooldown() {
-            els.cooldown.classList.remove('hidden');
-            const start = state.lastAd;
-            const interval = setInterval(() => {
-                const left = 60 - Math.floor((Date.now() - start) / 1000);
-                if (left <= 0) {
-                    clearInterval(interval);
-                    els.cooldown.classList.add('hidden');
-                    els.adBtn.disabled = false;
-                    return;
-                }
-                els.timer.textContent = `${left} সেকেন্ড বাকি`;
-                els.progress.style.width = `${(60 - left) * 1.666}%`;
+        function startCooldown(last) {
+            const cd = document.getElementById('cooldown');
+            cd.classList.remove('hidden');
+            const i = setInterval(() => {
+                const left = 60 - Math.floor((Date.now() - last) / 1000);
+                if (left <= 0) { clearInterval(i); cd.classList.add('hidden'); return; }
+                document.getElementById('timer').textContent = left + ' সেকেন্ড';
+                document.getElementById('bar').style.width = (60 - left) * 1.666 + '%';
             }, 100);
         }
 
-        // Redeem
-        let redeemData = {};
-        document.querySelectorAll('.redeem-btn').forEach(btn => {
-            btn.onclick = () => {
-                if (btn.disabled) return;
-                redeemData = {
-                    type: btn.dataset.type,
-                    amount: btn.dataset.amount,
-                    coins: btn.dataset.coins
-                };
-                els.modalTitle.textContent = `${redeemData.type} রিডিম`;
-                els.modalAmount.textContent = redeemData.amount;
-                els.phone.value = '';
-                els.modal.classList.remove('hidden');
-            };
-        });
-
-        els.cancel.onclick = () => els.modal.classList.add('hidden');
-        els.submit.onclick = () => {
-            const phone = els.phone.value.trim();
-            if (!/^\d{11}$/.test(phone)) {
-                tg.showAlert('১১ ডিজিটের নাম্বার দিন');
-                return;
-            }
-            state.coins -= parseInt(redeemData.coins);
-            updateUI();
-            els.modal.classList.add('hidden');
-
-            // Send to Admin via Telegram
-            const msg = encodeURIComponent(
-                `*নতুন রিডিম রিকোয়েস্ট*\n\n` +
-                `👤 ইউজার: ${user.first_name} (${uid})\n` +
-                `💰 পরিমাণ: ৳${redeemData.amount}\n` +
-                `📱 নাম্বার: ${phone}\n` +
-                `💎 ব্যালেন্স: ${state.coins} কয়েন`
-            );
-            window.open(`https://t.me/YourAdminBot?text=${msg}`, '_blank');
-            tg.showAlert('রিকোয়েস্ট পাঠানো হয়েছে! অ্যাডমিন ২৪ ঘণ্টায় পেমেন্ট করবে।');
-        };
-
-        // Copy Link
-        document.getElementById('copy-btn').onclick = () => {
-            navigator.clipboard.writeText(els.refLink.textContent).then(() => {
-                tg.showAlert('লিঙ্ক কপি হয়েছে!');
+        // Leaderboard
+        function loadLeaderboard() {
+            db.ref('users').orderByChild('coins').limitToLast(5).on('value', s => {
+                const list = document.getElementById('leaderboard');
+                list.innerHTML = '';
+                const entries = [];
+                s.forEach(c => entries.push({ id: c.key, ...c.val() }));
+                entries.reverse().forEach((u, i) => {
+                    list.innerHTML += `<div class="flex justify-between p-3 bg-gray-50 rounded-lg">
+                        <div class="flex items-center space-x-2">
+                            <span class="font-bold">${i+1}.</span>
+                            <span>${u.name}</span>
+                        </div>
+                        <span class="font-bold text-blue-600">${u.coins}</span>
+                    </div>`;
+                });
             });
-        };
+        }
 
-        // Tab Switch
-        document.querySelectorAll('.nav-btn').forEach(btn => {
-            btn.onclick = () => {
-                document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('text-blue-600'));
-                btn.classList.add('text-blue-600');
-                document.getElementById('tab-earn').classList.toggle('hidden', btn.dataset.tab !== 'earn');
-                document.getElementById('tab-redeem').classList.toggle('hidden', btn.dataset.tab !== 'redeem');
+        // History
+        function loadHistory() {
+            db.ref('redeems').orderByChild('uid').equalTo(uid).on('value', s => {
+                const h = document.getElementById('history');
+                h.innerHTML = '';
+                if (s.numChildren() === 0) {
+                    h.innerHTML = '<p class="text-gray-500 text-sm">কোনো রিডিম নেই</p>';
+                    return;
+                }
+                s.forEach(c => {
+                    const d = c.val();
+                    h.innerHTML += `<div class="p-3 bg-white rounded-lg border">
+                        <p class="font-semibold">${d.type} - ৳${d.amount}</p>
+                        <p class="text-xs text-gray-500">${new Date(d.time).toLocaleString('bn-BD')}</p>
+                        <p class="text-sm font-medium ${d.status === 'pending' ? 'text-yellow-600' : 'text-green-600'}">${d.status}</p>
+                    </div>`;
+                });
+            });
+        }
+
+        // Redeem
+        let redeem = {};
+        document.querySelectorAll('.redeemBtn').forEach(b => {
+            b.onclick = () => {
+                if (b.disabled) return;
+                redeem = { type: b.dataset.type, amount: b.dataset.amount, coins: b.dataset.coins };
+                document.getElementById('mTitle').textContent = `${redeem.type} - ৳${redeem.amount}`;
+                document.getElementById('mAmount').textContent = redeem.amount;
+                document.getElementById('modal').classList.remove('hidden');
             };
         });
 
-        // Show App
-        document.getElementById('app').classList.remove('hidden');
-        if (Date.now() - state.lastAd < 60000) startCooldown();
+        document.getElementById('cancel').onclick = () => document.getElementById('modal').classList.add('hidden');
+        document.getElementById('submit').onclick = () => {
+            const phone = document.getElementById('phone').value;
+            if (!/^\d{11}$/.test(phone)) return tg.showAlert('১১ ডিজিট');
+            userRef.child('coins').transaction(c => c - redeem.coins);
+            db.ref('redeems').push({
+                uid, name: userData.name, type: redeem.type, amount: redeem.amount, phone, time: Date.now(), status: 'pending'
+            });
+            document.getElementById('modal').classList.add('hidden');
+            tg.showAlert('রিকোয়েস্ট পাঠানো হয়েছে!');
+        };
+
+        // Copy
+        document.getElementById('copyBtn').onclick = () => {
+            navigator.clipboard.writeText(document.getElementById('refLink').textContent);
+            tg.showAlert('কপি হয়েছে!');
+        };
+
+        // Tab
+        document.querySelectorAll('.navBtn').forEach(b => {
+            b.onclick = () => {
+                document.querySelectorAll('.navBtn').forEach(x => x.classList.remove('text-blue-600'));
+                b.classList.add('text-blue-600');
+                ['earn', 'redeem', 'feed'].forEach(t => {
+                    document.getElementById('tab-' + t).classList.toggle('hidden', b.dataset.tab !== t);
+                });
+            };
+        });
+
+        init();
     </script>
 </body>
 </html>
