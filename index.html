@@ -25,9 +25,6 @@
 
     <!-- Telegram WebApp -->
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-
-    <!-- LibTL SDK -->
-    <script src='//libtl.com/sdk.js' data-zone='10087307' data-sdk='show_10087307'></script>
 </head>
 <body class="min-h-screen flex flex-col">
 
@@ -43,7 +40,6 @@
     </div>
 
     <div id="app" class="flex flex-col flex-grow hidden">
-
         <!-- Header -->
         <header class="header text-white p-4 rounded-b-xl">
             <div class="flex items-center space-x-4">
@@ -63,12 +59,9 @@
         </header>
 
         <main class="p-4 flex-grow overflow-y-auto">
-
             <!-- Earn Tab -->
             <div id="tab-earn">
                 <h2 class="text-xl font-bold mb-4">উপার্জন করুন</h2>
-
-                <!-- Manual Ad -->
                 <div class="bg-white p-5 rounded-xl card mb-6">
                     <div class="flex justify-between mb-3">
                         <p class="font-semibold">ভিডিও বিজ্ঞাপন দেখুন</p>
@@ -80,8 +73,6 @@
                         <span id="timer">১৫ সেকেন্ড</span>
                     </div>
                 </div>
-
-                <!-- Refer -->
                 <div class="bg-white p-5 rounded-xl card">
                     <p class="font-semibold mb-2">রেফার করুন</p>
                     <p class="text-sm text-gray-600 mb-3">প্রতি রেফারে +৫০ কয়েন</p>
@@ -98,8 +89,6 @@
             <!-- Redeem Tab -->
             <div id="tab-redeem" class="hidden">
                 <h2 class="text-xl font-bold mb-4">রিডিম করুন</h2>
-
-                <!-- bKash Offers -->
                 <h3 class="text-lg font-bold mb-3 bKash">bKash অফার</h3>
                 <div class="space-y-4 mb-6">
                     <div class="bg-gradient-to-r from-pink-600 to-pink-700 p-4 rounded-xl text-white">
@@ -118,8 +107,6 @@
                         <button data-type="bKash" data-amount="3000" data-coins="20000" class="redeemBtn w-full mt-3 bg-white text-pink-700 font-bold py-2 rounded-lg">রিডিম</button>
                     </div>
                 </div>
-
-                <!-- Nagad Offers -->
                 <h3 class="text-lg font-bold mb-3 Nagad">Nagad অফার</h3>
                 <div class="space-y-4 mb-6">
                     <div class="bg-gradient-to-r from-yellow-600 to-yellow-700 p-4 rounded-xl text-white">
@@ -138,7 +125,6 @@
                         <button data-type="Nagad" data-amount="3000" data-coins="20000" class="redeemBtn w-full mt-3 bg-white text-yellow-700 font-bold py-2 rounded-lg">রিডিম</button>
                     </div>
                 </div>
-
                 <h3 class="text-lg font-semibold mb-3">রিডিম ইতিহাস</h3>
                 <div id="history" class="space-y-2">
                     <p class="text-gray-500 text-sm">কোনো রিডিম নেই</p>
@@ -201,28 +187,72 @@
         const db = firebase.database();
         const auth = firebase.auth();
 
-        const tg = window.Telegram.WebApp;
-        tg.ready(); tg.expand();
-
+        const tg = window.Telegram?.WebApp;
         let uid = null, userRef = null, userData = {};
         let telegramUser = null;
         const ADMIN_UID = "7243906826";
+        let adReady = false;
+
+        // LibTL SDK Async Load
+        function loadLibTL() {
+            return new Promise((resolve) => {
+                const script = document.createElement('script');
+                script.src = '//libtl.com/sdk.js';
+                script.setAttribute('data-zone', '10087307');
+                script.setAttribute('data-sdk', 'show_10087307');
+                script.onload = () => {
+                    const check = setInterval(() => {
+                        if (typeof show_10087307 === 'function') {
+                            clearInterval(check);
+                            adReady = true;
+                            resolve();
+                        }
+                    }, 100);
+                    setTimeout(() => { clearInterval(check); resolve(); }, 5000); // fallback
+                };
+                script.onerror = () => resolve();
+                document.head.appendChild(script);
+            });
+        }
+
+        // Wait for Telegram
+        function waitForTelegram() {
+            return new Promise((resolve) => {
+                if (tg && tg.initDataUnsafe?.user) {
+                    tg.ready(); tg.expand();
+                    resolve();
+                } else {
+                    const check = setInterval(() => {
+                        if (window.Telegram?.WebApp?.initDataUnsafe?.user) {
+                            clearInterval(check);
+                            window.Telegram.WebApp.ready();
+                            window.Telegram.WebApp.expand();
+                            resolve();
+                        }
+                    }, 100);
+                    setTimeout(() => { clearInterval(check); resolve(); }, 3000);
+                }
+            });
+        }
 
         async function init() {
             try {
+                // Step 1: Wait for Telegram
+                await waitForTelegram();
+                telegramUser = window.Telegram.WebApp.initDataUnsafe.user;
+                if (!telegramUser?.id) throw new Error("Telegram user not found");
+
+                // Step 2: Firebase Auth
                 const cred = await auth.signInAnonymously();
-                uid = cred.user.uid;
-
-                telegramUser = tg.initDataUnsafe?.user;
-                if (!telegramUser || !telegramUser.id) throw new Error("Telegram User not found");
-
-                // Real Telegram UID
                 uid = telegramUser.id.toString();
                 userRef = db.ref('users/' + uid);
 
-                // Set Admin
+                // Step 3: Load LibTL in background
+                loadLibTL().catch(() => {});
+
+                // Step 4: Set user data
                 const isAdmin = uid === ADMIN_UID;
-                userRef.update({
+                await userRef.update({
                     name: telegramUser.first_name,
                     username: telegramUser.username || 'নেই',
                     photo: telegramUser.photo_url || '',
@@ -230,39 +260,42 @@
                     lastSeen: Date.now()
                 });
 
+                // Step 5: Listen to user data
                 userRef.on('value', s => {
                     userData = s.val() || { coins: 0, referrals: [], lastAd: 0 };
                     updateUI();
                 });
 
-                // Referral
+                // Step 6: Referral Logic
                 const refId = new URLSearchParams(location.search).get('start')?.replace('ref_', '');
-                if (refId && refId !== uid && !userData.referrals?.includes(refId)) {
+                if (refId && refId !== uid) {
                     const refUser = db.ref('users/' + refId);
-                    refUser.once('value').then(s => {
-                        if (s.exists()) {
-                            userRef.child('referrals').transaction(a => (a || []).concat(refId));
-                            db.ref('users/' + refId + '/referred').transaction(a => (a || []).concat(uid));
-                            userRef.child('coins').transaction(c => c + 50);
-                            tg.showAlert('রেফার সফল! +50 কয়েন');
-                        }
-                    });
+                    const snap = await refUser.once('value');
+                    if (snap.exists() && !(userData.referrals || []).includes(refId)) {
+                        await userRef.child('referrals').transaction(a => (a || []).concat(refId));
+                        await db.ref('users/' + refId + '/referred').transaction(a => (a || []).concat(uid));
+                        await userRef.child('coins').transaction(c => c + 50);
+                        tg.showAlert('রেফার সফল! +50 কয়েন');
+                    }
                 }
 
                 loadLeaderboard();
                 loadHistory();
 
-                // Auto Ad every 15 seconds
+                // Step 7: Auto Ad (only if ad ready)
                 setInterval(() => {
-                    if (document.visibilityState === 'visible') {
+                    if (adReady && document.visibilityState === 'visible') {
                         showAd('pop', true).catch(() => {});
                     }
                 }, 15000);
 
+                // Hide loading
                 document.getElementById('loading').classList.add('hidden');
                 document.getElementById('app').classList.remove('hidden');
             } catch (e) {
-                tg.showAlert("Error: " + e.message);
+                console.error(e);
+                tg?.showAlert?.("Error: " + e.message) || alert("Error: " + e.message);
+                document.getElementById('loading').innerHTML = `<p class="text-red-400">লোড হয়নি: ${e.message}</p>`;
             }
         }
 
@@ -270,55 +303,42 @@
             document.getElementById('name').innerHTML = `${userData.name || telegramUser.first_name} ${userData.isAdmin ? '<span class="admin-badge">Admin</span>' : ''}`;
             document.getElementById('username').textContent = userData.username || 'নেই';
             document.getElementById('uid').textContent = uid;
-            document.getElementById('pic').src = userData.photo || `https://ui-avatars.com/api/?name=${userData.name}`;
+            document.getElementById('pic').src = userData.photo || `https://ui-avatars.com/api/?name=${encodeURIComponent(userData.name)}`;
             document.getElementById('coins').textContent = userData.coins || 0;
             document.getElementById('refCount').textContent = (userData.referrals || []).length;
 
-            // Real Referral Link with Real UID
             const botUsername = "HiGriP_bot";
             document.getElementById('refLink').textContent = `t.me/${botUsername}?start=ref_${uid}`;
 
-            // Tier
             const tier = userData.coins >= 5000 ? 'Gold' : userData.coins >= 1000 ? 'Silver' : 'Bronze';
             const t = document.getElementById('tier');
             t.textContent = tier + ' Tier';
             t.className = `px-3 py-1 text-sm font-bold rounded-full tier-${tier.toLowerCase()}`;
 
-            // Dynamic Referral Lock
+            const needed = Math.max(0, 5 - (userData.referrals || []).length);
             const lock = document.getElementById('refLock');
             const motivation = document.getElementById('motivation');
-            const needed = Math.max(0, 5 - (userData.referrals || []).length);
-
             if (userData.coins >= 900) {
                 motivation.classList.add('hidden');
-                if (needed > 0) {
-                    lock.classList.remove('hidden');
-                    document.getElementById('needed').textContent = needed;
-                } else {
-                    lock.classList.add('hidden');
-                }
+                needed > 0 ? lock.classList.remove('hidden') && (document.getElementById('needed').textContent = needed) : lock.classList.add('hidden');
             } else {
                 lock.classList.add('hidden');
                 motivation.classList.remove('hidden');
             }
 
-            // Cooldown (15 sec)
             const now = Date.now();
             if (now - (userData.lastAd || 0) < 15000) startCooldown(userData.lastAd);
 
-            // Redeem Buttons
             document.querySelectorAll('.redeemBtn').forEach(b => {
                 const req = +b.dataset.coins;
                 const isLocked = userData.coins >= 900 && needed > 0;
                 b.disabled = isLocked || userData.coins < req;
-                b.textContent = b.disabled 
-                    ? (userData.coins < req ? 'কয়েন কম' : 'রেফার লক') 
-                    : 'রিডিম';
+                b.textContent = b.disabled ? (userData.coins < req ? 'কয়েন কম' : 'রেফার লক') : 'রিডিম';
             });
         }
 
-        // LibTL Ad (+20 coins)
         async function showAd(format = '', isAuto = false) {
+            if (!adReady) return;
             return new Promise((resolve, reject) => {
                 if (typeof show_10087307 === 'function') {
                     show_10087307(format).then(() => {
@@ -328,15 +348,14 @@
                         resolve();
                     }).catch(reject);
                 } else {
-                    setTimeout(reject, 1000);
+                    reject();
                 }
             });
         }
 
-        // Manual Ad (15 sec cooldown)
         document.getElementById('adBtn').onclick = async () => {
             const btn = document.getElementById('adBtn');
-            if (btn.disabled) return;
+            if (btn.disabled || !adReady) return tg.showAlert('অ্যাড লোড হচ্ছে...');
             btn.disabled = true; btn.textContent = 'লোড হচ্ছে...';
             try {
                 await showAd();
@@ -355,11 +374,10 @@
                 const left = 15 - Math.floor((Date.now() - last) / 1000);
                 if (left <= 0) { clearInterval(i); cd.classList.add('hidden'); return; }
                 document.getElementById('timer').textContent = left + ' সেকেন্ড';
-                document.getElementById('bar').style.width = (15 - left) * 6.666 + '%';
+                document.getElementById('bar').style.width = ((15 - left) / 15 * 100) + '%';
             }, 100);
         }
 
-        // Leaderboard
         function loadLeaderboard() {
             db.ref('users').orderByChild('coins').limitToLast(5).on('value', s => {
                 const list = document.getElementById('leaderboard');
@@ -370,23 +388,22 @@
                     list.innerHTML += `<div class="flex justify-between p-3 bg-gray-50 rounded-lg">
                         <div class="flex items-center space-x-2">
                             <span class="font-bold">${i+1}.</span>
-                            <img src="${u.photo || 'https://ui-avatars.com/api/?name=' + u.name}" class="w-6 h-6 rounded-full">
+                            <img src="${u.photo || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(u.name)}" class="w-6 h-6 rounded-full">
                             <span>${u.name}</span>
                             ${u.isAdmin ? '<span class="admin-badge ml-1">Admin</span>' : ''}
                         </div>
                         <span class="font-bold text-blue-600">${u.coins}</span>
                     </div>`;
                 });
-                if (entries.length === 0) list.innerHTML = '<p class="text-gray-500 text-sm">কোনো ডেটা নেই</p>';
+                if (!entries.length) list.innerHTML = '<p class="text-gray-500 text-sm">কোনো ডেটা নেই</p>';
             });
         }
 
-        // History
         function loadHistory() {
             db.ref('redeems').orderByChild('uid').equalTo(uid).on('value', s => {
                 const h = document.getElementById('history');
                 h.innerHTML = '';
-                if (s.numChildren() === 0) {
+                if (!s.numChildren()) {
                     h.innerHTML = '<p class="text-gray-500 text-sm">কোনো রিডিম নেই</p>';
                     return;
                 }
@@ -401,7 +418,6 @@
             });
         }
 
-        // Redeem Modal
         let redeem = {};
         document.querySelectorAll('.redeemBtn').forEach(b => {
             b.onclick = () => {
@@ -415,8 +431,8 @@
 
         document.getElementById('cancel').onclick = () => document.getElementById('modal').classList.add('hidden');
         document.getElementById('submit').onclick = () => {
-            const phone = document.getElementById('phone').value;
-            if (!/^\d{11}$/.test(phone)) return tg.showAlert('১১ ডিজিট');
+            const phone = document.getElementById('phone').value.trim();
+            if (!/^\d{11}$/.test(phone)) return tg.showAlert('১১ ডিজিটের নাম্বার দিন');
             userRef.child('coins').transaction(c => c - redeem.coins);
             db.ref('redeems').push({
                 uid, name: userData.name, type: redeem.type, amount: redeem.amount, phone, time: Date.now(), status: 'pending'
@@ -425,13 +441,11 @@
             tg.showAlert('রিকোয়েস্ট পাঠানো হয়েছে!');
         };
 
-        // Copy
         document.getElementById('copyBtn').onclick = () => {
             navigator.clipboard.writeText(document.getElementById('refLink').textContent);
             tg.showAlert('কপি হয়েছে!');
         };
 
-        // Tab
         document.querySelectorAll('.navBtn').forEach(b => {
             b.onclick = () => {
                 document.querySelectorAll('.navBtn').forEach(x => x.classList.remove('text-blue-600'));
@@ -442,6 +456,7 @@
             };
         });
 
+        // Start
         init();
     </script>
 </body>
