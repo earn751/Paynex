@@ -2,1685 +2,829 @@
 <html lang="bn">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>HiGriP - Telegram Mini App</title>
-    <meta name="description" content="A modern, digital Telegram Mini Web App for coin gripping and transfer.">
-    <!-- Telegram WebApp API -->
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <!-- Monetag Integration -->
-    <script src='//libtl.com/sdk.js' data-zone='10087307' data-sdk='show_10087307'></script>
-    <!-- Font Awesome for Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HiGrip - কয়েন উপার্জন করুন</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        /* --- Global Variables (Telegram Premium Theme) --- */
-        :root {
-            --tg-bg: var(--tg-theme-bg-color, #0f0f0f);
-            --tg-secondary-bg: var(--tg-theme-secondary-bg-color, #1a1a1a);
-            --tg-text: var(--tg-theme-text-color, #ffffff);
-            --tg-hint: var(--tg-theme-hint-color, #8e8e93);
-            --tg-link: var(--tg-theme-link-color, #6ab2ff);
-            --tg-button: var(--tg-theme-button-color, #40a7e3);
-            --tg-button-text: var(--tg-theme-button-text-color, #ffffff);
-            --accent-glow: #6ab2ff;
-            --accent-secondary: #ffd43b;
-            --card-bg: rgba(255, 255, 255, 0.08);
-            --card-hover-bg: rgba(255, 255, 255, 0.12);
-            --shadow-color: rgba(0, 0, 0, 0.3);
-            --border-radius: 16px;
-            --border-radius-small: 10px;
-            --transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-        }
-
-        /* --- Base Styling --- */
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
-        }
-
+        /* কাস্টম CSS এবং ফন্ট */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap');
         body {
-            background-color: var(--tg-bg);
-            color: var(--tg-text);
-            transition: var(--transition);
-            min-height: 100vh;
-            padding-bottom: 70px;
-            overscroll-behavior: none;
-            background-image: 
-                radial-gradient(circle at 10% 20%, rgba(106, 178, 255, 0.05) 0%, transparent 20%),
-                radial-gradient(circle at 90% 80%, rgba(255, 212, 59, 0.05) 0%, transparent 20%);
+            font-family: 'Inter', sans-serif;
+            background-color: #f7f9fc;
+            color: #1f2937;
+            touch-action: manipulation;
+        }
+        /* হেডার গ্রেডিয়েন্ট */
+        .header-bg {
+            background-image: linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%);
+        }
+        /* ট্রানজিশন এবং শ্যাডো */
+        .nav-link { transition: color 0.2s, transform 0.2s; }
+        .card-shadow { box-shadow: 0 5px 15px -3px rgba(0, 0, 0, 0.1); }
+        
+        /* bKash/Nagad রং */
+        .bKash-color { background-color: #e2136e; }
+        .Nagad-color { background-color: #f6941d; }
+        .bKash-color-btn { background-color: #e2136e; }
+        .Nagad-color-btn { background-color: #f6941d; }
+
+        /* রিডিম কার্ড স্টাইল */
+        .redeem-offer-card {
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="p" width="10" height="10" patternUnits="userSpaceOnUse"><circle cx="1" cy="1" r=".5" fill="rgba(255,255,255,0.2)"/></pattern></defs><rect width="100" height="100" fill="url(%23p)"/></svg>');
+            background-size: 10px 10px;
         }
 
-        #app-container {
-            max-width: 500px;
-            margin: 0 auto;
-            width: 100%;
-            position: relative;
-            overflow-x: hidden;
-        }
-
-        /* --- Loading Spinner --- */
-        .loading-spinner {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            text-align: center;
-            font-size: 1.5rem;
-            color: var(--tg-link);
-            z-index: 1000;
-        }
-        .loading-spinner i {
-            animation: spin 1.5s linear infinite;
-            display: block;
-            margin-bottom: 10px;
-            font-size: 2rem;
-        }
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-
-        /* --- Typography and Structure --- */
-        h2, h3, h4 {
-            margin: 15px 0 10px 0;
-            color: var(--tg-text);
-            font-weight: 600;
-        }
-        .section {
-            padding: 20px 15px;
-            display: none;
-            animation: fadeIn 0.4s ease-out;
-        }
-        .section.active {
-            display: block;
-        }
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        /* --- Utility Classes --- */
-        .card {
-            background-color: var(--card-bg);
-            padding: 18px;
-            border-radius: var(--border-radius);
-            margin-bottom: 15px;
-            box-shadow: 0 4px 12px var(--shadow-color);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            transition: var(--transition);
-        }
-        .card:hover {
-            background-color: var(--card-hover-bg);
-            transform: translateY(-2px);
-            box-shadow: 0 6px 16px var(--shadow-color);
-        }
-        .form-group {
-            margin-bottom: 18px;
-        }
-        .flex-row-end {
-            display: flex;
-            justify-content: flex-end;
-            margin-bottom: 15px;
-        }
-        .error-message {
-            color: #ff4d4f;
-            margin-top: 5px;
-            font-size: 0.9em;
-        }
-        .success-message {
-            color: #52c41a;
-            margin-top: 5px;
-            font-size: 0.9em;
-        }
-
-        /* --- Header & Profile --- */
-        header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 15px;
-            background-color: var(--tg-secondary-bg);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-            position: sticky;
-            top: 0;
-            z-index: 10;
-            backdrop-filter: blur(10px);
-        }
-        .header-user-info {
-            display: flex;
-            align-items: center;
-            font-weight: 600;
-        }
-        .current-balance {
-            font-size: 1.1em;
-            font-weight: 700;
-            color: var(--accent-secondary);
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-        .round-profile-pic {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            margin-right: 12px;
-            object-fit: cover;
-            border: 2px solid var(--tg-button);
-            box-shadow: 0 0 10px rgba(106, 178, 255, 0.3);
-        }
-        .large-pic {
-            width: 90px;
-            height: 90px;
-            margin: 0 auto 15px auto;
-            display: block;
-            border-width: 3px;
-        }
-        .profile-header {
-            text-align: center;
-            margin-bottom: 25px;
-        }
-
-        /* --- Inputs & Buttons --- */
-        .styled-input {
-            width: 100%;
-            padding: 14px 16px;
-            margin-top: 5px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: var(--border-radius-small);
-            background-color: rgba(255, 255, 255, 0.05);
-            color: var(--tg-text);
-            font-size: 1em;
-            transition: var(--transition);
-        }
-        .styled-input:focus {
-            outline: none;
-            border-color: var(--tg-link);
-            box-shadow: 0 0 0 2px rgba(106, 178, 255, 0.2);
-            background-color: rgba(255, 255, 255, 0.08);
-        }
-        .styled-input::placeholder {
-            color: var(--tg-hint);
-            opacity: 0.7;
-        }
-
-        button {
-            padding: 14px 20px;
-            border: none;
-            border-radius: var(--border-radius-small);
-            cursor: pointer;
-            font-weight: 600;
-            font-size: 1em;
-            transition: var(--transition);
-            position: relative;
-            overflow: hidden;
-        }
-        button::after {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            width: 5px;
-            height: 5px;
-            background: rgba(255, 255, 255, 0.5);
-            opacity: 0;
-            border-radius: 100%;
-            transform: scale(1, 1) translate(-50%);
-            transform-origin: 50% 50%;
-        }
-        button:focus:not(:active)::after {
-            animation: ripple 1s ease-out;
-        }
-        @keyframes ripple {
-            0% {
-                transform: scale(0, 0);
-                opacity: 0.5;
-            }
-            100% {
-                transform: scale(20, 20);
-                opacity: 0;
-            }
-        }
-
-        .primary-btn {
-            background-color: var(--tg-button);
-            color: var(--tg-button-text);
-            box-shadow: 0 4px 12px rgba(64, 167, 227, 0.3);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-        .primary-btn:active {
-            transform: translateY(2px);
-            box-shadow: 0 2px 6px rgba(64, 167, 227, 0.3);
-        }
-        .secondary-btn {
-            background-color: rgba(255, 255, 255, 0.08);
-            color: var(--tg-text);
-            border: 1px solid rgba(255, 255, 255, 0.15);
-        }
-        .secondary-btn:active {
-            transform: translateY(2px);
-        }
-        .glow-btn {
-            box-shadow: 0 0 15px var(--accent-glow);
-            animation: glowPulse 2s infinite ease-in-out;
-        }
-        @keyframes glowPulse {
-            0% { box-shadow: 0 0 10px var(--accent-glow); }
-            50% { box-shadow: 0 0 20px var(--accent-glow); }
-            100% { box-shadow: 0 0 10px var(--accent-glow); }
-        }
-
-        /* --- Navigation Bar --- */
-        .nav-bar {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            display: flex;
-            justify-content: space-around;
-            align-items: center;
-            height: 65px;
-            background-color: var(--tg-secondary-bg);
-            border-top: 1px solid rgba(255, 255, 255, 0.05);
-            box-shadow: 0 -4px 12px var(--shadow-color);
-            z-index: 10;
-            max-width: 500px;
-            margin: 0 auto;
-            backdrop-filter: blur(10px);
-        }
-        .nav-btn {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            background: none;
-            color: var(--tg-hint);
-            padding: 0;
-            height: 100%;
-            flex-grow: 1;
-            border-radius: 0;
-            font-size: 0.75em;
-            transition: var(--transition);
-            position: relative;
-        }
-        .nav-btn i {
-            font-size: 1.3em;
-            margin-bottom: 4px;
-            transition: var(--transition);
-        }
-        .nav-btn.active {
-            color: var(--tg-link);
-        }
-        .nav-btn.active::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 30px;
-            height: 3px;
-            background-color: var(--tg-link);
-            border-radius: 0 0 3px 3px;
-        }
-        .nav-btn:active {
-            transform: scale(0.95);
-        }
-
-        /* --- Grip Section Specifics --- */
-        .coin-counter-large {
-            text-align: center;
-            font-size: 2.8em;
-            font-weight: 900;
-            color: var(--accent-secondary);
-            margin-bottom: 25px;
-            text-shadow: 0 0 15px rgba(255, 212, 59, 0.3);
-            animation: float 3s infinite ease-in-out;
-        }
-        @keyframes float {
-            0% { transform: translateY(0px); }
-            50% { transform: translateY(-5px); }
-            100% { transform: translateY(0px); }
-        }
-        .grip-area {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 280px;
-            position: relative;
-        }
-        .grip-button {
-            width: 170px;
-            height: 170px;
-            border-radius: 50%;
-            background: linear-gradient(145deg, var(--tg-button), #2d8cc9);
-            color: var(--tg-button-text);
-            font-size: 4.5em;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 
-                0 0 25px var(--tg-button),
-                inset 0 0 15px rgba(255, 255, 255, 0.3);
-            transition: var(--transition);
-            border: 5px solid rgba(255, 255, 255, 0.2);
-            animation: pulse 2s infinite ease-in-out;
-            position: relative;
-            overflow: hidden;
-        }
-        .grip-button::before {
-            content: '';
-            position: absolute;
-            top: -10px;
-            left: -10px;
-            right: -10px;
-            bottom: -10px;
-            background: radial-gradient(circle, rgba(255,255,255,0.2) 0%, transparent 70%);
-            opacity: 0;
-            transition: opacity 0.3s;
-        }
-        .grip-button:active {
-            transform: scale(0.92);
-            box-shadow: 
-                0 0 10px var(--tg-button),
-                inset 0 0 10px rgba(255, 255, 255, 0.2);
-            animation: none;
-        }
-        .grip-button:active::before {
-            opacity: 1;
-        }
-        @keyframes pulse {
-            0% { transform: scale(1); box-shadow: 0 0 20px var(--tg-button); }
-            50% { transform: scale(1.05); box-shadow: 0 0 35px var(--tg-button); }
-            100% { transform: scale(1); box-shadow: 0 0 20px var(--tg-button); }
-        }
-
-        .grip-info-bar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-top: 25px;
-            padding: 15px;
-            background-color: var(--card-bg);
-            border-radius: var(--border-radius);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-        }
-        .multiplier-display {
-            font-size: 1.2em;
-            font-weight: 600;
-        }
-        .glow-text {
-            color: var(--accent-glow);
-            text-shadow: 0 0 10px var(--accent-glow);
-        }
-
-        /* --- Particle Animation (CSS) --- */
-        .particle-container {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            width: 1px;
-            height: 1px;
-            pointer-events: none;
-            overflow: visible;
-            z-index: 5;
-        }
-        .coin-particle {
-            position: absolute;
-            width: 20px;
-            height: 20px;
-            font-size: 14px;
-            text-align: center;
-            line-height: 20px;
-            color: gold;
-            opacity: 0;
-            user-select: none;
-            pointer-events: none;
-            transform: translate(-50%, -50%); 
-            animation: coinRise 1.2s ease-out forwards;
-            text-shadow: 0 0 5px rgba(255, 215, 0, 0.7);
-        }
-
-        @keyframes coinRise {
-            0% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
-            20% { opacity: 1; }
-            100% { opacity: 0; transform: translate(calc(var(--rand-x) * 1px), calc(var(--rand-y) * 1px - 120px)) scale(0.3); }
-        }
-
-        /* --- News Feed --- */
-        .news-feed {
-            display: flex;
-            flex-direction: column;
-            gap: 18px;
-            margin-top: 18px;
-        }
-        .news-card {
-            background-color: var(--card-bg);
-            padding: 18px;
-            border-radius: var(--border-radius);
-            box-shadow: 0 4px 12px var(--shadow-color);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            transition: var(--transition);
-        }
-        .news-card:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 6px 16px var(--shadow-color);
-        }
-        .news-card h4 {
-            margin-top: 0;
-            color: var(--tg-link);
-            font-weight: 600;
-        }
-        .news-card p {
-            margin: 12px 0;
-            color: var(--tg-text);
-            line-height: 1.5;
-        }
-        .news-card .news-btn {
-            width: 100%;
-            margin-top: 12px;
-            background-color: var(--tg-link);
-            color: var(--tg-button-text);
-            border: none;
-        }
-
-        /* --- Transfer Section --- */
-        .transfer-result-card {
-            margin-top: 18px;
-            padding: 18px;
-            background-color: var(--card-bg);
-            border-radius: var(--border-radius);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            transition: var(--transition);
-        }
-        .transfer-result-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 16px var(--shadow-color);
-        }
-        .transfer-result-card .result-info {
-            font-weight: 600;
-            color: var(--tg-text);
-            margin-bottom: 12px;
-            border-bottom: 1px dashed rgba(255, 255, 255, 0.1);
-            padding-bottom: 12px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        .transfer-form-card {
-            padding-top: 12px;
-        }
-        #confirm-transfer {
-            width: 100%;
-            margin-top: 12px;
-        }
-
-        /* --- Profile Specifics --- */
-        .ref-card, .history-card {
-            margin-top: 18px;
-        }
-        .ref-link-group {
-            display: flex;
-            gap: 12px;
-        }
-        .ref-link-group input {
-            flex-grow: 1;
-        }
-        .history-filters {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 12px;
-            flex-wrap: wrap;
-        }
-        .history-filters .filter-btn {
-            padding: 10px 15px;
-            font-size: 0.85em;
-            background-color: rgba(255, 255, 255, 0.08);
-            color: var(--tg-hint);
-            border-radius: 20px;
-            transition: var(--transition);
-        }
-        .history-filters .filter-btn.active {
-            background-color: var(--tg-button);
-            color: var(--tg-button-text);
-            box-shadow: 0 2px 8px rgba(64, 167, 227, 0.3);
-        }
-        .transaction-list {
-            max-height: 250px;
-            overflow-y: auto;
-            padding-right: 5px;
-        }
-        .transaction-list::-webkit-scrollbar {
-            width: 4px;
-        }
-        .transaction-list::-webkit-scrollbar-thumb {
-            background-color: rgba(255, 255, 255, 0.2);
-            border-radius: 2px;
-        }
-        .transaction-list div {
-            padding: 10px 0;
-            border-bottom: 1px dotted rgba(255, 255, 255, 0.1);
-            font-size: 0.9em;
-            transition: var(--transition);
-        }
-        .transaction-list div:hover {
-            background-color: rgba(255, 255, 255, 0.03);
-            padding-left: 5px;
-            border-radius: 5px;
-        }
-        .ref-tree-view {
-            padding-left: 10px;
-        }
-        .ref-tree-view ul {
-            list-style: none;
-            padding-left: 15px;
-            border-left: 1px dashed var(--tg-hint);
-        }
-        .ref-tree-view li {
-            padding: 8px 0;
-            font-size: 0.9em;
-            color: var(--tg-hint);
-            position: relative;
-        }
-        .ref-tree-view li::before {
-            content: '';
-            position: absolute;
-            left: -15px;
-            top: 15px;
-            width: 10px;
-            height: 1px;
-            background-color: var(--tg-hint);
-        }
-        .ref-tree-view li strong {
-            color: var(--tg-text);
-        }
-
-        /* --- Ad Container --- */
-        .ad-container {
-            margin: 20px 0;
-            padding: 15px;
-            background-color: var(--card-bg);
-            border-radius: var(--border-radius);
-            text-align: center;
-            border: 1px dashed rgba(255, 255, 255, 0.1);
-        }
-        .ad-label {
-            font-size: 0.8em;
-            color: var(--tg-hint);
-            margin-bottom: 8px;
-        }
-
-        /* --- Auto Grip Indicator --- */
-        .auto-grip-indicator {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            margin-top: 15px;
-            padding: 10px;
-            background-color: rgba(106, 178, 255, 0.1);
-            border-radius: var(--border-radius-small);
-            border: 1px solid rgba(106, 178, 255, 0.2);
-        }
-        .auto-grip-indicator .progress-bar {
-            flex-grow: 1;
-            height: 6px;
-            background-color: rgba(255, 255, 255, 0.1);
-            border-radius: 3px;
-            overflow: hidden;
-        }
-        .auto-grip-indicator .progress {
-            height: 100%;
-            background: linear-gradient(90deg, var(--tg-link), #8ac6ff);
-            border-radius: 3px;
-            width: 0%;
-            transition: width 0.5s linear;
-        }
     </style>
+    <!-- Telegram WebApp SDK -->
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <!-- Monetag SDK Simulation (Replace with actual script from your Monetag dashboard) -->
+    <script>
+        // Monetag SDK Simulation: আসল Monetag SDK লোড হওয়ার পর এই ফাংশনটি কাজ করবে
+        function show_10087307() {
+            return new Promise(resolve => {
+                setTimeout(() => {
+                    console.log("Monetag Ad Simulated: Success");
+                    resolve();
+                }, 5000); // 5 সেকেন্ড বিজ্ঞাপন প্রদর্শন সিমুলেশন
+            });
+        }
+    </script>
 </head>
-<body>
-    <div id="app-container">
-        <!-- Loading Spinner (Initially Visible) -->
-        <div id="loading-spinner" class="loading-spinner">
-            <i class="fas fa-spinner fa-spin"></i>
-            <p>Loading HiGriP...</p>
+<body class="min-h-screen flex flex-col">
+
+    <div id="app" class="flex flex-col flex-grow">
+        <!-- লোডিং স্ক্রিন -->
+        <div id="loading" class="absolute inset-0 bg-gray-900 bg-opacity-90 flex flex-col items-center justify-center z-50 transition-opacity duration-300">
+            <svg class="animate-spin h-8 w-8 text-white mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            <p class="text-white text-lg">ডাটা লোড হচ্ছে...</p>
         </div>
 
-        <!-- Main Content (Hidden until Telegram.WebApp.ready) -->
-        <div id="main-content" style="display: none;">
-
-            <!-- Header -->
-            <header>
-                <div class="header-user-info">
-                    <img id="header-profile-pic" src="" alt="P" class="round-profile-pic">
-                    <span id="header-username"></span>
+        <!-- হেডার -->
+        <header id="header" class="header-bg text-white p-4 rounded-b-xl shadow-lg transition-all duration-300">
+            <div class="flex items-center space-x-4">
+                <img id="profile-pic" class="w-12 h-12 rounded-full border-2 border-yellow-400 object-cover" src="https://placehold.co/48x48/6b7280/ffffff?text=U" onerror="this.onerror=null; this.src='https://placehold.co/48x48/6b7280/ffffff?text=U';" alt="Profile">
+                <div class="flex-grow">
+                    <p class="text-lg font-bold truncate" id="user-name">ইউজার নাম</p>
+                    <p class="text-xs text-gray-300 truncate" id="user-uid">UID: 123456789</p>
                 </div>
-                <div class="current-balance">
-                    <i class="fas fa-coins"></i> <span id="header-balance">0</span>
+            </div>
+            <div class="mt-3 flex items-center justify-between">
+                <div class="flex items-baseline space-x-1">
+                    <span class="text-3xl font-extrabold text-yellow-300" id="user-coins">0</span>
+                    <span class="text-sm font-medium">কয়েন</span>
                 </div>
-            </header>
-            
-            <main>
-                <!-- 1. Grip Section (👊) -->
-                <section id="grip-section" class="section active">
-                    <div class="coin-counter-large">
-                        <span id="coin-counter-text">0</span>
+                <div id="tier-badge" class="px-3 py-1 text-sm font-semibold rounded-full bg-gray-500 text-white">Bronze Tier</div>
+            </div>
+        </header>
+
+        <!-- মূল কন্টেন্ট (ট্যাব) -->
+        <main class="p-4 flex-grow overflow-y-auto" id="main-content">
+
+            <!-- 1. Redeem Tab -->
+            <div id="tab-redeem" class="tab-content" style="display:none;">
+                <h2 class="text-xl font-bold mb-4 text-gray-800">কয়েন রিডিম</h2>
+
+                <!-- bKash Offers Section -->
+                <h3 class="text-lg font-bold text-gray-800 mb-3">bKash অফার</h3>
+                <div class="space-y-4 mb-8" id="bKash-offers">
+                    <!-- Offer 1: 1000C = 100৳ -->
+                    <div class="redeem-offer-card bKash-color p-0 rounded-xl card-shadow overflow-hidden">
+                        <div class="text-center py-4 px-6">
+                            <p class="text-5xl font-extrabold text-white">৳100</p>
+                        </div>
+                        <div class="bg-white p-4 flex justify-between items-center text-gray-800">
+                            <div class="flex flex-col">
+                                <span class="text-xs font-semibold uppercase text-red-600">bKash</span>
+                                <span class="text-sm font-bold">1,000 কয়েনে রিডিম</span>
+                            </div>
+                            <button data-type="bKash" data-coins="1000" data-amount="100" class="redeem-btn bKash-color-btn text-white font-bold py-2 px-4 rounded-lg transition duration-200">
+                                রিডিম
+                            </button>
+                        </div>
                     </div>
+
+                    <!-- Offer 2: 10000C = 1500৳ -->
+                    <div class="redeem-offer-card bKash-color p-0 rounded-xl card-shadow overflow-hidden">
+                        <div class="text-center py-4 px-6">
+                            <p class="text-5xl font-extrabold text-white">৳1500</p>
+                        </div>
+                        <div class="bg-white p-4 flex justify-between items-center text-gray-800">
+                            <div class="flex flex-col">
+                                <span class="text-xs font-semibold uppercase text-red-600">bKash</span>
+                                <span class="text-sm font-bold">10,000 কয়েনে রিডিম</span>
+                            </div>
+                            <button data-type="bKash" data-coins="10000" data-amount="1500" class="redeem-btn bKash-color-btn text-white font-bold py-2 px-4 rounded-lg transition duration-200">
+                                রিডিম
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Offer 3: 20000C = 3000৳ -->
+                    <div class="redeem-offer-card bKash-color p-0 rounded-xl card-shadow overflow-hidden">
+                        <div class="text-center py-4 px-6">
+                            <p class="text-5xl font-extrabold text-white">৳3000</p>
+                        </div>
+                        <div class="bg-white p-4 flex justify-between items-center text-gray-800">
+                            <div class="flex flex-col">
+                                <span class="text-xs font-semibold uppercase text-red-600">bKash</span>
+                                <span class="text-sm font-bold">20,000 কয়েনে রিডিম</span>
+                            </div>
+                            <button data-type="bKash" data-coins="20000" data-amount="3000" class="redeem-btn bKash-color-btn text-white font-bold py-2 px-4 rounded-lg transition duration-200">
+                                রিডিম
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Nagad Offers Section -->
+                <h3 class="text-lg font-bold text-gray-800 mb-3 mt-6">Nagad অফার</h3>
+                <div class="space-y-4" id="Nagad-offers">
+                    <!-- Offer 1: 1000C = 100৳ -->
+                    <div class="redeem-offer-card Nagad-color p-0 rounded-xl card-shadow overflow-hidden">
+                        <div class="text-center py-4 px-6">
+                            <p class="text-5xl font-extrabold text-white">৳100</p>
+                        </div>
+                        <div class="bg-white p-4 flex justify-between items-center text-gray-800">
+                            <div class="flex flex-col">
+                                <span class="text-xs font-semibold uppercase text-yellow-600">Nagad</span>
+                                <span class="text-sm font-bold">1,000 কয়েনে রিডিম</span>
+                            </div>
+                            <button data-type="Nagad" data-coins="1000" data-amount="100" class="redeem-btn Nagad-color-btn text-white font-bold py-2 px-4 rounded-lg transition duration-200">
+                                রিডিম
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Offer 2: 10000C = 1500৳ -->
+                    <div class="redeem-offer-card Nagad-color p-0 rounded-xl card-shadow overflow-hidden">
+                        <div class="text-center py-4 px-6">
+                            <p class="text-5xl font-extrabold text-white">৳1500</p>
+                        </div>
+                        <div class="bg-white p-4 flex justify-between items-center text-gray-800">
+                            <div class="flex flex-col">
+                                <span class="text-xs font-semibold uppercase text-yellow-600">Nagad</span>
+                                <span class="text-sm font-bold">10,000 কয়েনে রিডিম</span>
+                            </div>
+                            <button data-type="Nagad" data-coins="10000" data-amount="1500" class="redeem-btn Nagad-color-btn text-white font-bold py-2 px-4 rounded-lg transition duration-200">
+                                রিডিম
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Redeem History -->
+                <h3 class="text-lg font-semibold mt-8 mb-3 text-gray-800 border-b pb-1">রিডিম ইতিহাস</h3>
+                <div id="redeem-history" class="space-y-2">
+                    <p class="text-gray-500 text-sm">কোনো রিডিম রিকোয়েস্ট নেই।</p>
+                </div>
+            </div>
+
+            <!-- 2. Earn Tab -->
+            <div id="tab-earn" class="tab-content" style="display:block;">
+                <h2 class="text-xl font-bold mb-4 text-gray-800">কয়েন উপার্জন করুন</h2>
+
+                <!-- Monetag Ad Card -->
+                <div class="bg-white p-5 rounded-xl card-shadow mb-6">
+                    <div class="flex justify-between items-center mb-3">
+                        <p class="text-lg font-semibold text-gray-800">ভিডিও বিজ্ঞাপন দেখুন</p>
+                        <span class="text-green-600 font-bold">+10 কয়েন</span>
+                    </div>
+                    <button id="ad-button" class="w-full py-3 rounded-lg text-white font-bold transition duration-300 disabled:opacity-50" style="background-color:#3b82f6;">
+                        বিজ্ঞাপন দেখুন
+                    </button>
+                    <div id="ad-cooldown" class="mt-3 text-center text-sm text-gray-500" style="display:none;">
+                        <div class="w-full bg-gray-200 rounded-full h-2.5 mb-1">
+                            <div id="cooldown-progress" class="bg-red-600 h-2.5 rounded-full" style="width: 0%"></div>
+                        </div>
+                        <span id="cooldown-timer">১ মিনিট কুলডাউন...</span>
+                    </div>
+                </div>
+
+                <!-- Referral Card -->
+                <div class="bg-white p-5 rounded-xl card-shadow">
+                    <p class="text-lg font-semibold text-gray-800 mb-3">বন্ধুদের রেফার করুন</p>
+                    <p class="text-sm text-gray-600 mb-4">আপনার লিঙ্কে জয়েন করলে এবং প্রথম অ্যাড দেখলে, আপনি ও আপনার বন্ধু দুজনেই পাবেন <span class="text-green-600 font-bold">+50 কয়েন</span>।</p>
+
+                    <div class="flex items-center justify-between bg-gray-100 p-3 rounded-lg mb-4">
+                        <p class="text-sm font-medium truncate" id="referral-code">ref_...</p>
+                        <button id="copy-referral-btn" class="text-blue-600 text-sm font-semibold ml-3 active:text-blue-800">কপি</button>
+                    </div>
+
+                    <p class="text-sm font-medium text-gray-800">আপনার রেফার সংখ্যা: <span id="referral-count" class="font-bold text-blue-600">0</span></p>
+                    <p id="redeem-lock-status" class="text-xs mt-1 text-red-500 font-medium hidden">রিডিম করতে আরও <span id="ref-needed">5</span> জনকে রেফার করুন।</p>
+
+                </div>
+            </div>
+
+            <!-- 3. Feed Tab -->
+            <div id="tab-feed" class="tab-content" style="display:none;">
+                <h2 class="text-xl font-bold mb-4 text-gray-800">লাইভ ফিড ও লিডারবোর্ড</h2>
+
+                <!-- Leaderboard -->
+                <div class="bg-white p-5 rounded-xl card-shadow mb-6">
+                    <p class="text-lg font-semibold text-gray-800 mb-3 border-b pb-2">শীর্ষ উপার্জনকারী (টপ ৫)</p>
+                    <div id="leaderboard-list" class="space-y-3">
+                        <p class="text-gray-500 text-sm">লিডারবোর্ড লোড হচ্ছে...</p>
+                    </div>
+                </div>
+
+                <!-- Admin Posts -->
+                <div class="bg-white p-5 rounded-xl card-shadow">
+                    <p class="text-lg font-semibold text-gray-800 mb-3 border-b pb-2">অ্যাডমিন আপডেট</p>
+                    <p class="text-gray-500 text-sm">এখানে অ্যাডমিন থেকে আসা গুরুত্বপূর্ণ পোস্ট ও আপডেট দেখা যাবে।</p>
+                </div>
+            </div>
+
+        </main>
+
+        <!-- Redeem Modal -->
+        <div id="redeem-modal" class="fixed inset-0 bg-gray-900 bg-opacity-75 hidden items-center justify-center p-4 z-40 transition-opacity duration-300">
+            <div class="bg-white w-full max-w-md rounded-xl shadow-2xl transform scale-95 transition-transform duration-300">
+                <div id="modal-header" class="p-4 rounded-t-xl text-white flex justify-between items-center bKash-color">
+                    <h3 class="text-xl font-bold" id="modal-title">রিডিম ফর্ম</h3>
+                    <button id="close-modal-btn" class="p-1 rounded-full hover:bg-white hover:bg-opacity-20 transition">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+                <form id="redeem-form" class="p-6">
+                    <p class="text-sm font-medium mb-4 text-gray-600" id="redeem-type-info">আপনি bKash-এর মাধ্যমে <span class="font-bold text-lg text-green-600">৳100</span> রিডিম করছেন।</p>
                     
-                    <div class="grip-area">
-                        <button id="grip-btn" class="grip-button">
-                            <i class="fas fa-hand-rock"></i>
-                        </button>
-                    </div>
+                    <input type="hidden" id="modal-coins" value="0">
+                    <input type="hidden" id="modal-amount" value="0">
+                    <input type="hidden" id="modal-type" value="">
 
-                    <div class="auto-grip-indicator">
-                        <i class="fas fa-clock"></i>
-                        <span>Auto Grip in: <span id="countdown">15</span>s</span>
-                        <div class="progress-bar">
-                            <div class="progress" id="auto-grip-progress"></div>
-                        </div>
-                    </div>
+                    <!-- Target Number -->
+                    <label class="block text-sm font-medium text-gray-700 mb-2">আপনার মোবাইল নাম্বার</label>
+                    <input type="text" id="target-number" required pattern="[0-9]{11}" placeholder="১১ ডিজিটের নাম্বার" class="w-full p-3 mb-6 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 transition duration-150">
 
-                    <div class="grip-info-bar">
-                        <div class="multiplier-display">
-                            Multiplier: <span id="multiplier-text" class="glow-text">1x</span>
-                        </div>
-                        <button id="watch-ad-btn" class="secondary-btn glow-btn" style="display:none">
-                            <i class="fas fa-video"></i> Watch Ad for 5x Boost
-                        </button>
-                    </div>
-
-                    <div id="particle-container" class="particle-container"></div>
-                </section>
-
-                <!-- 2. Transfer Section (🔄) -->
-                <section id="transfer-section" class="section">
-                    <h2><i class="fas fa-exchange-alt"></i> কয়েন ট্রান্সফার</h2>
-                    <div class="form-group">
-                        <input type="text" id="username-input" placeholder="@username বা ইউজার আইডি" class="styled-input" />
-                        <button id="search-btn" class="primary-btn"><i class="fas fa-search"></i> Search User</button>
-                    </div>
-                    
-                    <div id="user-result" class="transfer-result-card" style="display:none">
-                        <div class="result-info">
-                            <i class="fas fa-user-check"></i> Found: <span id="found-username"></span> (<span id="found-id"></span>)
-                        </div>
-                        <div id="transfer-form" class="transfer-form-card">
-                            <input type="number" id="amount-input" placeholder="কয়েন পরিমাণ" class="styled-input" />
-                            <button id="confirm-transfer" class="primary-btn"><i class="fas fa-paper-plane"></i> Transfer Now</button>
-                            <p class="error-message" id="transfer-error" style="display:none"></p>
-                        </div>
-                    </div>
-                </section>
-
-                <!-- 3. News Section (📰) -->
-                <section id="news-section" class="section">
-                    <div class="flex-row-end">
-                        <button id="admin-post-btn" class="primary-btn glow-btn" style="display:none">
-                            <i class="fas fa-plus"></i> Post News
-                        </button>
-                    </div>
-                    
-                    <div id="admin-post-form" class="card post-form" style="display:none">
-                        <h3>New Post</h3>
-                        <input type="text" id="post-title" placeholder="Title" class="styled-input">
-                        <textarea id="post-caption" placeholder="Caption" class="styled-input"></textarea>
-                        <input type="text" id="post-btn-text" placeholder="Button Text (Optional)" class="styled-input">
-                        <input type="url" id="post-btn-link" placeholder="Button Link (URL)" class="styled-input">
-                        <button id="save-post-btn" class="primary-btn">Save Post</button>
-                    </div>
-
-                    <div id="news-feed" class="news-feed">
-                        <!-- News cards will be inserted here -->
-                    </div>
-                    <button id="load-more-news" class="secondary-btn" style="display:none">Load More</button>
-                </section>
-
-                <!-- 4. Profile Section (👤) -->
-                <section id="profile-section" class="section">
-                    <div class="profile-header">
-                        <img src="" id="profile-pic" alt="Profile" class="round-profile-pic large-pic" />
-                        <h3 id="user-name">User Name</h3>
-                        <p id="profile-balance">Balance: 0 কয়েন</p>
-                    </div>
-
-                    <div class="card ref-card">
-                        <h4><i class="fas fa-user-friends"></i> Referral Link</h4>
-                        <div class="form-group ref-link-group">
-                            <input type="text" id="ref-link" readonly class="styled-input" />
-                            <button id="share-ref" class="primary-btn"><i class="fas fa-share-alt"></i> Share & Earn</button>
-                        </div>
-                    </div>
-
-                    <div class="card history-card">
-                        <h4><i class="fas fa-history"></i> Transaction History</h4>
-                        <div class="history-filters">
-                            <button class="filter-btn active" data-filter="all">All</button>
-                            <button class="filter-btn" data-filter="grip">Grip</button>
-                            <button class="filter-btn" data-filter="transfer">Transfer</button>
-                            <button class="filter-btn" data-filter="referral">Referral</button>
-                        </div>
-                        <div id="history-list" class="transaction-list">
-                            <!-- History will be inserted here -->
-                        </div>
-                    </div>
-
-                    <div class="card ref-card">
-                        <h4><i class="fas fa-tree"></i> Referral Dashboard</h4>
-                        <div id="ref-tree" class="ref-tree-view">
-                            <!-- Referral tree will be inserted here -->
-                        </div>
-                    </div>
-                </section>
-            </main>
-
-            <!-- Fixed Bottom Navigation Bar -->
-            <div class="nav-bar">
-                <button data-section="grip" class="nav-btn active">
-                    <i class="fas fa-hand-rock"></i>
-                    <span class="nav-label">Grip</span>
-                </button>
-                <button data-section="transfer" class="nav-btn">
-                    <i class="fas fa-exchange-alt"></i>
-                    <span class="nav-label">Transfer</span>
-                </button>
-                <button data-section="news" class="nav-btn">
-                    <i class="fas fa-newspaper"></i>
-                    <span class="nav-label">News</span>
-                </button>
-                <button data-section="profile" class="nav-btn">
-                    <i class="fas fa-user-circle"></i>
-                    <span class="nav-label">Profile</span>
-                </button>
+                    <button type="submit" id="final-redeem-btn" class="w-full py-3 rounded-lg text-white font-bold transition duration-300 disabled:opacity-50 bKash-color-btn">
+                        রিডিম রিকোয়েস্ট পাঠান
+                    </button>
+                    <p id="redeem-error" class="text-sm text-red-500 mt-3 text-center hidden">ত্রুটি: আপনার পর্যাপ্ত কয়েন বা রেফার নেই।</p>
+                </form>
             </div>
         </div>
+
+        <!-- বটম নেভিগেশন -->
+        <nav class="bg-white border-t border-gray-200 sticky bottom-0 z-10 shadow-lg">
+            <div class="flex justify-around py-2">
+                <button data-tab="redeem" class="nav-link flex flex-col items-center p-2 text-gray-500 active:text-blue-600">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 8c-2.485 0-4 .933-4 2.5v.5H7a2 2 0 00-2 2v3a2 2 0 002 2h10a2 2 0 002-2v-3a2 2 0 00-2-2h-1v-.5c0-1.567-1.515-2.5-4-2.5z" />
+                    </svg>
+                    <span class="text-xs mt-1">রিডিম</span>
+                </button>
+                <button data-tab="earn" class="nav-link flex flex-col items-center p-2 text-blue-600 active:text-blue-600">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z" />
+                    </svg>
+                    <span class="text-xs mt-1">উপার্জন</span>
+                </button>
+                <button data-tab="feed" class="nav-link flex flex-col items-center p-2 text-gray-500 active:text-blue-600">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16m-7 6h7" />
+                    </svg>
+                    <span class="text-xs mt-1">ফিড</span>
+                </button>
+            </div>
+        </nav>
     </div>
-    
+
     <script>
-        /**
-         * HiGriP - Telegram Mini Web App Script
-         * Premium Telegram-Style UI with Auto Grip Feature
-         */
+        // #################################################
+        // # টেলিগ্রাম মিনি অ্যাপ ফ্রন্টএন্ড লজিক (JavaScript) #
+        // #################################################
 
-        // --- GLOBAL VARIABLES & CONSTANTS ---
-        const ADMIN_UID = 7243906826;
-        const REFERRAL_COMMISSION = { L1: 0.10, L2: 0.05, L3: 0.02 };
-        const MONETAG_ZONE_ID = 10087307;
-        const AUTO_GRIP_INTERVAL = 15000; // 15 seconds
+        // গ্লোবাল স্টেট
+        const STATE = {
+            user: {},
+            coins: 0,
+            referral_count: 0,
+            tier: 'Bronze',
+            last_ad: 0,
+            is_earning_cooldown: false,
+            // এখানে আপনার ব্যাকএন্ড URL দিন
+            API_URL: 'https://your-backend-url.onrender.com/api' // ডেপ্লয় করার সময় এটি পরিবর্তন করুন
+        };
 
-        let user = null;
-        let currentMultiplier = 1;
-        let tapCount = 0;
-        let tapTimer = null;
-        let transferCount = 0;
-        let newsItems = [];
-        let displayedNewsCount = 5;
-        let autoGripTimer = null;
-        let autoGripCountdown = 15;
-        let lastGripTime = 0;
+        const tg = window.Telegram.WebApp;
 
-        // Monetag Ad Manager
-        const AdManager = {
-            isAdLoaded: typeof window[`show_${MONETAG_ZONE_ID}`] !== 'undefined',
+        // --- ইউটিলিটি ফাংশন ---
+
+        /** টেলিগ্রাম অ্যালার্ট */
+        const showAlert = (message) => {
+            if (tg) {
+                tg.showAlert(message);
+            } else {
+                console.warn("Telegram WebApp not available. Alert:", message);
+                alert(message); // লোকাল টেস্টিং এর জন্য ফলব্যাক
+            }
+        }
+
+        /** এপিআই ফেচ হেল্পার */
+        const apiFetch = async (endpoint, method = 'GET', data = null) => {
+            const url = `${STATE.API_URL}${endpoint}`;
+            const options = {
+                method,
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${tg.initData || 'local-test-token'}` // initData ব্যবহার করে অথেনটিকেশন
+                },
+            };
+            if (data) {
+                options.body = JSON.stringify(data);
+            }
+
+            try {
+                const response = await fetch(url, options);
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.message || 'API Error');
+                }
+                return await response.json();
+            } catch (error) {
+                console.error(`API Error on ${endpoint}:`, error.message);
+                showAlert(`API ত্রুটি: ${error.message}`);
+                throw error;
+            }
+        };
+
+        /** ইউজার টিয়ার গণনা */
+        const getTier = (coins) => {
+            if (coins >= 5000) return 'Gold';
+            if (coins >= 1000) return 'Silver';
+            return 'Bronze';
+        }
+
+        /** ইউআই রেন্ডারিং */
+        const renderUI = () => {
+            const { user, coins, referral_count, tier } = STATE;
+
+            // ১. হেডার ও প্রোফাইল
+            document.getElementById('profile-pic').src = user.photo_url || 'https://placehold.co/48x48/6b7280/ffffff?text=U';
+            document.getElementById('user-name').textContent = `${user.first_name || ''} ${user.last_name || ''}`;
+            document.getElementById('user-uid').textContent = `UID: ${user.id}`;
+            document.getElementById('user-coins').textContent = coins.toLocaleString('en-US');
+
+            // ২. টিয়ার ব্যাজ
+            const tierBadge = document.getElementById('tier-badge');
+            tierBadge.textContent = `${tier} Tier`;
+            tierBadge.className = 'px-3 py-1 text-sm font-semibold rounded-full transition-colors duration-300';
+            if (tier === 'Gold') {
+                tierBadge.classList.add('bg-yellow-500', 'text-gray-900');
+            } else if (tier === 'Silver') {
+                tierBadge.classList.add('bg-gray-400', 'text-white');
+            } else {
+                tierBadge.classList.add('bg-amber-800', 'text-white');
+            }
+
+            // ৩. আর্ন ট্যাব
+            document.getElementById('referral-code').textContent = `t.me/HiGriP_bot?start=ref_${user.id}`;
+            document.getElementById('referral-count').textContent = referral_count;
+
+            // ৪. রিডিম লক স্ট্যাটাস (Hidden check)
+            const refNeeded = 5 - referral_count;
+            if (refNeeded > 0) {
+                document.getElementById('redeem-lock-status').classList.remove('hidden');
+                document.getElementById('ref-needed').textContent = refNeeded;
+            } else {
+                document.getElementById('redeem-lock-status').classList.add('hidden');
+            }
+
+            // রিডিম বাটনের অবস্থা আপডেট করুন
+            document.querySelectorAll('.redeem-btn').forEach(btn => {
+                const coinsRequired = parseInt(btn.getAttribute('data-coins'), 10);
+                if (STATE.referral_count < 5) {
+                    btn.disabled = false; // এখানে ফলস রাখছি কারণ লকের মেসেজটাshowAlert দিয়ে দেব
+                    btn.classList.add('opacity-50', 'cursor-pointer');
+                    btn.textContent = 'লকড';
+                } else if (STATE.coins < coinsRequired) {
+                    btn.disabled = true;
+                    btn.classList.add('opacity-50');
+                    btn.textContent = 'কয়েন কম';
+                } else {
+                    btn.disabled = false;
+                    btn.classList.remove('opacity-50');
+                    btn.textContent = 'রিডিম';
+                }
+            });
+        }
+
+        /** অ্যাপ ইনিশিয়ালাইজেশন */
+        const initApp = async () => {
+            // ১. ফুল স্ক্রিন
+            tg.ready();
+            tg.expand();
+            tg.MainButton.hide();
+
+            // ২. ইউজার ডেটা
+            const unsafeUser = tg.initDataUnsafe.user;
+            if (!unsafeUser) {
+                document.getElementById('loading').innerHTML = '<p class="text-white text-lg">Telegram ব্যবহারকারী ডেটা পাওয়া যায়নি।</p>';
+                return;
+            }
+            STATE.user = unsafeUser;
+
+            // ৩. রেফারেল কোড চেক
+            const urlParams = new URLSearchParams(window.location.search);
+            const startParam = urlParams.get('start');
+            let referred_by = null;
+            if (startParam && startParam.startsWith('ref_')) {
+                referred_by = startParam.substring(4);
+            }
+
+            // ৪. এপিআই কল টু ইনিশিয়ালাইজ
+            try {
+                const initData = await apiFetch('/init', 'POST', {
+                    initData: tg.initData,
+                    referred_by: referred_by,
+                    user_info: {
+                        uid: unsafeUser.id,
+                        username: unsafeUser.username,
+                        first_name: unsafeUser.first_name,
+                        last_name: unsafeUser.last_name,
+                        photo_url: unsafeUser.photo_url
+                    }
+                });
+
+                STATE.coins = initData.coins || 0;
+                STATE.referral_count = initData.referral_count || 0;
+                STATE.last_ad = initData.last_ad || 0;
+                STATE.tier = getTier(STATE.coins);
+
+                renderUI();
+                await fetchLeaderboard();
+                await fetchRedeemHistory();
+                checkAdCooldown();
+
+            } catch (error) {
+                console.error("Initialization Failed:", error);
+            } finally {
+                // ৫. লোডিং স্ক্রিন হাইড
+                document.getElementById('loading').style.opacity = '0';
+                setTimeout(() => document.getElementById('loading').style.display = 'none', 300);
+            }
+        }
+
+        // --- বিজ্ঞাপন উপার্জনের লজিক ---
+
+        const adButton = document.getElementById('ad-button');
+        const adCooldownDiv = document.getElementById('ad-cooldown');
+        const cooldownProgress = document.getElementById('cooldown-progress');
+        const cooldownTimerText = document.getElementById('cooldown-timer');
+
+        const AD_COOLDOWN_SECONDS = 60; // ১ মিনিট
+        const AD_PROCESS_SECONDS = 30; // ৩০ সেকেন্ড প্রোগ্রেস বার
+
+        let cooldownInterval;
+
+        const checkAdCooldown = () => {
+            const now = Date.now();
+            const lastAdTime = STATE.last_ad;
+            const elapsed = (now - lastAdTime) / 1000;
+            const remaining = AD_COOLDOWN_SECONDS - elapsed;
+
+            clearInterval(cooldownInterval);
+
+            if (remaining > 0) {
+                STATE.is_earning_cooldown = true;
+                adButton.disabled = true;
+                adButton.textContent = 'কুলডাউনে আছে...';
+                adCooldownDiv.style.display = 'block';
+
+                const updateTimer = () => {
+                    const currentRemaining = Math.max(0, AD_COOLDOWN_SECONDS - ((Date.now() - lastAdTime) / 1000));
+                    if (currentRemaining <= 0) {
+                        clearInterval(cooldownInterval);
+                        STATE.is_earning_cooldown = false;
+                        adButton.disabled = false;
+                        adButton.textContent = 'বিজ্ঞাপন দেখুন';
+                        adCooldownDiv.style.display = 'none';
+                        return;
+                    }
+                    cooldownTimerText.textContent = ` ${Math.ceil(currentRemaining)} সেকেন্ড বাকি`;
+                    const percentage = (currentRemaining / AD_COOLDOWN_SECONDS) * 100;
+                    cooldownProgress.style.width = `${100 - percentage}%`;
+                };
+
+                updateTimer();
+                cooldownInterval = setInterval(updateTimer, 1000);
+
+            } else {
+                STATE.is_earning_cooldown = false;
+                adButton.disabled = false;
+                adButton.textContent = 'বিজ্ঞাপন দেখুন';
+                adCooldownDiv.style.display = 'none';
+            }
+        }
+
+        const handleAdWatch = async () => {
+            if (STATE.is_earning_cooldown) return;
+
+            adButton.disabled = true;
+            adButton.textContent = 'বিজ্ঞাপন লোড হচ্ছে...';
+
+            try {
+                // ১. ৩০ সেকেন্ড প্রোগ্রেস বার
+                adCooldownDiv.style.display = 'block';
+                cooldownTimerText.textContent = 'বিজ্ঞাপন চলছে, ৩০ সেকেন্ড অপেক্ষা করুন...';
+
+                const startTime = Date.now();
+                const progressInterval = setInterval(() => {
+                    const elapsed = (Date.now() - startTime) / 1000;
+                    const progress = Math.min(100, (elapsed / AD_PROCESS_SECONDS) * 100);
+                    cooldownProgress.style.width = `${progress}%`;
+                }, 100);
+
+                // ২. Monetag ফাংশন কল
+                await show_10087307();
+                clearInterval(progressInterval);
+                cooldownProgress.style.width = '100%'; 
+
+                // ৩. ব্যাকএন্ডে সফলতার নোটিফিকেশন পাঠান
+                const result = await apiFetch('/earn', 'POST', {
+                    uid: STATE.user.id,
+                    reward: 10 
+                });
+
+                // ৪. স্টেট এবং ইউআই আপডেট
+                STATE.coins = result.new_coins;
+                STATE.referral_count = result.referral_count; 
+                STATE.last_ad = Date.now();
+                STATE.tier = getTier(STATE.coins);
+
+                renderUI();
+                checkAdCooldown();
+
+                showAlert(`বিজ্ঞাপন দেখা সফল! আপনি ${result.earned_coins} কয়েন পেয়েছেন।`);
+
+            } catch (error) {
+                console.error("Ad earning failed:", error);
+                adButton.textContent = 'বিজ্ঞাপন দেখুন';
+                adButton.disabled = false;
+                adCooldownDiv.style.display = 'none';
+            }
+        }
+
+        // --- রিডিম লজিক ---
+
+        const redeemModal = document.getElementById('redeem-modal');
+        const modalHeader = document.getElementById('modal-header');
+        const modalTitle = document.getElementById('modal-title');
+        const redeemTypeInfo = document.getElementById('redeem-type-info');
+        const finalRedeemBtn = document.getElementById('final-redeem-btn');
+        const redeemError = document.getElementById('redeem-error');
+        const redeemForm = document.getElementById('redeem-form');
+        const modalCoinsInput = document.getElementById('modal-coins');
+        const modalAmountInput = document.getElementById('modal-amount');
+        const modalTypeInput = document.getElementById('modal-type');
+
+
+        const openRedeemModal = (type, coins, amount) => {
+            const coinsRequired = parseInt(coins, 10);
+
+            // ১. রেফারেল লক চেক
+            if (STATE.referral_count < 5) {
+                showAlert("কমপক্ষে ৫ জনকে রেফার করুন!");
+                return;
+            }
+            // ২. পর্যাপ্ত কয়েন চেক
+            if (STATE.coins < coinsRequired) {
+                showAlert(`আপনার পর্যাপ্ত কয়েন (${coinsRequired.toLocaleString()}) নেই!`);
+                return;
+            }
+
+            // ৩. মোডাল সেটআপ
+            modalCoinsInput.value = coins;
+            modalAmountInput.value = amount;
+            modalTypeInput.value = type;
+
+            redeemError.classList.add('hidden');
+            redeemModal.classList.remove('hidden');
+            document.querySelector('#redeem-modal > div').classList.remove('scale-95');
             
-            // In-App Interstitial (অটোমেটিক ফুল স্ক্রিন এড)
-            showInterstitial() {
-                if (!this.isAdLoaded) {
-                    console.log("Mock: In-App Interstitial would show now");
+            // ৪. রঙ ও টেক্সট সেটআপ
+            let headerColorClass, btnColorClass;
+
+            if (type === 'bKash') {
+                headerColorClass = 'bKash-color';
+                btnColorClass = 'bKash-color-btn';
+                modalTitle.textContent = 'bKash রিডিম রিকোয়েস্ট';
+            } else if (type === 'Nagad') {
+                headerColorClass = 'Nagad-color';
+                btnColorClass = 'Nagad-color-btn';
+                modalTitle.textContent = 'Nagad রিডিম রিকোয়েস্ট';
+            }
+
+            modalHeader.className = `p-4 rounded-t-xl text-white flex justify-between items-center ${headerColorClass}`;
+            finalRedeemBtn.className = `w-full py-3 rounded-lg text-white font-bold transition duration-300 disabled:opacity-50 ${btnColorClass}`;
+            redeemTypeInfo.innerHTML = `আপনি ${type}-এর মাধ্যমে <span class="font-bold text-lg text-white p-1 rounded-md ${headerColorClass}">৳${amount.toLocaleString()}</span> রিডিম করছেন। এর জন্য আপনার ${coins.toLocaleString()} কয়েন কাটা হবে।`;
+
+            finalRedeemBtn.disabled = false;
+            finalRedeemBtn.textContent = 'রিডিম রিকোয়েস্ট পাঠান';
+        }
+
+        const closeRedeemModal = () => {
+            document.querySelector('#redeem-modal > div').classList.add('scale-95');
+            setTimeout(() => redeemModal.classList.add('hidden'), 300);
+        }
+
+        const handleRedeemRequest = async (e) => {
+            e.preventDefault();
+            
+            const coins = parseInt(modalCoinsInput.value, 10);
+            const amount = parseInt(modalAmountInput.value, 10);
+            const redeemType = modalTypeInput.value;
+            const targetNumber = document.getElementById('target-number').value.trim();
+
+            if (STATE.referral_count < 5 || STATE.coins < coins) {
+                showAlert("রিডিম শর্ত পূরণ হয়নি।");
+                return;
+            }
+            
+            finalRedeemBtn.disabled = true;
+            finalRedeemBtn.textContent = 'প্রসেসিং...';
+            redeemError.classList.add('hidden');
+
+            try {
+                const result = await apiFetch('/redeem', 'POST', {
+                    uid: STATE.user.id,
+                    type: redeemType,
+                    coins: coins,
+                    amount: amount,
+                    number: targetNumber
+                });
+
+                STATE.coins = result.new_coins;
+                STATE.tier = getTier(STATE.coins);
+                renderUI();
+                await fetchRedeemHistory();
+
+                showAlert("আপনার রিডিম রিকোয়েস্ট সফলভাবে জমা হয়েছে।");
+                closeRedeemModal();
+
+            } catch (error) {
+                redeemError.textContent = `ত্রুটি: ${error.message}`;
+                redeemError.classList.remove('hidden');
+            } finally {
+                finalRedeemBtn.disabled = false;
+                finalRedeemBtn.textContent = 'রিডিম রিকোয়েস্ট পাঠান';
+            }
+        }
+
+        // --- লিডারবোর্ড ও ইতিহাস ---
+
+        const fetchLeaderboard = async () => {
+            try {
+                const data = await apiFetch('/leaderboard');
+                const list = document.getElementById('leaderboard-list');
+                list.innerHTML = '';
+                
+                if (data.length === 0) {
+                    list.innerHTML = '<p class="text-gray-500 text-sm">কোনো ডেটা পাওয়া যায়নি।</p>';
                     return;
                 }
-                
-                try {
-                    show_10087307({
-                        type: 'inApp',
-                        inAppSettings: {
-                            frequency: 2,
-                            capping: 0.1,
-                            interval: 30,
-                            timeout: 5,
-                            everyPage: false
-                        }
-                    });
-                    console.log("In-App Interstitial shown successfully");
-                } catch (error) {
-                    console.error("Interstitial ad error:", error);
-                }
-            },
-            
-            // Rewarded Interstitial (পুরস্কার ভিত্তিক এড)
-            async showRewardedInterstitial() {
-                if (!this.isAdLoaded) {
-                    console.log("Mock: Rewarded Interstitial would show now");
-                    return new Promise((resolve) => {
-                        setTimeout(() => {
-                            Telegram.WebApp.showAlert('🔴 Development: Rewarded ad completed');
-                            resolve(true);
-                        }, 2000);
-                    });
-                }
-                
-                try {
-                    await show_10087307();
-                    return true;
-                } catch (error) {
-                    console.error("Rewarded Interstitial error:", error);
-                    return false;
-                }
-            },
-            
-            // Rewarded Popup (ভিডিও এড - পুরস্কার নিশ্চিত)
-            async showRewardedPopup() {
-                if (!this.isAdLoaded) {
-                    console.log("Mock: Rewarded Popup would show now");
-                    return new Promise((resolve) => {
-                        setTimeout(() => {
-                            Telegram.WebApp.showAlert('🔴 Development: Video ad completed - Reward granted!');
-                            resolve(true);
-                        }, 2000);
-                    });
-                }
-                
-                try {
-                    await show_10087307('pop');
-                    return true;
-                } catch (error) {
-                    console.error("Rewarded Popup error:", error);
-                    throw error;
-                }
-            }
-        };
 
-        // --- DOM ELEMENTS ---
-        const elements = {
-            appContainer: document.getElementById('app-container'),
-            mainContent: document.getElementById('main-content'),
-            loadingSpinner: document.getElementById('loading-spinner'),
-            navBar: document.querySelector('.nav-bar'),
-            sections: document.querySelectorAll('.section'),
-            headerBalance: document.getElementById('header-balance'),
-            headerUsername: document.getElementById('header-username'),
-            headerProfilePic: document.getElementById('header-profile-pic'),
-            coinCounterText: document.getElementById('coin-counter-text'),
-            gripBtn: document.getElementById('grip-btn'),
-            multiplierText: document.getElementById('multiplier-text'),
-            watchAdBtn: document.getElementById('watch-ad-btn'),
-            particleContainer: document.getElementById('particle-container'),
-            usernameInput: document.getElementById('username-input'),
-            searchBtn: document.getElementById('search-btn'),
-            userResult: document.getElementById('user-result'),
-            foundUsername: document.getElementById('found-username'),
-            foundId: document.getElementById('found-id'),
-            amountInput: document.getElementById('amount-input'),
-            confirmTransferBtn: document.getElementById('confirm-transfer'),
-            transferError: document.getElementById('transfer-error'),
-            adminPostBtn: document.getElementById('admin-post-btn'),
-            adminPostForm: document.getElementById('admin-post-form'),
-            savePostBtn: document.getElementById('save-post-btn'),
-            newsFeed: document.getElementById('news-feed'),
-            loadMoreNewsBtn: document.getElementById('load-more-news'),
-            profilePic: document.getElementById('profile-pic'),
-            userName: document.getElementById('user-name'),
-            profileBalance: document.getElementById('profile-balance'),
-            refLinkInput: document.getElementById('ref-link'),
-            shareRefBtn: document.getElementById('share-ref'),
-            historyList: document.getElementById('history-list'),
-            refTree: document.getElementById('ref-tree'),
-            filterButtons: document.querySelectorAll('.filter-btn'),
-            countdown: document.getElementById('countdown'),
-            autoGripProgress: document.getElementById('auto-grip-progress')
-        };
-
-        // --- LOCAL STORAGE & DATA HANDLING ---
-
-        function loadData(key, defaultValue) {
-            const data = localStorage.getItem(key);
-            try {
-                return data ? JSON.parse(data) : defaultValue;
-            } catch (e) {
-                console.error(`Error loading localStorage key: ${key}`, e);
-                return defaultValue;
-            }
-        }
-
-        function saveData(key, data) {
-            localStorage.setItem(key, JSON.stringify(data));
-        }
-
-        let users = loadData('users', {});
-        newsItems = loadData('news', []);
-        let transfers = loadData('transfers', []);
-
-        // --- TELEGRAM API WRAPPER & INITIALIZATION ---
-
-        function initTelegram() {
-            if (!window.Telegram || !Telegram.WebApp) {
-                console.error("❌ Telegram WebApp not found! This app must run inside Telegram.");
-                elements.loadingSpinner.innerHTML = `
-                    <i class="fas fa-exclamation-triangle"></i>
-                    <p>এই অ্যাপটি শুধুমাত্র Telegram-এ কাজ করে</p>
-                    <p style="font-size: 0.8em; margin-top: 10px;">Telegram-এ @HiGriP_bot খুলে试用 করুন</p>
-                `;
-                return;
-            }
-
-            Telegram.WebApp.ready();
-            Telegram.WebApp.onEvent('themeChanged', applyTheme);
-            Telegram.WebApp.expand();
-            Telegram.WebApp.isClosingConfirmationEnabled = true;
-            
-            initApp();
-        }
-
-        function applyTheme() {
-            const params = Telegram.WebApp.themeParams;
-            const root = document.documentElement;
-
-            root.style.setProperty('--tg-bg', params.bg_color || '#0f0f0f');
-            root.style.setProperty('--tg-secondary-bg', params.secondary_bg_color || '#1a1a1a');
-            root.style.setProperty('--tg-text', params.text_color || '#ffffff');
-            root.style.setProperty('--tg-hint', params.hint_color || '#8e8e93');
-            root.style.setProperty('--tg-link', params.link_color || '#6ab2ff');
-            root.style.setProperty('--tg-button', params.button_color || '#40a7e3');
-            root.style.setProperty('--tg-button-text', params.button_text_color || '#ffffff');
-            root.style.setProperty('--accent-glow', params.link_color || '#6ab2ff');
-        }
-
-        function initApp() {
-            applyTheme();
-            
-            // 🔥 রিয়েল টেলিগ্রাম ইউজার ডেটা লোড করুন
-            const tgUser = Telegram.WebApp.initDataUnsafe.user;
-            
-            if (!tgUser) {
-                console.error("❌ Telegram user data not available");
-                elements.loadingSpinner.innerHTML = `
-                    <i class="fas fa-exclamation-triangle"></i>
-                    <p>ইউজার ডেটা লোড করতে সমস্যা হচ্ছে</p>
-                    <p style="font-size: 0.8em;">দয়া করে আবার চেষ্টা করুন</p>
-                `;
-                return;
-            }
-
-            user = initUser(tgUser);
-            
-            elements.loadingSpinner.style.display = 'none';
-            elements.mainContent.style.display = 'block';
-
-            updateHeaderUI();
-            renderSection('grip');
-            
-            setupListeners();
-            startAutoGripTimer();
-            
-            // 🔥 App খোলার পর প্রথম ইন্টারস্টিশিয়াল এড
-            setTimeout(() => {
-                AdManager.showInterstitial();
-            }, 3000);
-        }
-
-        function initUser(tgUser) {
-            const userId = tgUser.id;
-            let currentUser = users[userId];
-
-            if (!currentUser) {
-                // 🔥 নতুন ইউজার - টেলিগ্রাম থেকে রিয়েল ডেটা ব্যবহার করুন
-                const startParam = Telegram.WebApp.initDataUnsafe.start_param;
-                const referredByCode = startParam && startParam !== 'HiGriP_bot' ? startParam : null;
-
-                currentUser = {
-                    id: userId,
-                    username: tgUser.username || `user${userId}`,
-                    first_name: tgUser.first_name || "Telegram User",
-                    last_name: tgUser.last_name || "",
-                    language_code: tgUser.language_code || "en",
-                    photo_url: tgUser.photo_url || "",
-                    balance: 50, // Initial bonus
-                    referral_code: `REF${userId}`,
-                    referred_by: null,
-                    history: [{ 
-                        timestamp: Date.now(), 
-                        amount: 50, 
-                        type: 'Initial Bonus', 
-                        note: 'Welcome bonus from Telegram' 
-                    }],
-                    referrals: { L1: [], L2: [], L3: [] },
-                    total_ref_earnings: 0,
-                    transfer_count: 0,
-                    created_at: Date.now(),
-                    last_active: Date.now()
-                };
-                users[userId] = currentUser;
-                
-                // রেফারেল সিস্টেম
-                if (referredByCode) {
-                    const referrer = Object.values(users).find(u => u.referral_code === referredByCode);
-                    if (referrer) {
-                        currentUser.referred_by = referrer.id;
-                        addReferral(referrer.id, userId);
-                        
-                        // রেফারেল বোনাস
-                        referrer.balance += 20;
-                        referrer.history.unshift({
-                            timestamp: Date.now(),
-                            amount: 20,
-                            type: 'Referral Bonus',
-                            note: `New user referral: ${currentUser.username}`
-                        });
-                    }
-                }
-                
-                saveData('users', users);
-                
-                console.log("✅ New Telegram user created:", {
-                    id: currentUser.id,
-                    username: currentUser.username,
-                    name: currentUser.first_name
+                data.forEach((user, index) => {
+                    const tier = getTier(user.coins);
+                    const tierClass = tier === 'Gold' ? 'bg-yellow-500' : tier === 'Silver' ? 'bg-gray-400' : 'bg-amber-800';
+                    const item = document.createElement('div');
+                    item.className = 'flex items-center justify-between p-2 bg-gray-50 rounded-lg';
+                    item.innerHTML = `
+                        <div class="flex items-center space-x-3">
+                            <span class="font-bold text-lg text-gray-600 w-6 text-center">${index + 1}.</span>
+                            <span class="font-semibold truncate">${user.name}</span>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <span class="text-blue-600 font-bold">${user.coins.toLocaleString()}</span>
+                            <span class="px-2 py-0.5 text-xs font-semibold rounded-full text-white ${tierClass}">${tier}</span>
+                        </div>
+                    `;
+                    list.appendChild(item);
                 });
-            } else {
-                // 🔥 এক্সিস্টিং ইউজার - টেলিগ্রাম ডেটা আপডেট করুন
-                currentUser.username = tgUser.username || currentUser.username;
-                currentUser.first_name = tgUser.first_name || currentUser.first_name;
-                currentUser.last_name = tgUser.last_name || currentUser.last_name;
-                currentUser.photo_url = tgUser.photo_url || currentUser.photo_url;
-                currentUser.last_active = Date.now();
-                
-                users[userId] = currentUser;
-                saveData('users', users);
-                
-                console.log("✅ Existing Telegram user updated:", {
-                    id: currentUser.id,
-                    username: currentUser.username,
-                    name: currentUser.first_name
-                });
-            }
 
-            transferCount = currentUser.transfer_count || 0;
-            
-            return currentUser;
-        }
-
-        function updateHeaderUI() {
-            // 🔥 রিয়েল টেলিগ্রাম ডেটা ব্যবহার করুন
-            elements.headerBalance.textContent = user.balance.toLocaleString();
-            elements.coinCounterText.textContent = user.balance.toLocaleString();
-            elements.headerUsername.textContent = user.first_name;
-            
-            // টেলিগ্রাম প্রোফাইল পিকচার
-            if (user.photo_url) {
-                elements.headerProfilePic.src = user.photo_url;
-                elements.profilePic.src = user.photo_url;
-            } else {
-                // ডিফল্ট অ্যাভাটার
-                const defaultAvatar = `https://ui-avatars.com/api/?name=${encodeURIComponent(user.first_name)}&background=40a7e3&color=fff&size=128`;
-                elements.headerProfilePic.src = defaultAvatar;
-                elements.profilePic.src = defaultAvatar;
-            }
-            
-            elements.userName.textContent = user.first_name + (user.last_name ? ` ${user.last_name}` : '');
-            elements.profileBalance.textContent = `Balance: ${user.balance.toLocaleString()} কয়েন`;
-            elements.refLinkInput.value = `https://t.me/HiGriP_bot?start=${user.referral_code}`;
-        }
-
-        // --- CORE UTILITY FUNCTIONS ---
-
-        function addCoins(amount, type, note = '') {
-            user.balance += amount;
-            user.history.unshift({
-                timestamp: Date.now(),
-                amount: amount,
-                type: type,
-                note: note
-            });
-            
-            // 🔥 প্রতি ১০০ কয়েনে ইন্টারস্টিশিয়াল এড
-            if (amount > 0 && user.balance % 100 < amount) {
-                AdManager.showInterstitial();
-            }
-            
-            saveData('users', users);
-            updateHeaderUI();
-        }
-
-        function createCoinParticle(text) {
-            const particle = document.createElement('div');
-            particle.classList.add('coin-particle');
-            particle.textContent = text;
-            
-            const randX = (Math.random() - 0.5) * 100;
-            const randY = (Math.random() - 0.5) * 50;
-
-            particle.style.setProperty('--rand-x', randX);
-            particle.style.setProperty('--rand-y', randY);
-
-            elements.particleContainer.appendChild(particle);
-
-            setTimeout(() => {
-                if (elements.particleContainer.contains(particle)) {
-                    elements.particleContainer.removeChild(particle);
-                }
-            }, 1200);
-        }
-
-        // --- AUTO GRIP TIMER ---
-        function startAutoGripTimer() {
-            if (autoGripTimer) clearInterval(autoGripTimer);
-            
-            autoGripCountdown = 15;
-            elements.countdown.textContent = autoGripCountdown;
-            elements.autoGripProgress.style.width = '0%';
-            
-            autoGripTimer = setInterval(() => {
-                autoGripCountdown--;
-                elements.countdown.textContent = autoGripCountdown;
-                elements.autoGripProgress.style.width = `${(15 - autoGripCountdown) * (100/15)}%`;
-                
-                if (autoGripCountdown <= 0) {
-                    performAutoGrip();
-                    autoGripCountdown = 15;
-                    elements.countdown.textContent = autoGripCountdown;
-                    elements.autoGripProgress.style.width = '0%';
-                }
-            }, 1000);
-        }
-
-        function performAutoGrip() {
-            const now = Date.now();
-            // Only auto grip if user hasn't manually gripped in the last 5 seconds
-            if (now - lastGripTime > 5000) {
-                const baseCoins = 1;
-                const coinsEarned = baseCoins * currentMultiplier;
-                addCoins(coinsEarned, 'Auto Grip', `Auto grip for ${coinsEarned} coins`);
-                
-                createCoinParticle(`+${coinsEarned}`);
-                creditReferrers(coinsEarned);
-                
-                // Show a subtle notification
-                Telegram.WebApp.showPopup({
-                    title: 'Auto Grip!',
-                    message: `You received ${coinsEarned} coins automatically.`,
-                    buttons: [{ type: 'ok' }]
-                });
-                
-                // Show ad every 3rd auto grip
-                if (user.balance % 30 < coinsEarned) {
-                    AdManager.showInterstitial();
-                }
-            }
-        }
-
-        // --- NAVIGATION & EVENT LISTENERS ---
-
-        function setupListeners() {
-            elements.navBar.addEventListener('click', handleNavClick);
-            elements.gripBtn.addEventListener('click', handleGripTap);
-            elements.watchAdBtn.addEventListener('click', handleWatchAd);
-            elements.searchBtn.addEventListener('click', handleUserSearch);
-            elements.confirmTransferBtn.addEventListener('click', handleConfirmTransfer);
-            elements.adminPostBtn.addEventListener('click', () => {
-                elements.adminPostForm.style.display = elements.adminPostForm.style.display === 'none' ? 'block' : 'none';
-                Telegram.WebApp.HapticFeedback.selectionChanged();
-            });
-            elements.savePostBtn.addEventListener('click', handleSavePost);
-            elements.loadMoreNewsBtn.addEventListener('click', () => renderNewsFeed(false));
-            elements.shareRefBtn.addEventListener('click', handleShareRef);
-            elements.filterButtons.forEach(btn => btn.addEventListener('click', handleHistoryFilter));
-        }
-
-        function handleNavClick(e) {
-            const btn = e.target.closest('.nav-btn');
-            if (btn) {
-                const sectionId = btn.getAttribute('data-section');
-                renderSection(sectionId);
-                Telegram.WebApp.HapticFeedback.selectionChanged();
-            }
-        }
-
-        function renderSection(sectionId) {
-            elements.sections.forEach(section => {
-                section.classList.remove('active');
-                if (section.id === `${sectionId}-section`) {
-                    section.classList.add('active');
-                }
-            });
-
-            document.querySelectorAll('.nav-btn').forEach(btn => {
-                btn.classList.remove('active');
-                if (btn.getAttribute('data-section') === sectionId) {
-                    btn.classList.add('active');
-                }
-            });
-
-            if (sectionId === 'profile') renderProfile();
-            if (sectionId === 'news') renderNewsFeed(true);
-        }
-
-        // --- 1. GRIP SECTION LOGIC ---
-
-        function start5xBoost(seconds) {
-            currentMultiplier = 5;
-            elements.multiplierText.textContent = '5x (Boost)';
-            elements.watchAdBtn.style.display = 'none';
-
-            setTimeout(() => {
-                currentMultiplier = 1;
-                elements.multiplierText.textContent = '1x';
-            }, seconds * 1000);
-        }
-
-        function handleGripTap() {
-            Telegram.WebApp.HapticFeedback.impactOccurred('light');
-            lastGripTime = Date.now();
-
-            tapCount++;
-            if (tapTimer) clearTimeout(tapTimer);
-
-            if (tapCount >= 3 && currentMultiplier < 5) {
-                currentMultiplier = 5;
-                elements.multiplierText.textContent = '5x (Quick)';
-            }
-
-            tapTimer = setTimeout(() => {
-                tapCount = 0;
-                if (elements.multiplierText.textContent.includes('Quick')) {
-                    currentMultiplier = 1;
-                    elements.multiplierText.textContent = '1x';
-                }
-            }, 500);
-
-            const baseCoins = 1;
-            const coinsEarned = baseCoins * currentMultiplier;
-            addCoins(coinsEarned, 'Grip', `Tapped for ${coinsEarned} coins`);
-
-            createCoinParticle(`+${coinsEarned}`);
-
-            creditReferrers(coinsEarned);
-
-            if (user.balance % 50 < coinsEarned && !elements.multiplierText.textContent.includes('Boost')) {
-                elements.watchAdBtn.style.display = 'block';
-            } else if (user.balance % 50 > 5 && elements.watchAdBtn.style.display !== 'none' && !elements.multiplierText.textContent.includes('Boost')) {
-                elements.watchAdBtn.style.display = 'none';
-            }
-        }
-
-        function creditReferrers(earned) {
-            let currentReferrerId = user.referred_by;
-            let level = 1;
-
-            while (currentReferrerId && level <= 3) {
-                const referrer = users[currentReferrerId];
-                if (!referrer) break;
-
-                const commissionRate = REFERRAL_COMMISSION[`L${level}`];
-                const commission = Math.floor(earned * commissionRate);
-
-                if (commission > 0) {
-                    referrer.total_ref_earnings = (referrer.total_ref_earnings || 0) + commission;
-                    
-                    referrer.balance += commission;
-                    referrer.history.unshift({ 
-                        timestamp: Date.now(), 
-                        amount: commission, 
-                        type: 'Referral', 
-                        note: `L${level} commission from ${user.username}` 
-                    });
-                    
-                    if (!referrer.referrals[`L${level}`]) referrer.referrals[`L${level}`] = [];
-                    
-                    const refEntry = referrer.referrals[`L${level}`].find(r => r.id === user.id);
-                    if (!refEntry) {
-                         referrer.referrals[`L${level}`].push({ 
-                             id: user.id, 
-                             username: user.username, 
-                             earnings: commission 
-                         });
-                    } else {
-                         refEntry.earnings += commission;
-                    }
-
-                    users[currentReferrerId] = referrer;
-                    
-                    currentReferrerId = referrer.referred_by;
-                    level++;
-                } else {
-                    break;
-                }
-            }
-            saveData('users', users);
-        }
-
-        async function handleWatchAd() {
-            Telegram.WebApp.HapticFeedback.impactOccurred('medium');
-            
-            try {
-                const success = await AdManager.showRewardedPopup();
-                if (success) {
-                    start5xBoost(30);
-                    Telegram.WebApp.showAlert('🎉 5x বুস্ট চালু! ৩০ সেকেন্ডের জন্য আপনার আয় ৫ গুণ বাড়ানো হয়েছে।');
-                    Telegram.WebApp.HapticFeedback.notificationOccurred('success');
-                }
             } catch (error) {
-                console.error('Rewarded Popup failed:', error);
-                Telegram.WebApp.showAlert('❌ বিজ্ঞাপন লোড হতে পারেনি বা পুরস্কৃত হয়নি। অনুগ্রহ করে আবার চেষ্টা করুন।');
+                document.getElementById('leaderboard-list').innerHTML = '<p class="text-red-500 text-sm">লিডারবোর্ড লোড করা যায়নি।</p>';
             }
         }
-
-        // --- 2. TRANSFER SECTION LOGIC ---
-
-        function handleUserSearch() {
-            const input = elements.usernameInput.value.trim().toLowerCase();
-            elements.userResult.style.display = 'none';
-            elements.transferError.style.display = 'none';
-            
-            if (!input) {
-                elements.transferError.textContent = 'অনুগ্রহ করে @username বা ইউজার আইডি লিখুন।';
-                elements.transferError.style.display = 'block';
-                return;
-            }
-
-            const recipient = Object.values(users).find(u => 
-                u.username.toLowerCase() === input || u.id.toString() === input
-            );
-            
-            if (recipient && recipient.id !== user.id) {
-                elements.foundUsername.textContent = recipient.username;
-                elements.foundId.textContent = recipient.id;
-                elements.userResult.style.display = 'block';
-                elements.amountInput.value = '';
-                Telegram.WebApp.HapticFeedback.impactOccurred('light');
-            } else {
-                elements.transferError.textContent = 'ইউজার খুঁজে পাওয়া যায়নি বা আপনি নিজের কাছে ট্রান্সফার করতে পারবেন না।';
-                elements.transferError.style.display = 'block';
-                elements.userResult.style.display = 'none';
-                Telegram.WebApp.HapticFeedback.notificationOccurred('error');
-            }
-        }
-
-        function handleConfirmTransfer() {
-            const recipientId = parseInt(elements.foundId.textContent);
-            const amount = parseInt(elements.amountInput.value);
-            const recipient = users[recipientId];
-
-            elements.transferError.style.display = 'none';
-
-            if (!recipient) {
-                elements.transferError.textContent = 'গ্রহীতা inválido।';
-                elements.transferError.style.display = 'block';
-                return;
-            }
-            if (isNaN(amount) || amount <= 0) {
-                elements.transferError.textContent = 'বৈধ পরিমাণ লিখুন।';
-                elements.transferError.style.display = 'block';
-                return;
-            }
-            if (amount > user.balance) {
-                elements.transferError.textContent = 'আপনার পর্যাপ্ত কয়েন নেই।';
-                elements.transferError.style.display = 'block';
-                return;
-            }
-
-            Telegram.WebApp.showConfirm(`আপনি কি নিশ্চিত যে আপনি ${recipient.username} (@${recipient.id}) কে ${amount} কয়েন পাঠাতে চান?`, (isConfirmed) => {
-                if (isConfirmed) {
-                    addCoins(-amount, 'Transfer', `Sent to ${recipient.username}`);
-                    recipient.balance += amount;
-                    recipient.history.unshift({ 
-                        timestamp: Date.now(), 
-                        amount: amount, 
-                        type: 'Transfer', 
-                        note: `Received from ${user.username}` 
-                    });
-                    users[recipientId] = recipient;
-                    
-                    transferCount++;
-                    user.transfer_count = transferCount;
-
-                    transfers.unshift({ 
-                        sender_id: user.id, 
-                        receiver_id: recipientId, 
-                        amount: amount, 
-                        timestamp: Date.now() 
-                    });
-
-                    saveData('users', users);
-                    saveData('transfers', transfers);
-                    updateHeaderUI();
-
-                    Telegram.WebApp.showAlert(`✅ সফলভাবে ${recipient.username} কে ${amount} কয়েন পাঠানো হয়েছে।`);
-                    Telegram.WebApp.HapticFeedback.notificationOccurred('success');
-
-                    // 🔥 In-App Interstitial (প্রতি ৩য় ট্রান্সফারে)
-                    if (transferCount % 3 === 0) {
-                        AdManager.showInterstitial();
-                    }
-                    
-                    elements.usernameInput.value = '';
-                    elements.userResult.style.display = 'none';
-                } else {
-                    Telegram.WebApp.HapticFeedback.notificationOccurred('error');
-                }
-            });
-        }
-
-        // --- 3. NEWS SECTION LOGIC ---
-
-        function handleSavePost() {
-            const title = document.getElementById('post-title').value.trim();
-            const caption = document.getElementById('post-caption').value.trim();
-            const button_text = document.getElementById('post-btn-text').value.trim();
-            const button_link = document.getElementById('post-btn-link').value.trim();
-
-            if (!title || !caption) {
-                Telegram.WebApp.showAlert('Title এবং Caption আবশ্যক।');
-                return;
-            }
-
-            const newPost = {
-                id: Date.now(),
-                admin_uid: user.id,
-                title: title,
-                caption: caption,
-                button_text: button_text,
-                button_link: button_link,
-                timestamp: Date.now()
-            };
-
-            newsItems.unshift(newPost);
-            saveData('news', newsItems);
-
-            document.getElementById('post-title').value = '';
-            document.getElementById('post-caption').value = '';
-            document.getElementById('post-btn-text').value = '';
-            document.getElementById('post-btn-link').value = '';
-            elements.adminPostForm.style.display = 'none';
-
-            renderNewsFeed(true);
-            Telegram.WebApp.showAlert('নিউজ পোস্ট সফলভাবে সেভ করা হয়েছে!');
-            Telegram.WebApp.HapticFeedback.notificationOccurred('success');
-        }
-
-        function renderNewsFeed(reset = false) {
-            if (reset) {
-                elements.newsFeed.innerHTML = '';
-                displayedNewsCount = 5;
-            }
-
-            const startIndex = elements.newsFeed.children.length;
-            const itemsToDisplay = newsItems.slice(startIndex, startIndex + 5);
-            
-            if (user.id === ADMIN_UID) {
-                elements.adminPostBtn.style.display = 'block';
-            } else {
-                elements.adminPostBtn.style.display = 'none';
-            }
-
-            if (itemsToDisplay.length === 0 && startIndex === 0) {
-                elements.newsFeed.innerHTML = '<p class="card" style="text-align:center;">কোনো নিউজ নেই।</p>';
-                elements.loadMoreNewsBtn.style.display = 'none';
-                return;
-            }
-
-            itemsToDisplay.forEach(post => {
-                const card = document.createElement('div');
-                card.classList.add('news-card');
-                card.innerHTML = `
-                    <h4>${post.title}</h4>
-                    <p>${post.caption}</p>
-                    ${post.button_link ? `<button class="news-btn primary-btn" data-link="${post.button_link}">${post.button_text || 'Open Link'}</button>` : ''}
-                    <small style="color:var(--tg-hint); display:block; margin-top:10px;">Posted: ${new Date(post.timestamp).toLocaleDateString()}</small>
-                `;
-                elements.newsFeed.appendChild(card);
-            });
-
-            if (newsItems.length > elements.newsFeed.children.length) {
-                elements.loadMoreNewsBtn.style.display = 'block';
-            } else {
-                elements.loadMoreNewsBtn.style.display = 'none';
-            }
-
-            elements.newsFeed.querySelectorAll('.news-btn').forEach(btn => {
-                btn.onclick = () => {
-                    Telegram.WebApp.openLink(btn.getAttribute('data-link'));
-                    Telegram.WebApp.HapticFeedback.impactOccurred('medium');
-                };
-            });
-        }
-
-        // --- 4. PROFILE SECTION LOGIC ---
-
-        function renderProfile() {
-            updateHeaderUI();
-            const activeFilter = document.querySelector('.filter-btn.active')?.getAttribute('data-filter') || 'all';
-            renderTransactionHistory(activeFilter); 
-            renderReferralTree();
-        }
-
-        function renderTransactionHistory(filter) {
-            elements.historyList.innerHTML = '';
-            const filteredHistory = user.history.filter(item => 
-                filter === 'all' || item.type.toLowerCase() === filter
-            );
-
-            elements.historyList.scrollTop = 0;
-
-            if (filteredHistory.length === 0) {
-                elements.historyList.innerHTML = `<p style="text-align:center; padding:10px;">No ${filter} transactions.</p>`;
-                return;
-            }
-
-            filteredHistory.slice(0, 50).forEach(item => {
-                const date = new Date(item.timestamp).toLocaleString('en-US', { 
-                    hour: '2-digit', 
-                    minute: '2-digit', 
-                    year: 'numeric', 
-                    month: 'short', 
-                    day: 'numeric' 
-                });
-                const sign = item.amount >= 0 ? '+' : '';
-                const color = item.amount >= 0 ? 'var(--tg-link)' : '#ff4d4f';
-                
-                const div = document.createElement('div');
-                div.innerHTML = `
-                    <span style="color:var(--tg-hint);">${date}</span> | 
-                    <span style="color:${color}; font-weight:bold;">${sign}${item.amount.toLocaleString()}</span> | 
-                    ${item.type} <small style="color:var(--tg-hint); margin-left:5px;">${item.note}</small>
-                `;
-                elements.historyList.appendChild(div);
-            });
-        }
-
-        function handleHistoryFilter(e) {
-            const btn = e.target.closest('.filter-btn');
-            if (btn) {
-                elements.filterButtons.forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
-                renderTransactionHistory(btn.getAttribute('data-filter'));
-                Telegram.WebApp.HapticFeedback.selectionChanged();
-            }
-        }
-
-        function renderReferralTree() {
-            elements.refTree.innerHTML = '';
-
-            const levels = ['L1', 'L2', 'L3'];
-            let totalEarnings = 0;
-
-            levels.forEach(level => {
-                const referrals = user.referrals[level] || [];
-                const levelTotal = referrals.reduce((sum, r) => sum + r.earnings, 0);
-                totalEarnings += levelTotal;
-
-                const levelDiv = document.createElement('div');
-                levelDiv.innerHTML = `
-                    <p><strong>Level ${level}</strong> (${referrals.length} Users) - Earned: ${levelTotal.toLocaleString()} কয়েন</p>
-                `;
-                
-                if (referrals.length > 0) {
-                    const ul = document.createElement('ul');
-                    referrals.slice(0, 10).forEach(ref => {
-                        const li = document.createElement('li');
-                        li.textContent = `@${ref.username} | Total Earnings: ${ref.earnings.toLocaleString()}`;
-                        ul.appendChild(li);
-                    });
-                    if (referrals.length > 10) {
-                         const li = document.createElement('li');
-                         li.textContent = `... and ${referrals.length - 10} more.`;
-                         ul.appendChild(li);
-                    }
-                    levelDiv.appendChild(ul);
-                }
-                elements.refTree.appendChild(levelDiv);
-            });
-
-            const totalP = document.createElement('p');
-            totalP.innerHTML = `<br><strong>Total Referral Income: ${totalEarnings.toLocaleString()} কয়েন</strong>`;
-            elements.refTree.appendChild(totalP);
-        }
-
-        async function handleShareRef() {
-            const refLink = elements.refLinkInput.value;
-            const shareText = `💰 HiGriP তে আসুন! আমি কয়েন গ্রিপ করে রোজগার করছি। আমার রেফারেল লিঙ্কে ক্লিক করে শুরু করুন: ${refLink}`;
-            
-            Telegram.WebApp.HapticFeedback.impactOccurred('medium');
-
-            Telegram.WebApp.shareUrl(refLink, shareText);
-
+        
+        const fetchRedeemHistory = async () => {
             try {
-                const success = await AdManager.showRewardedInterstitial();
-                if (success) {
-                    addCoins(50, 'Referral Bonus', 'Referral link share bonus');
-                    Telegram.WebApp.showAlert('🎉 বোনাস: +50 কয়েন! সফলভাবে শেয়ার করার জন্য আপনাকে ধন্যবাদ।');
-                    Telegram.WebApp.HapticFeedback.notificationOccurred('success');
+                const result = await apiFetch(`/redeem-history?uid=${STATE.user.id}`);
+                const historyList = document.getElementById('redeem-history');
+                historyList.innerHTML = '';
+
+                if (!result.history || result.history.length === 0) {
+                    historyList.innerHTML = '<p class="text-gray-500 text-sm">কোনো রিডিম রিকোয়েস্ট নেই।</p>';
+                    return;
                 }
+
+                result.history.forEach(item => {
+                    const statusColor = item.status === 'Pending' ? 'text-yellow-600' : 'text-green-600';
+                    const itemDiv = document.createElement('div');
+                    itemDiv.className = 'flex justify-between items-center p-3 bg-white rounded-lg border';
+                    itemDiv.innerHTML = `
+                        <div>
+                            <p class="font-semibold">${item.type} - ৳${item.amount.toLocaleString()}</p>
+                            <p class="text-xs text-gray-500">${new Date(item.date).toLocaleDateString('bn-BD')}</p>
+                        </div>
+                        <div class="text-sm font-medium ${statusColor}">${item.status}</div>
+                    `;
+                    historyList.appendChild(itemDiv);
+                });
+
             } catch (error) {
-                console.error("Rewarded Interstitial failed:", error);
+                document.getElementById('redeem-history').innerHTML = '<p class="text-red-500 text-sm">ইতিহাস লোড করা যায়নি।</p>';
             }
         }
 
-        function addReferral(referrerId, newUserId) {
-            let currentId = referrerId;
-            let level = 1;
 
-            while (currentId && level <= 3) {
-                const referrer = users[currentId];
-                if (!referrer) break;
+        // --- ইভেন্ট লিসেনার্স ---
 
-                if (!referrer.referrals[`L${level}`]) {
-                    referrer.referrals[`L${level}`] = [];
-                }
+        const switchTab = (tabName) => {
+            document.querySelectorAll('.tab-content').forEach(tab => tab.style.display = 'none');
+            document.querySelectorAll('.nav-link').forEach(link => link.classList.remove('text-blue-600', 'active'));
+            document.querySelectorAll('.nav-link').forEach(link => link.classList.add('text-gray-500'));
 
-                if (!referrer.referrals[`L${level}`].some(r => r.id === newUserId)) {
-                    referrer.referrals[`L${level}`].push({ 
-                        id: newUserId, 
-                        username: users[newUserId].username, 
-                        earnings: 0 
-                    });
-                }
-                
-                currentId = referrer.referred_by;
-                level++;
+            document.getElementById(`tab-${tabName}`).style.display = 'block';
+            const activeLink = document.querySelector(`.nav-link[data-tab="${tabName}"]`);
+            activeLink.classList.remove('text-gray-500');
+            activeLink.classList.add('text-blue-600', 'active');
+            
+            if (tabName === 'feed') {
+                 fetchLeaderboard();
+            }
+            if (tabName === 'redeem') {
+                 fetchRedeemHistory();
+                 renderUI(); // রিডিম বাটন স্ট্যাটাস নিশ্চিত করার জন্য
             }
         }
 
-        // --- START APPLICATION ---
-        document.addEventListener('DOMContentLoaded', initTelegram);
+        document.addEventListener('DOMContentLoaded', () => {
+            // নেভিগেশন
+            document.querySelectorAll('.nav-link').forEach(button => {
+                button.addEventListener('click', () => switchTab(button.getAttribute('data-tab')));
+            });
+
+            // Ad Button
+            adButton.addEventListener('click', handleAdWatch);
+
+            // রিডিম বাটন (নতুন কার্ডে)
+            document.querySelectorAll('.redeem-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const type = btn.getAttribute('data-type');
+                    const coins = btn.getAttribute('data-coins');
+                    const amount = btn.getAttribute('data-amount');
+                    openRedeemModal(type, coins, amount);
+                });
+            });
+
+            // রিডিম মোডাল বন্ধ
+            document.getElementById('close-modal-btn').addEventListener('click', closeRedeemModal);
+            
+            // রিডিম ফর্ম সাবমিট
+            redeemForm.addEventListener('submit', handleRedeemRequest);
+
+            // রেফারেল লিঙ্ক কপি
+            document.getElementById('copy-referral-btn').addEventListener('click', () => {
+                const refCode = document.getElementById('referral-code').textContent;
+                const tempInput = document.createElement('input');
+                tempInput.value = refCode;
+                document.body.appendChild(tempInput);
+                tempInput.select();
+                try {
+                    document.execCommand('copy');
+                    showAlert("রেফার লিঙ্ক কপি হয়েছে!");
+                } catch (err) {
+                    console.error('Failed to copy text: ', err);
+                    showAlert("কপি ব্যর্থ হয়েছে, ম্যানুয়ালি কপি করুন।");
+                }
+                document.body.removeChild(tempInput);
+            });
+
+            // অ্যাপ ইনিশিয়ালাইজেশন
+            if (tg) {
+                initApp();
+            } else {
+                // ফলব্যাক (লোকাল টেস্টিং)
+                console.error("Telegram WebApp not found. Using dummy data.");
+                STATE.user = { id: 123456789, first_name: 'টেস্ট', last_name: 'ইউজার', username: 'testuser', photo_url: 'https://placehold.co/48x48/6b7280/ffffff?text=T' };
+                STATE.coins = 12000; // টেস্টের জন্য পর্যাপ্ত কয়েন
+                STATE.referral_count = 6; // টেস্টের জন্য রেফার লক আনলক
+                STATE.tier = getTier(STATE.coins);
+                renderUI();
+                document.getElementById('loading').style.display = 'none';
+                STATE.API_URL = 'http://localhost:3000/api'; // লোকাল সার্ভার এড্রেস
+            }
+        });
+
     </script>
 </body>
 </html>
