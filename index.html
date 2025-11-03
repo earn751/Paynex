@@ -13,6 +13,8 @@
         .tier-gold { @apply bg-yellow-500 text-black; }
         .tier-silver { @apply bg-gray-400 text-white; }
         .tier-bronze { @apply bg-amber-800 text-white; }
+        .bKash { @apply bg-pink-600 text-white; }
+        .Nagad { @apply bg-yellow-600 text-white; }
     </style>
 
     <!-- Firebase -->
@@ -23,7 +25,7 @@
     <!-- Telegram WebApp -->
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
-    <!-- LibTL SDK (তোমার Zone ID) -->
+    <!-- LibTL SDK -->
     <script src='//libtl.com/sdk.js' data-zone='10087307' data-sdk='show_10087307'></script>
 </head>
 <body class="min-h-screen flex flex-col">
@@ -47,7 +49,7 @@
                 <img id="pic" class="w-12 h-12 rounded-full border-2 border-yellow-400" src="" alt="">
                 <div class="flex-1">
                     <p class="font-bold" id="name">...</p>
-                    <p class="text-xs text-gray-300">@<span id="username">...</span></p>
+                    <p class="text-xs text-gray-300">@<span id="username">...</span> | UID: <span id="uid">...</span></p>
                 </div>
             </div>
             <div class="mt-3 flex justify-between items-center">
@@ -88,24 +90,54 @@
                     </div>
                     <p class="text-sm">রেফার: <strong id="refCount">0</strong> জন</p>
                     <p id="refLock" class="text-xs text-red-600 mt-2 hidden">রিডিমের জন্য আরও <span id="needed">5</span> জন লাগবে</p>
+                    <p id="motivation" class="text-xs text-green-600 mt-2">কোনো রেফার লাগবে না! শুধু কয়েন আর্ন করুন</p>
                 </div>
             </div>
 
             <!-- Redeem Tab -->
             <div id="tab-redeem" class="hidden">
                 <h2 class="text-xl font-bold mb-4">রিডিম করুন</h2>
+
+                <!-- bKash Offers -->
+                <h3 class="text-lg font-bold mb-3 bKash">bKash অফার</h3>
                 <div class="space-y-4 mb-6">
                     <div class="bg-gradient-to-r from-pink-600 to-pink-700 p-4 rounded-xl text-white">
                         <p class="text-4xl font-bold text-center">৳100</p>
                         <p class="text-center">1,000 কয়েন</p>
                         <button data-type="bKash" data-amount="100" data-coins="1000" class="redeemBtn w-full mt-3 bg-white text-pink-700 font-bold py-2 rounded-lg">রিডিম</button>
                     </div>
+                    <div class="bg-gradient-to-r from-pink-600 to-pink-700 p-4 rounded-xl text-white">
+                        <p class="text-4xl font-bold text-center">৳1500</p>
+                        <p class="text-center">10,000 কয়েন</p>
+                        <button data-type="bKash" data-amount="1500" data-coins="10000" class="redeemBtn w-full mt-3 bg-white text-pink-700 font-bold py-2 rounded-lg">রিডিম</button>
+                    </div>
+                    <div class="bg-gradient-to-r from-pink-600 to-pink-700 p-4 rounded-xl text-white">
+                        <p class="text-4xl font-bold text-center">৳3000</p>
+                        <p class="text-center">20,000 কয়েন</p>
+                        <button data-type="bKash" data-amount="3000" data-coins="20000" class="redeemBtn w-full mt-3 bg-white text-pink-700 font-bold py-2 rounded-lg">রিডিম</button>
+                    </div>
+                </div>
+
+                <!-- Nagad Offers -->
+                <h3 class="text-lg font-bold mb-3 Nagad">Nagad অফার</h3>
+                <div class="space-y-4 mb-6">
                     <div class="bg-gradient-to-r from-yellow-600 to-yellow-700 p-4 rounded-xl text-white">
                         <p class="text-4xl font-bold text-center">৳100</p>
                         <p class="text-center">1,000 কয়েন</p>
                         <button data-type="Nagad" data-amount="100" data-coins="1000" class="redeemBtn w-full mt-3 bg-white text-yellow-700 font-bold py-2 rounded-lg">রিডিম</button>
                     </div>
+                    <div class="bg-gradient-to-r from-yellow-600 to-yellow-700 p-4 rounded-xl text-white">
+                        <p class="text-4xl font-bold text-center">৳1500</p>
+                        <p class="text-center">10,000 কয়েন</p>
+                        <button data-type="Nagad" data-amount="1500" data-coins="10000" class="redeemBtn w-full mt-3 bg-white text-yellow-700 font-bold py-2 rounded-lg">রিডিম</button>
+                    </div>
+                    <div class="bg-gradient-to-r from-yellow-600 to-yellow-700 p-4 rounded-xl text-white">
+                        <p class="text-4xl font-bold text-center">৳3000</p>
+                        <p class="text-center">20,000 কয়েন</p>
+                        <button data-type="Nagad" data-amount="3000" data-coins="20000" class="redeemBtn w-full mt-3 bg-white text-yellow-700 font-bold py-2 rounded-lg">রিডিম</button>
+                    </div>
                 </div>
+
                 <h3 class="text-lg font-semibold mb-3">রিডিম ইতিহাস</h3>
                 <div id="history" class="space-y-2">
                     <p class="text-gray-500 text-sm">কোনো রিডিম নেই</p>
@@ -114,7 +146,7 @@
 
             <!-- Feed Tab -->
             <div id="tab-feed" class="hidden">
-                <h2 class="text-xl font-bold mb-4">লিডারবোর্ড</h2>
+                <h2 class="text-xl font-bold mb-4">লিডারবোর্ড (টপ ৫)</h2>
                 <div id="leaderboard" class="space-y-3">
                     <p class="text-gray-500 text-sm">লোড হচ্ছে...</p>
                 </div>
@@ -195,7 +227,7 @@
                     updateUI();
                 });
 
-                // Referral Check
+                // Referral
                 const refId = new URLSearchParams(location.search).get('start')?.replace('ref_', '');
                 if (refId && refId !== uid && !userData.referrals?.includes(refId)) {
                     const refUser = db.ref('users/' + refId);
@@ -229,37 +261,55 @@
         function updateUI() {
             document.getElementById('name').textContent = userData.name || telegramUser.first_name;
             document.getElementById('username').textContent = userData.username || 'নেই';
+            document.getElementById('uid').textContent = uid.slice(-6);
             document.getElementById('pic').src = userData.photo || `https://ui-avatars.com/api/?name=${userData.name}`;
             document.getElementById('coins').textContent = userData.coins || 0;
             document.getElementById('refCount').textContent = (userData.referrals || []).length;
 
-            // Real Referral Link with UID
-            const botUsername = "HiGriP_bot"; // তোমার বটের @username
+            // Real Referral Link
+            const botUsername = "HiGriP_bot";
             document.getElementById('refLink').textContent = `t.me/${botUsername}?start=ref_${uid}`;
 
+            // Tier
             const tier = userData.coins >= 5000 ? 'Gold' : userData.coins >= 1000 ? 'Silver' : 'Bronze';
             const t = document.getElementById('tier');
             t.textContent = tier + ' Tier';
             t.className = `px-3 py-1 text-sm font-bold rounded-full tier-${tier.toLowerCase()}`;
 
-            const needed = Math.max(0, 5 - (userData.referrals || []).length);
+            // Dynamic Referral Lock (900+ coins)
             const lock = document.getElementById('refLock');
-            if (needed > 0) {
-                lock.classList.remove('hidden');
-                document.getElementById('needed').textContent = needed;
-            } else lock.classList.add('hidden');
+            const motivation = document.getElementById('motivation');
+            const needed = Math.max(0, 5 - (userData.referrals || []).length);
 
+            if (userData.coins >= 900) {
+                motivation.classList.add('hidden');
+                if (needed > 0) {
+                    lock.classList.remove('hidden');
+                    document.getElementById('needed').textContent = needed;
+                } else {
+                    lock.classList.add('hidden');
+                }
+            } else {
+                lock.classList.add('hidden');
+                motivation.classList.remove('hidden');
+            }
+
+            // Cooldown
             const now = Date.now();
             if (now - (userData.lastAd || 0) < 60000) startCooldown(userData.lastAd);
 
+            // Redeem Buttons
             document.querySelectorAll('.redeemBtn').forEach(b => {
                 const req = +b.dataset.coins;
-                b.disabled = needed > 0 || userData.coins < req;
-                b.textContent = b.disabled ? (userData.coins < req ? 'কয়েন কম' : 'রেফার লক') : 'রিডিম';
+                const isLocked = userData.coins >= 900 && needed > 0;
+                b.disabled = isLocked || userData.coins < req;
+                b.textContent = b.disabled 
+                    ? (userData.coins < req ? 'কয়েন কম' : 'রেফার লক') 
+                    : 'রিডিম';
             });
         }
 
-        // LibTL Ad Function
+        // LibTL Ad
         async function showAd(format = '') {
             return new Promise((resolve, reject) => {
                 if (typeof show_10087307 === 'function') {
@@ -269,12 +319,11 @@
                         resolve();
                     }).catch(reject);
                 } else {
-                    reject('Ad not loaded');
+                    setTimeout(reject, 1000);
                 }
             });
         }
 
-        // Manual Ad
         document.getElementById('adBtn').onclick = async () => {
             const btn = document.getElementById('adBtn');
             if (btn.disabled) return;
@@ -301,10 +350,70 @@
             }, 100);
         }
 
-        // Leaderboard, History, Redeem, Copy, Tab (আগের মতোই)
-        function loadLeaderboard() { /* ... same as before ... */ }
-        function loadHistory() { /* ... same as before ... */ }
-        // ... (বাকি কোড আগের মতোই — স্পেসের জন্য কাটা হয়েছে)
+        // Leaderboard
+        function loadLeaderboard() {
+            db.ref('users').orderByChild('coins').limitToLast(5).on('value', s => {
+                const list = document.getElementById('leaderboard');
+                list.innerHTML = '';
+                const entries = [];
+                s.forEach(c => entries.push({ id: c.key, ...c.val() }));
+                entries.reverse().forEach((u, i) => {
+                    list.innerHTML += `<div class="flex justify-between p-3 bg-gray-50 rounded-lg">
+                        <div class="flex items-center space-x-2">
+                            <span class="font-bold">${i+1}.</span>
+                            <img src="${u.photo || 'https://ui-avatars.com/api/?name=' + u.name}" class="w-6 h-6 rounded-full">
+                            <span>${u.name}</span>
+                        </div>
+                        <span class="font-bold text-blue-600">${u.coins}</span>
+                    </div>`;
+                });
+                if (entries.length === 0) list.innerHTML = '<p class="text-gray-500 text-sm">কোনো ডেটা নেই</p>';
+            });
+        }
+
+        // History
+        function loadHistory() {
+            db.ref('redeems').orderByChild('uid').equalTo(uid).on('value', s => {
+                const h = document.getElementById('history');
+                h.innerHTML = '';
+                if (s.numChildren() === 0) {
+                    h.innerHTML = '<p class="text-gray-500 text-sm">কোনো রিডিম নেই</p>';
+                    return;
+                }
+                s.forEach(c => {
+                    const d = c.val();
+                    h.innerHTML += `<div class="p-3 bg-white rounded-lg border">
+                        <p class="font-semibold">${d.type} - ৳${d.amount}</p>
+                        <p class="text-xs text-gray-500">${new Date(d.time).toLocaleString('bn-BD')}</p>
+                        <p class="text-sm font-medium ${d.status === 'pending' ? 'text-yellow-600' : 'text-green-600'}">${d.status}</p>
+                    </div>`;
+                });
+            });
+        }
+
+        // Redeem Modal
+        let redeem = {};
+        document.querySelectorAll('.redeemBtn').forEach(b => {
+            b.onclick = () => {
+                if (b.disabled) return;
+                redeem = { type: b.dataset.type, amount: b.dataset.amount, coins: b.dataset.coins };
+                document.getElementById('mTitle').textContent = `${redeem.type} - ৳${redeem.amount}`;
+                document.getElementById('mAmount').textContent = redeem.amount;
+                document.getElementById('modal').classList.remove('hidden');
+            };
+        });
+
+        document.getElementById('cancel').onclick = () => document.getElementById('modal').classList.add('hidden');
+        document.getElementById('submit').onclick = () => {
+            const phone = document.getElementById('phone').value;
+            if (!/^\d{11}$/.test(phone)) return tg.showAlert('১১ ডিজিট');
+            userRef.child('coins').transaction(c => c - redeem.coins);
+            db.ref('redeems').push({
+                uid, name: userData.name, type: redeem.type, amount: redeem.amount, phone, time: Date.now(), status: 'pending'
+            });
+            document.getElementById('modal').classList.add('hidden');
+            tg.showAlert('রিকোয়েস্ট পাঠানো হয়েছে!');
+        };
 
         // Copy
         document.getElementById('copyBtn').onclick = () => {
@@ -312,7 +421,7 @@
             tg.showAlert('কপি হয়েছে!');
         };
 
-        // Tab Switch
+        // Tab
         document.querySelectorAll('.navBtn').forEach(b => {
             b.onclick = () => {
                 document.querySelectorAll('.navBtn').forEach(x => x.classList.remove('text-blue-600'));
