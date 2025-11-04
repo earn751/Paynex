@@ -531,41 +531,37 @@
         let adReady = false;
         let userRank = null;
 
-        // Enhanced LibTL SDK Async Load
+        // LibTL SDK লোড
         function loadLibTL() {
             return new Promise((resolve) => {
-                // Simulate ad loading for demo
-                setTimeout(() => {
-                    adReady = true;
-                    resolve();
-                }, 2000);
-                
-                // Actual implementation would be:
-                /*
                 const script = document.createElement('script');
                 script.src = '//libtl.com/sdk.js';
                 script.setAttribute('data-zone', '10087307');
                 script.setAttribute('data-sdk', 'show_10087307');
+                script.async = true;
                 script.onload = () => {
                     const check = setInterval(() => {
-                        if (typeof show_10087307 === 'function') {
+                        if (typeof window.show_10087307 === 'function') {
                             clearInterval(check);
                             adReady = true;
+                            console.log('LibTL SDK লোড হয়েছে');
                             resolve();
                         }
                     }, 100);
-                    setTimeout(() => { clearInterval(check); resolve(); }, 5000);
+                    setTimeout(() => { clearInterval(check); resolve(); }, 10000);
                 };
-                script.onerror = () => resolve();
+                script.onerror = () => {
+                    console.error('LibTL SDK লোড হয়নি');
+                    adReady = false;
+                    resolve();
+                };
                 document.head.appendChild(script);
-                */
             });
         }
 
-        // Wait for Telegram with enhanced UX
+        // Telegram Wait
         function waitForTelegram() {
             return new Promise((resolve) => {
-                // Simulate loading progress
                 let progress = 0;
                 const progressInterval = setInterval(() => {
                     progress += 10;
@@ -600,23 +596,19 @@
             });
         }
 
-        // Enhanced initialization
+        // Initialization
         async function init() {
             try {
-                // Step 1: Wait for Telegram
                 await waitForTelegram();
                 telegramUser = window.Telegram.WebApp.initDataUnsafe.user;
                 if (!telegramUser?.id) throw new Error("Telegram user not found");
 
-                // Step 2: Firebase Auth
                 const cred = await auth.signInAnonymously();
                 uid = telegramUser.id.toString();
                 userRef = db.ref('users/' + uid);
 
-                // Step 3: Load LibTL in background
-                loadLibTL().catch(() => {});
+                loadLibTL().catch(() => console.warn('LibTL লোড করতে ব্যর্থ'));
 
-                // Step 4: Set user data with enhanced fields
                 const isAdmin = uid === ADMIN_UID;
                 const now = Date.now();
                 const today = new Date().toDateString();
@@ -633,7 +625,6 @@
                     totalRedeemed: 0
                 });
 
-                // Step 5: Listen to user data
                 userRef.on('value', s => {
                     userData = s.val() || { 
                         coins: 0, 
@@ -645,7 +636,6 @@
                     updateUI();
                 });
 
-                // Step 6: Referral Logic
                 const refId = new URLSearchParams(location.search).get('start')?.replace('ref_', '');
                 if (refId && refId !== uid) {
                     const refUser = db.ref('users/' + refId);
@@ -659,21 +649,22 @@
                     }
                 }
 
-                // Step 7: Check daily bonus
                 checkDailyBonus();
-
                 loadLeaderboard();
                 loadHistory();
                 loadNotifications();
 
-                // Step 8: Auto Ad (only if ad ready)
+                // অটোমেটিক ১৫ সেকেন্ডে অ্যাড
                 setInterval(() => {
                     if (adReady && document.visibilityState === 'visible') {
-                        showAd('pop', true).catch(() => {});
+                        window.show_10087307('pop').then(() => {
+                            alert('You have seen an ad!');
+                            userRef.child('coins').transaction(c => (c || 0) + 20);
+                            userRef.child('totalEarned').transaction(t => (t || 0) + 20);
+                        }).catch(() => {});
                     }
                 }, 15000);
 
-                // Hide loading with smooth transition
                 setTimeout(() => {
                     document.getElementById('loading').classList.add('hidden');
                     document.getElementById('app').classList.remove('hidden');
@@ -681,18 +672,9 @@
             } catch (e) {
                 console.error(e);
                 tg?.showAlert?.("Error: " + e.message) || alert("Error: " + e.message);
-                document.getElementById('loading').innerHTML = `
-                    <div class="text-center">
-                        <i class="fas fa-exclamation-triangle text-red-400 text-4xl mb-4"></i>
-                        <p class="text-red-400 text-xl">লোড হয়নি</p>
-                        <p class="text-gray-400 mt-2">${e.message}</p>
-                        <button onclick="location.reload()" class="mt-4 px-4 py-2 bg-blue-500 text-white rounded-lg">আবার চেষ্টা করুন</button>
-                    </div>
-                `;
             }
         }
 
-        // Enhanced UI update function
         function updateUI() {
             document.getElementById('name').innerHTML = `${userData.name || telegramUser.first_name} ${userData.isAdmin ? '<span class="admin-badge">Admin</span>' : ''}`;
             document.getElementById('username').textContent = userData.username || 'নেই';
@@ -708,29 +690,20 @@
             const botUsername = "HiGriP_bot";
             document.getElementById('refLink').textContent = `t.me/${botUsername}?start=ref_${uid}`;
 
-            // Enhanced tier system
             let tier, nextTier, progress;
             if (userData.coins >= 5000) {
-                tier = 'Gold';
-                nextTier = 'Max Tier';
-                progress = 100;
+                tier = 'Gold'; nextTier = 'Max Tier'; progress = 100;
             } else if (userData.coins >= 1000) {
-                tier = 'Silver';
-                nextTier = 'Gold: 5000 কয়েন';
-                progress = ((userData.coins - 1000) / 4000) * 100;
+                tier = 'Silver'; nextTier = 'Gold: 5000 কয়েন'; progress = ((userData.coins - 1000) / 4000) * 100;
             } else {
-                tier = 'Bronze';
-                nextTier = 'Silver: 1000 কয়েন';
-                progress = (userData.coins / 1000) * 100;
+                tier = 'Bronze'; nextTier = 'Silver: 1000 কয়েন'; progress = (userData.coins / 1000) * 100;
             }
             
             const t = document.getElementById('tier');
             t.textContent = tier + ' Tier';
             t.className = `px-3 py-1 text-sm font-bold rounded-full tier-${tier.toLowerCase()} shadow-lg`;
-            
             document.getElementById('user-tier-badge').textContent = tier + ' Tier';
             document.getElementById('user-tier-badge').className = `px-3 py-1 text-sm font-bold rounded-full tier-${tier.toLowerCase()}`;
-            
             document.getElementById('next-tier').textContent = nextTier;
             document.getElementById('tier-progress').style.width = `${progress}%`;
 
@@ -757,7 +730,6 @@
                     '<i class="fas fa-exchange-alt mr-2"></i> রিডিম';
             });
 
-            // Update user rank if available
             if (userRank) {
                 document.getElementById('user-rank').textContent = userRank.rank;
                 document.getElementById('user-rank-name').textContent = userData.name;
@@ -765,7 +737,6 @@
             }
         }
 
-        // Daily bonus functionality
         async function checkDailyBonus() {
             const today = new Date().toDateString();
             if (userData.lastDailyBonus !== today) {
@@ -785,11 +756,9 @@
                 tg.showAlert('আপনি ইতিমধ্যে আজকের বোনাস নিয়েছেন!');
                 return;
             }
-            
             await userRef.child('coins').transaction(c => (c || 0) + 100);
             await userRef.child('totalEarned').transaction(t => (t || 0) + 100);
             await userRef.child('lastDailyBonus').set(today);
-            
             document.getElementById('bonus-amount').textContent = '১০০';
             document.getElementById('dailyBonusModal').classList.remove('hidden');
             document.getElementById('dailyBonusBtn').classList.remove('pulse-animation');
@@ -802,52 +771,25 @@
             document.getElementById('dailyBonusModal').classList.add('hidden');
         };
 
-        // Enhanced ad functionality
-        async function showAd(format = '', isAuto = false) {
-            if (!adReady) return;
-            return new Promise((resolve, reject) => {
-                // Simulate ad viewing for demo
-                setTimeout(() => {
-                    userRef.child('coins').transaction(c => (c || 0) + 20);
-                    userRef.child('totalEarned').transaction(t => (t || 0) + 20);
-                    userRef.child('lastAd').set(Date.now());
-                    if (!isAuto) {
-                        tg.showAlert('অ্যাড দেখা শেষ! +20 কয়েন');
-                        
-                        // Add coin animation
-                        const coinsEl = document.getElementById('coins');
-                        coinsEl.classList.remove('coin-animation');
-                        void coinsEl.offsetWidth; // Trigger reflow
-                        coinsEl.classList.add('coin-animation');
-                    }
-                    resolve();
-                }, 2000);
-                
-                // Actual implementation would be:
-                /*
-                if (typeof show_10087307 === 'function') {
-                    show_10087307(format).then(() => {
-                        userRef.child('coins').transaction(c => c + 20);
-                        userRef.child('lastAd').set(Date.now());
-                        if (!isAuto) tg.showAlert('অ্যাড দেখা শেষ! +20 কয়েন');
-                        resolve();
-                    }).catch(reject);
-                } else {
-                    reject();
-                }
-                */
-            });
-        }
-
+        // Watch Ad বাটন - Rewarded Interstitial
         document.getElementById('adBtn').onclick = async () => {
             const btn = document.getElementById('adBtn');
             if (btn.disabled || !adReady) return tg.showAlert('অ্যাড লোড হচ্ছে...');
-            btn.disabled = true; 
+            btn.disabled = true;
             btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> লোড হচ্ছে...';
             try {
-                await showAd();
-            } catch {
-                tg.showAlert('অ্যাড লোড হয়নি');
+                await window.show_10087307().then(() => {
+                    alert('You have seen an ad!');
+                    userRef.child('coins').transaction(c => (c || 0) + 20);
+                    userRef.child('totalEarned').transaction(t => (t || 0) + 20);
+                    userRef.child('lastAd').set(Date.now());
+                    const coinsEl = document.getElementById('coins');
+                    coinsEl.classList.remove('coin-animation');
+                    void coinsEl.offsetWidth;
+                    coinsEl.classList.add('coin-animation');
+                });
+            } catch (err) {
+                tg.showAlert('অ্যাড দেখাতে সমস্যা হয়েছে');
             } finally {
                 btn.innerHTML = '<i class="fas fa-play-circle mr-2"></i> দেখুন';
                 btn.disabled = false;
@@ -869,38 +811,24 @@
             }, 100);
         }
 
-        // Enhanced leaderboard with user rank
         function loadLeaderboard() {
             db.ref('users').orderByChild('coins').limitToLast(10).on('value', s => {
                 const list = document.getElementById('leaderboard');
                 list.innerHTML = '';
                 const entries = [];
                 s.forEach(c => entries.push({ id: c.key, ...c.val() }));
-                
-                // Sort by coins (descending)
                 entries.sort((a, b) => (b.coins || 0) - (a.coins || 0));
-                
-                // Find user rank
                 userRank = null;
-                entries.forEach((u, i) => {
-                    if (u.id === uid) {
-                        userRank = { rank: i + 1, ...u };
-                    }
-                });
-                
-                // Update user rank in UI
+                entries.forEach((u, i) => { if (u.id === uid) userRank = { rank: i + 1, ...u }; });
                 if (userRank) {
                     document.getElementById('user-rank').textContent = userRank.rank;
                     document.getElementById('user-rank-name').textContent = userData.name;
                     document.getElementById('user-rank-coins').textContent = `${userData.coins || 0} কয়েন`;
                 }
-                
-                // Display top 10
                 entries.slice(0, 10).forEach((u, i) => {
                     const rankClass = i === 0 ? 'bg-yellow-100 border-yellow-300' : 
                                      i === 1 ? 'bg-gray-100 border-gray-300' : 
                                      i === 2 ? 'bg-amber-100 border-amber-300' : 'bg-white';
-                    
                     list.innerHTML += `
                     <div class="flex justify-between p-3 rounded-lg border-2 ${rankClass}">
                         <div class="flex items-center space-x-2">
@@ -916,10 +844,7 @@
                         </span>
                     </div>`;
                 });
-                
-                if (!entries.length) {
-                    list.innerHTML = '<p class="text-gray-500 text-sm text-center py-8">কোনো ডেটা নেই</p>';
-                }
+                if (!entries.length) list.innerHTML = '<p class="text-gray-500 text-sm text-center py-8">কোনো ডেটা নেই</p>';
             });
         }
 
@@ -937,7 +862,6 @@
                     const statusClass = d.status === 'pending' ? 'text-yellow-600 bg-yellow-100' : 
                                       d.status === 'completed' ? 'text-green-600 bg-green-100' : 
                                       'text-red-600 bg-red-100';
-                    
                     h.innerHTML += `
                     <div class="p-3 bg-white rounded-lg border card">
                         <div class="flex justify-between items-start mb-2">
@@ -952,37 +876,13 @@
         }
 
         function loadNotifications() {
-            // Simulated notifications
             const notifications = [
-                {
-                    id: 1,
-                    title: "স্বাগতম HiGrip-এ!",
-                    message: "কয়েন উপার্জন শুরু করুন এবং রিয়েল মানি উপভোগ করুন",
-                    time: "আজ, ১০:৩০ AM",
-                    icon: "info-circle",
-                    color: "blue"
-                },
-                {
-                    id: 2,
-                    title: "রেফার প্রোগ্রাম",
-                    message: "বন্ধুদের রেফার করে অতিরিক্ত কয়েন উপার্জন করুন",
-                    time: "গতকাল, ০৩:১৫ PM",
-                    icon: "user-friends",
-                    color: "green"
-                },
-                {
-                    id: 3,
-                    title: "নতুন অফার!",
-                    message: "bKash-এ এখন ১০% এক্সট্রা বোনাস পাচ্ছেন",
-                    time: "২ দিন আগে, ১১:২০ AM",
-                    icon: "gift",
-                    color: "purple"
-                }
+                { id: 1, title: "স্বাগতম HiGrip-এ!", message: "কয়েন উপার্জন শুরু করুন এবং রিয়েল মানি উপভোগ করুন", time: "আজ, ১০:৩০ AM", icon: "info-circle", color: "blue" },
+                { id: 2, title: "রেফার প্রোগ্রাম", message: "বন্ধুদের রেফার করে অতিরিক্ত কয়েন উপার্জন করুন", time: "গতকাল, ০৩:১৫ PM", icon: "user-friends", color: "green" },
+                { id: 3, title: "নতুন অফার!", message: "bKash-এ এখন ১০% এক্সট্রা বোনাস পাচ্ছেন", time: "২ দিন আগে, ১১:২০ AM", icon: "gift", color: "purple" }
             ];
-            
             const list = document.getElementById('notifications-list');
             list.innerHTML = '';
-            
             notifications.forEach(notif => {
                 list.innerHTML += `
                 <div class="bg-white p-4 rounded-xl card">
@@ -998,8 +898,6 @@
                     </div>
                 </div>`;
             });
-            
-            // Update notification badge
             document.getElementById('notification-count').textContent = notifications.length;
             document.getElementById('notification-count').classList.remove('hidden');
         }
@@ -1020,21 +918,9 @@
         document.getElementById('submit').onclick = () => {
             const phone = document.getElementById('phone').value.trim();
             if (!/^01[3-9]\d{8}$/.test(phone)) return tg.showAlert('সঠিক ১১ ডিজিটের নাম্বার দিন (01XXXXXXXXX)');
-            
             userRef.child('coins').transaction(c => c - redeem.coins);
             userRef.child('totalRedeemed').transaction(t => (t || 0) + parseInt(redeem.coins));
-            
-            db.ref('redeems').push({
-                uid, 
-                name: userData.name, 
-                type: redeem.type, 
-                amount: redeem.amount, 
-                coins: redeem.coins,
-                phone, 
-                time: Date.now(), 
-                status: 'pending'
-            });
-            
+            db.ref('redeems').push({ uid, name: userData.name, type: redeem.type, amount: redeem.amount, coins: redeem.coins, phone, time: Date.now(), status: 'pending' });
             document.getElementById('modal').classList.add('hidden');
             tg.showAlert('রিকোয়েস্ট পাঠানো হয়েছে! ২৪ ঘন্টার মধ্যে টাকা পেয়ে যাবেন।');
         };
@@ -1044,32 +930,22 @@
             tg.showAlert('লিঙ্ক কপি হয়েছে! বন্ধুদের সাথে শেয়ার করুন।');
         };
 
-        document.getElementById('notifications-btn').onclick = () => {
-            switchTab('notifications');
-        };
+        document.getElementById('notifications-btn').onclick = () => switchTab('notifications');
 
-        // Enhanced tab switching
         function switchTab(tabName) {
             document.querySelectorAll('.navBtn').forEach(x => {
                 x.classList.remove('text-blue-600', 'nav-active');
                 x.classList.add('text-gray-600');
             });
-            
             document.querySelector(`[data-tab="${tabName}"]`).classList.add('text-blue-600', 'nav-active');
             document.querySelector(`[data-tab="${tabName}"]`).classList.remove('text-gray-600');
-            
             ['earn', 'redeem', 'feed', 'notifications'].forEach(t => {
                 document.getElementById('tab-' + t).classList.toggle('hidden', t !== tabName);
             });
         }
 
-        document.querySelectorAll('.navBtn').forEach(b => {
-            b.onclick = () => {
-                switchTab(b.dataset.tab);
-            };
-        });
+        document.querySelectorAll('.navBtn').forEach(b => b.onclick = () => switchTab(b.dataset.tab));
 
-        // Start
         init();
     </script>
 </body>
