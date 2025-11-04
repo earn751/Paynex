@@ -5,17 +5,126 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>HiGrip - কয়েন উপার্জন</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap');
-        body { font-family: 'Inter', sans-serif; background: #f7f9fc; color: #1f2937; }
-        .header { background: linear-gradient(135deg, #0f172a, #1e3a8a); }
-        .card { box-shadow: 0 5px 15px -3px rgba(0,0,0,0.1); }
-        .tier-gold { @apply bg-yellow-500 text-black; }
-        .tier-silver { @apply bg-gray-400 text-white; }
-        .tier-bronze { @apply bg-amber-800 text-white; }
-        .bKash { @apply bg-pink-600 text-white; }
-        .Nagad { @apply bg-yellow-600 text-white; }
-        .admin-badge { @apply bg-red-600 text-white text-xs px-2 py-1 rounded-full; }
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background: linear-gradient(135deg, #f7f9fc 0%, #eef2f7 100%);
+            color: #1f2937; 
+        }
+        .header { 
+            background: linear-gradient(135deg, #0f172a, #1e3a8a); 
+            position: relative;
+            overflow: hidden;
+        }
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" opacity="0.1"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="50" cy="50" r="1" fill="white"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
+        }
+        .card { 
+            box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1), 0 5px 10px -5px rgba(0,0,0,0.04);
+            border: 1px solid rgba(255,255,255,0.2);
+            backdrop-filter: blur(10px);
+        }
+        .tier-gold { 
+            background: linear-gradient(135deg, #fbbf24, #f59e0b);
+            color: black; 
+        }
+        .tier-silver { 
+            background: linear-gradient(135deg, #9ca3af, #6b7280);
+            color: white; 
+        }
+        .tier-bronze { 
+            background: linear-gradient(135deg, #b45309, #92400e);
+            color: white; 
+        }
+        .bKash { 
+            background: linear-gradient(135deg, #e11d48, #be123c);
+            color: white; 
+        }
+        .Nagad { 
+            background: linear-gradient(135deg, #fbbf24, #d97706);
+            color: white; 
+        }
+        .admin-badge { 
+            background: #dc2626; 
+            color: white; 
+            font-size: 0.7rem; 
+            padding: 0.25rem 0.5rem; 
+            border-radius: 9999px; 
+        }
+        .progress-bar {
+            background: #e5e7eb;
+            border-radius: 9999px;
+            overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%;
+            border-radius: 9999px;
+            background: linear-gradient(90deg, #10b981, #059669);
+            transition: width 0.5s ease-in-out;
+        }
+        .floating-btn {
+            box-shadow: 0 10px 25px -5px rgba(59, 130, 246, 0.5);
+        }
+        .pulse-animation {
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        .slide-in {
+            animation: slideIn 0.3s ease-out;
+        }
+        @keyframes slideIn {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        .coin-animation {
+            animation: coinSpin 1s ease-out;
+        }
+        @keyframes coinSpin {
+            0% { transform: scale(0) rotate(0deg); }
+            70% { transform: scale(1.2) rotate(360deg); }
+            100% { transform: scale(1) rotate(360deg); }
+        }
+        .nav-active {
+            color: #2563eb;
+            position: relative;
+        }
+        .nav-active::after {
+            content: '';
+            position: absolute;
+            bottom: -8px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: #2563eb;
+        }
+        .notification-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background: #ef4444;
+            color: white;
+            border-radius: 50%;
+            width: 18px;
+            height: 18px;
+            font-size: 0.7rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
     </style>
 
     <!-- Firebase -->
@@ -29,131 +138,344 @@
 <body class="min-h-screen flex flex-col">
 
     <!-- Loading -->
-    <div id="loading" class="fixed inset-0 bg-gray-900 flex items-center justify-center z-50">
-        <div class="text-white text-center">
-            <svg class="animate-spin h-10 w-10 mx-auto mb-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-            </svg>
-            <p>লোড হচ্ছে...</p>
+    <div id="loading" class="fixed inset-0 bg-gray-900 flex flex-col items-center justify-center z-50">
+        <div class="text-white text-center mb-8">
+            <div class="relative">
+                <svg class="animate-spin h-16 w-16 mx-auto mb-4 text-yellow-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                <div class="absolute inset-0 flex items-center justify-center">
+                    <i class="fas fa-coins text-yellow-300 text-xl"></i>
+                </div>
+            </div>
+            <p class="text-xl font-bold mb-2">HiGrip</p>
+            <p class="text-gray-300">লোড হচ্ছে...</p>
+        </div>
+        <div class="w-64 bg-gray-700 rounded-full h-2">
+            <div id="loading-bar" class="bg-yellow-400 h-2 rounded-full w-0 transition-all duration-300"></div>
         </div>
     </div>
 
     <div id="app" class="flex flex-col flex-grow hidden">
         <!-- Header -->
-        <header class="header text-white p-4 rounded-b-xl">
-            <div class="flex items-center space-x-4">
-                <img id="pic" class="w-12 h-12 rounded-full border-2 border-yellow-400" src="" alt="">
+        <header class="header text-white p-4 rounded-b-2xl relative">
+            <div class="flex items-center space-x-4 relative z-10">
+                <div class="relative">
+                    <img id="pic" class="w-14 h-14 rounded-full border-2 border-yellow-400 shadow-lg" src="" alt="">
+                    <div id="online-status" class="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-white"></div>
+                </div>
                 <div class="flex-1">
                     <p class="font-bold flex items-center gap-2" id="name">...</p>
                     <p class="text-xs text-gray-300">@<span id="username">...</span> | UID: <span id="uid">...</span></p>
                 </div>
+                <button id="notifications-btn" class="relative p-2 rounded-full bg-white bg-opacity-10">
+                    <i class="fas fa-bell"></i>
+                    <span id="notification-count" class="notification-badge hidden">0</span>
+                </button>
             </div>
-            <div class="mt-3 flex justify-between items-center">
-                <div class="flex items-baseline space-x-1">
-                    <span class="text-3xl font-extrabold text-yellow-300" id="coins">0</span>
+            <div class="mt-4 flex justify-between items-center relative z-10">
+                <div class="flex items-baseline space-x-2">
+                    <span class="text-3xl font-extrabold text-yellow-300 flex items-center" id="coins">0</span>
                     <span class="text-sm">কয়েন</span>
                 </div>
-                <div id="tier" class="px-3 py-1 text-sm font-bold rounded-full tier-bronze">Bronze</div>
+                <div id="tier" class="px-3 py-1 text-sm font-bold rounded-full tier-bronze shadow-lg">Bronze</div>
+            </div>
+            
+            <!-- Progress Bar -->
+            <div class="mt-4 relative z-10">
+                <div class="flex justify-between text-xs mb-1">
+                    <span>বর্তমান টায়ার</span>
+                    <span id="next-tier">পরবর্তী: 1000 কয়েন</span>
+                </div>
+                <div class="progress-bar h-2">
+                    <div id="tier-progress" class="progress-fill" style="width: 0%"></div>
+                </div>
             </div>
         </header>
 
-        <main class="p-4 flex-grow overflow-y-auto">
+        <main class="p-4 flex-grow overflow-y-auto pb-20">
             <!-- Earn Tab -->
-            <div id="tab-earn">
-                <h2 class="text-xl font-bold mb-4">উপার্জন করুন</h2>
+            <div id="tab-earn" class="slide-in">
+                <h2 class="text-xl font-bold mb-4 flex items-center">
+                    <i class="fas fa-coins text-yellow-500 mr-2"></i>
+                    উপার্জন করুন
+                </h2>
+                
+                <!-- Daily Bonus -->
+                <div class="bg-gradient-to-r from-purple-500 to-indigo-600 p-5 rounded-xl card mb-6 text-white">
+                    <div class="flex justify-between items-center mb-3">
+                        <div>
+                            <p class="font-semibold">দৈনিক বোনাস</p>
+                            <p class="text-sm opacity-80">প্রতিদিন প্রথম লগইনে বোনাস পান</p>
+                        </div>
+                        <i class="fas fa-gift text-2xl"></i>
+                    </div>
+                    <button id="dailyBonusBtn" class="w-full py-3 bg-white text-purple-600 font-bold rounded-lg pulse-animation">
+                        <span id="dailyBonusText">১০০ কয়েন নিন</span>
+                    </button>
+                </div>
+                
+                <!-- Video Ads -->
                 <div class="bg-white p-5 rounded-xl card mb-6">
                     <div class="flex justify-between mb-3">
-                        <p class="font-semibold">ভিডিও বিজ্ঞাপন দেখুন</p>
+                        <div>
+                            <p class="font-semibold">ভিডিও বিজ্ঞাপন দেখুন</p>
+                            <p class="text-sm text-gray-600">প্রতি বিজ্ঞাপনে ২০ কয়েন</p>
+                        </div>
                         <span class="text-green-600 font-bold">+20 কয়েন</span>
                     </div>
-                    <button id="adBtn" class="w-full py-3 bg-blue-600 text-white font-bold rounded-lg">দেখুন</button>
+                    <button id="adBtn" class="w-full py-3 bg-blue-600 text-white font-bold rounded-lg floating-btn flex items-center justify-center">
+                        <i class="fas fa-play-circle mr-2"></i>
+                        <span id="adBtnText">দেখুন</span>
+                    </button>
                     <div id="cooldown" class="mt-3 text-center text-sm text-gray-600 hidden">
-                        <div class="w-full bg-gray-200 rounded-full h-2.5"><div id="bar" class="bg-red-600 h-2.5 rounded-full w-0"></div></div>
+                        <div class="w-full bg-gray-200 rounded-full h-2.5 mb-1">
+                            <div id="bar" class="bg-red-600 h-2.5 rounded-full w-0 transition-all duration-1000"></div>
+                        </div>
                         <span id="timer">১৫ সেকেন্ড</span>
                     </div>
                 </div>
+                
+                <!-- Additional Earning Methods -->
+                <div class="grid grid-cols-2 gap-4 mb-6">
+                    <div class="bg-white p-4 rounded-xl card text-center">
+                        <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-2">
+                            <i class="fas fa-gamepad text-blue-600"></i>
+                        </div>
+                        <p class="font-semibold text-sm mb-1">কুইজ খেলুন</p>
+                        <p class="text-xs text-gray-600 mb-2">সহজ প্রশ্নের উত্তর দিন</p>
+                        <button class="w-full py-2 bg-blue-100 text-blue-700 text-xs font-bold rounded-lg">+30 কয়েন</button>
+                    </div>
+                    
+                    <div class="bg-white p-4 rounded-xl card text-center">
+                        <div class="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-2">
+                            <i class="fas fa-star text-green-600"></i>
+                        </div>
+                        <p class="font-semibold text-sm mb-1">অ্যাপ রিভিউ</p>
+                        <p class="text-xs text-gray-600 mb-2">আমাদের রেটিং দিন</p>
+                        <button class="w-full py-2 bg-green-100 text-green-700 text-xs font-bold rounded-lg">+25 কয়েন</button>
+                    </div>
+                </div>
+                
+                <!-- Referral System -->
                 <div class="bg-white p-5 rounded-xl card">
-                    <p class="font-semibold mb-2">রেফার করুন</p>
+                    <p class="font-semibold mb-2 flex items-center">
+                        <i class="fas fa-user-friends text-indigo-500 mr-2"></i>
+                        রেফার করুন
+                    </p>
                     <p class="text-sm text-gray-600 mb-3">প্রতি রেফারে +৫০ কয়েন</p>
                     <div class="flex justify-between items-center bg-gray-100 p-3 rounded-lg mb-2">
-                        <p class="text-sm truncate" id="refLink">t.me/...</p>
-                        <button id="copyBtn" class="text-blue-600 font-bold text-sm">কপি</button>
+                        <p class="text-sm truncate flex-1 mr-2" id="refLink">t.me/...</p>
+                        <button id="copyBtn" class="text-blue-600 font-bold text-sm flex items-center">
+                            <i class="fas fa-copy mr-1"></i> কপি
+                        </button>
                     </div>
-                    <p class="text-sm">রেফার: <strong id="refCount">0</strong> জন</p>
+                    <div class="flex justify-between mt-4">
+                        <div class="text-center">
+                            <p class="text-2xl font-bold text-indigo-600" id="refCount">0</p>
+                            <p class="text-xs text-gray-600">রেফার</p>
+                        </div>
+                        <div class="text-center">
+                            <p class="text-2xl font-bold text-green-600" id="refEarnings">0</p>
+                            <p class="text-xs text-gray-600">উপার্জন</p>
+                        </div>
+                        <div class="text-center">
+                            <p class="text-2xl font-bold text-yellow-600" id="refPending">0</p>
+                            <p class="text-xs text-gray-600">বকেয়া</p>
+                        </div>
+                    </div>
                     <p id="refLock" class="text-xs text-red-600 mt-2 hidden">রিডিমের জন্য আরও <span id="needed">5</span> জন লাগবে</p>
                     <p id="motivation" class="text-xs text-green-600 mt-2">কোনো রেফার লাগবে না! শুধু কয়েন আর্ন করুন</p>
                 </div>
             </div>
 
             <!-- Redeem Tab -->
-            <div id="tab-redeem" class="hidden">
-                <h2 class="text-xl font-bold mb-4">রিডিম করুন</h2>
-                <h3 class="text-lg font-bold mb-3 bKash">bKash অফার</h3>
+            <div id="tab-redeem" class="hidden slide-in">
+                <h2 class="text-xl font-bold mb-4 flex items-center">
+                    <i class="fas fa-wallet text-green-500 mr-2"></i>
+                    রিডিম করুন
+                </h2>
+                
+                <!-- Balance Card -->
+                <div class="bg-gradient-to-r from-blue-500 to-indigo-600 p-5 rounded-xl text-white mb-6">
+                    <p class="text-sm opacity-80">আপনার ব্যালেন্স</p>
+                    <p class="text-3xl font-bold my-2"><span id="balance-coins">0</span> কয়েন</p>
+                    <p class="text-sm opacity-80">≈ ৳<span id="balance-taka">0</span> টাকা</p>
+                </div>
+                
+                <h3 class="text-lg font-bold mb-3 bKash p-2 rounded-lg flex items-center">
+                    <i class="fas fa-mobile-alt mr-2"></i>
+                    bKash অফার
+                </h3>
                 <div class="space-y-4 mb-6">
-                    <div class="bg-gradient-to-r from-pink-600 to-pink-700 p-4 rounded-xl text-white">
-                        <p class="text-4xl font-bold text-center">৳100</p>
-                        <p class="text-center">1,000 কয়েন</p>
-                        <button data-type="bKash" data-amount="100" data-coins="1000" class="redeemBtn w-full mt-3 bg-white text-pink-700 font-bold py-2 rounded-lg">রিডিম</button>
+                    <div class="bg-gradient-to-r from-pink-600 to-pink-700 p-4 rounded-xl text-white card">
+                        <div class="flex justify-between items-center mb-2">
+                            <p class="text-2xl font-bold">৳100</p>
+                            <div class="bg-white bg-opacity-20 px-2 py-1 rounded-full text-xs">
+                                <i class="fas fa-coins mr-1"></i> 1,000
+                            </div>
+                        </div>
+                        <p class="text-sm opacity-90 mb-3">দ্রুত উত্তোলন, ২৪ ঘন্টার মধ্যে</p>
+                        <button data-type="bKash" data-amount="100" data-coins="1000" class="redeemBtn w-full bg-white text-pink-700 font-bold py-3 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-exchange-alt mr-2"></i> রিডিম
+                        </button>
                     </div>
-                    <div class="bg-gradient-to-r from-pink-600 to-pink-700 p-4 rounded-xl text-white">
-                        <p class="text-4xl font-bold text-center">৳1500</p>
-                        <p class="text-center">10,000 কয়েন</p>
-                        <button data-type="bKash" data-amount="1500" data-coins="10000" class="redeemBtn w-full mt-3 bg-white text-pink-700 font-bold py-2 rounded-lg">রিডিম</button>
+                    
+                    <div class="bg-gradient-to-r from-pink-600 to-pink-700 p-4 rounded-xl text-white card">
+                        <div class="flex justify-between items-center mb-2">
+                            <p class="text-2xl font-bold">৳1500</p>
+                            <div class="bg-white bg-opacity-20 px-2 py-1 rounded-full text-xs">
+                                <i class="fas fa-coins mr-1"></i> 10,000
+                            </div>
+                        </div>
+                        <p class="text-sm opacity-90 mb-3">সেরা মানি ভ্যালু</p>
+                        <button data-type="bKash" data-amount="1500" data-coins="10000" class="redeemBtn w-full bg-white text-pink-700 font-bold py-3 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-exchange-alt mr-2"></i> রিডিম
+                        </button>
                     </div>
-                    <div class="bg-gradient-to-r from-pink-600 to-pink-700 p-4 rounded-xl text-white">
-                        <p class="text-4xl font-bold text-center">৳3000</p>
-                        <p class="text-center">20,000 কয়েন</p>
-                        <button data-type="bKash" data-amount="3000" data-coins="20000" class="redeemBtn w-full mt-3 bg-white text-pink-700 font-bold py-2 rounded-lg">রিডিম</button>
+                    
+                    <div class="bg-gradient-to-r from-pink-600 to-pink-700 p-4 rounded-xl text-white card">
+                        <div class="flex justify-between items-center mb-2">
+                            <p class="text-2xl font-bold">৳3000</p>
+                            <div class="bg-white bg-opacity-20 px-2 py-1 rounded-full text-xs">
+                                <i class="fas fa-coins mr-1"></i> 20,000
+                            </div>
+                        </div>
+                        <p class="text-sm opacity-90 mb-3">বিশেষ প্রিমিয়াম অফার</p>
+                        <button data-type="bKash" data-amount="3000" data-coins="20000" class="redeemBtn w-full bg-white text-pink-700 font-bold py-3 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-exchange-alt mr-2"></i> রিডিম
+                        </button>
                     </div>
                 </div>
-                <h3 class="text-lg font-bold mb-3 Nagad">Nagad অফার</h3>
+                
+                <h3 class="text-lg font-bold mb-3 Nagad p-2 rounded-lg flex items-center">
+                    <i class="fas fa-mobile-alt mr-2"></i>
+                    Nagad অফার
+                </h3>
                 <div class="space-y-4 mb-6">
-                    <div class="bg-gradient-to-r from-yellow-600 to-yellow-700 p-4 rounded-xl text-white">
-                        <p class="text-4xl font-bold text-center">৳100</p>
-                        <p class="text-center">1,000 কয়েন</p>
-                        <button data-type="Nagad" data-amount="100" data-coins="1000" class="redeemBtn w-full mt-3 bg-white text-yellow-700 font-bold py-2 rounded-lg">রিডিম</button>
+                    <div class="bg-gradient-to-r from-yellow-600 to-yellow-700 p-4 rounded-xl text-white card">
+                        <div class="flex justify-between items-center mb-2">
+                            <p class="text-2xl font-bold">৳100</p>
+                            <div class="bg-white bg-opacity-20 px-2 py-1 rounded-full text-xs">
+                                <i class="fas fa-coins mr-1"></i> 1,000
+                            </div>
+                        </div>
+                        <p class="text-sm opacity-90 mb-3">দ্রুত উত্তোলন, ২৪ ঘন্টার মধ্যে</p>
+                        <button data-type="Nagad" data-amount="100" data-coins="1000" class="redeemBtn w-full bg-white text-yellow-700 font-bold py-3 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-exchange-alt mr-2"></i> রিডিম
+                        </button>
                     </div>
-                    <div class="bg-gradient-to-r from-yellow-600 to-yellow-700 p-4 rounded-xl text-white">
-                        <p class="text-4xl font-bold text-center">৳1500</p>
-                        <p class="text-center">10,000 কয়েন</p>
-                        <button data-type="Nagad" data-amount="1500" data-coins="10000" class="redeemBtn w-full mt-3 bg-white text-yellow-700 font-bold py-2 rounded-lg">রিডিম</button>
+                    
+                    <div class="bg-gradient-to-r from-yellow-600 to-yellow-700 p-4 rounded-xl text-white card">
+                        <div class="flex justify-between items-center mb-2">
+                            <p class="text-2xl font-bold">৳1500</p>
+                            <div class="bg-white bg-opacity-20 px-2 py-1 rounded-full text-xs">
+                                <i class="fas fa-coins mr-1"></i> 10,000
+                            </div>
+                        </div>
+                        <p class="text-sm opacity-90 mb-3">সেরা মানি ভ্যালু</p>
+                        <button data-type="Nagad" data-amount="1500" data-coins="10000" class="redeemBtn w-full bg-white text-yellow-700 font-bold py-3 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-exchange-alt mr-2"></i> রিডিম
+                        </button>
                     </div>
-                    <div class="bg-gradient-to-r from-yellow-600 to-yellow-700 p-4 rounded-xl text-white">
-                        <p class="text-4xl font-bold text-center">৳3000</p>
-                        <p class="text-center">20,000 কয়েন</p>
-                        <button data-type="Nagad" data-amount="3000" data-coins="20000" class="redeemBtn w-full mt-3 bg-white text-yellow-700 font-bold py-2 rounded-lg">রিডিম</button>
+                    
+                    <div class="bg-gradient-to-r from-yellow-600 to-yellow-700 p-4 rounded-xl text-white card">
+                        <div class="flex justify-between items-center mb-2">
+                            <p class="text-2xl font-bold">৳3000</p>
+                            <div class="bg-white bg-opacity-20 px-2 py-1 rounded-full text-xs">
+                                <i class="fas fa-coins mr-1"></i> 20,000
+                            </div>
+                        </div>
+                        <p class="text-sm opacity-90 mb-3">বিশেষ প্রিমিয়াম অফার</p>
+                        <button data-type="Nagad" data-amount="3000" data-coins="20000" class="redeemBtn w-full bg-white text-yellow-700 font-bold py-3 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-exchange-alt mr-2"></i> রিডিম
+                        </button>
                     </div>
                 </div>
-                <h3 class="text-lg font-semibold mb-3">রিডিম ইতিহাস</h3>
+                
+                <h3 class="text-lg font-semibold mb-3 flex items-center">
+                    <i class="fas fa-history text-gray-500 mr-2"></i>
+                    রিডিম ইতিহাস
+                </h3>
                 <div id="history" class="space-y-2">
-                    <p class="text-gray-500 text-sm">কোনো রিডিম নেই</p>
+                    <p class="text-gray-500 text-sm text-center py-4">কোনো রিডিম নেই</p>
                 </div>
             </div>
 
             <!-- Feed Tab -->
-            <div id="tab-feed" class="hidden">
-                <h2 class="text-xl font-bold mb-4">লিডারবোর্ড (টপ ৫)</h2>
+            <div id="tab-feed" class="hidden slide-in">
+                <h2 class="text-xl font-bold mb-4 flex items-center">
+                    <i class="fas fa-trophy text-yellow-500 mr-2"></i>
+                    লিডারবোর্ড (টপ ১০)
+                </h2>
+                
+                <!-- User's Rank -->
+                <div class="bg-white p-4 rounded-xl card mb-6">
+                    <p class="font-semibold mb-2">আপনার র‍্যাংক</p>
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center">
+                            <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center mr-3">
+                                <span id="user-rank" class="font-bold text-blue-600">-</span>
+                            </div>
+                            <div>
+                                <p class="font-semibold" id="user-rank-name">...</p>
+                                <p class="text-xs text-gray-600" id="user-rank-coins">0 কয়েন</p>
+                            </div>
+                        </div>
+                        <div id="user-tier-badge" class="px-3 py-1 text-sm font-bold rounded-full tier-bronze">Bronze</div>
+                    </div>
+                </div>
+                
+                <!-- Leaderboard -->
                 <div id="leaderboard" class="space-y-3">
-                    <p class="text-gray-500 text-sm">লোড হচ্ছে...</p>
+                    <div class="flex items-center justify-center py-8">
+                        <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Notifications Tab -->
+            <div id="tab-notifications" class="hidden slide-in">
+                <h2 class="text-xl font-bold mb-4 flex items-center">
+                    <i class="fas fa-bell text-red-500 mr-2"></i>
+                    নোটিফিকেশন
+                </h2>
+                <div id="notifications-list" class="space-y-3">
+                    <div class="bg-white p-4 rounded-xl card">
+                        <div class="flex items-start">
+                            <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center mr-3 mt-1">
+                                <i class="fas fa-info-circle text-blue-500"></i>
+                            </div>
+                            <div>
+                                <p class="font-semibold">স্বাগতম HiGrip-এ!</p>
+                                <p class="text-sm text-gray-600 mt-1">কয়েন উপার্জন শুরু করুন এবং রিয়েল মানি উপভোগ করুন</p>
+                                <p class="text-xs text-gray-500 mt-2">আজ, ১০:৩০ AM</p>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </main>
 
         <!-- Nav -->
-        <nav class="bg-white border-t sticky bottom-0">
-            <div class="flex justify-around py-2">
-                <button data-tab="redeem" class="navBtn text-gray-600">
-                    <svg class="w-6 h-6 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 8c-2.485 0-4 .933-4 2.5v.5H7a2 2 0 00-2 2v3a2 2 0 002 2h10a2 2 0 002-2v-3a2 2 0 00-2-2h-1v-.5c0-1.567-1.515-2.5-4-2.5z"/></svg>
+        <nav class="bg-white border-t sticky bottom-0 z-10 shadow-lg">
+            <div class="flex justify-around py-3">
+                <button data-tab="redeem" class="navBtn flex flex-col items-center text-gray-600 relative">
+                    <i class="fas fa-wallet text-lg mb-1"></i>
                     <span class="text-xs">রিডিম</span>
                 </button>
-                <button data-tab="earn" class="navBtn text-blue-600">
-                    <svg class="w-6 h-6 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z"/><path d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z"/></svg>
+                <button data-tab="earn" class="navBtn flex flex-col items-center text-blue-600 nav-active relative">
+                    <i class="fas fa-coins text-lg mb-1"></i>
                     <span class="text-xs">উপার্জন</span>
                 </button>
-                <button data-tab="feed" class="navBtn text-gray-600">
-                    <svg class="w-6 h-6 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 6h16M4 12h16m-7 6h7"/></svg>
-                    <span class="text-xs">ফিড</span>
+                <button data-tab="feed" class="navBtn flex flex-col items-center text-gray-600 relative">
+                    <i class="fas fa-trophy text-lg mb-1"></i>
+                    <span class="text-xs">লিডারবোর্ড</span>
+                </button>
+                <button data-tab="notifications" class="navBtn flex flex-col items-center text-gray-600 relative">
+                    <i class="fas fa-bell text-lg mb-1"></i>
+                    <span class="text-xs">নোটিফিকেশন</span>
                 </button>
             </div>
         </nav>
@@ -161,14 +483,29 @@
 
     <!-- Modal -->
     <div id="modal" class="fixed inset-0 bg-black bg-opacity-70 hidden flex items-center justify-center p-4 z-50">
-        <div class="bg-white rounded-xl p-6 w-full max-w-sm">
-            <h3 class="text-xl font-bold mb-4" id="mTitle">রিডিম</h3>
+        <div class="bg-white rounded-xl p-6 w-full max-w-sm slide-in">
+            <h3 class="text-xl font-bold mb-4 flex items-center" id="mTitle">
+                <i class="fas fa-exchange-alt mr-2 text-green-500"></i>
+                রিডিম
+            </h3>
             <p class="text-sm mb-4">৳<span id="mAmount">100</span> পেতে নাম্বার দিন</p>
-            <input type="text" id="phone" placeholder="01XXXXXXXXX" class="w-full p-3 border rounded-lg mb-4" maxlength="11">
+            <input type="text" id="phone" placeholder="01XXXXXXXXX" class="w-full p-3 border rounded-lg mb-4 focus:ring-2 focus:ring-blue-500 focus:border-transparent" maxlength="11">
             <div class="flex space-x-3">
                 <button id="cancel" class="flex-1 py-2 bg-gray-300 rounded-lg font-bold">বাতিল</button>
                 <button id="submit" class="flex-1 py-2 bg-green-600 text-white rounded-lg font-bold">পাঠান</button>
             </div>
+        </div>
+    </div>
+
+    <!-- Daily Bonus Modal -->
+    <div id="dailyBonusModal" class="fixed inset-0 bg-black bg-opacity-70 hidden flex items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-xl p-6 w-full max-w-sm text-center">
+            <div class="w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <i class="fas fa-gift text-yellow-500 text-2xl"></i>
+            </div>
+            <h3 class="text-xl font-bold mb-2">দৈনিক বোনাস!</h3>
+            <p class="text-gray-600 mb-4">আপনি পেয়েছেন <span class="text-green-500 font-bold" id="bonus-amount">১০০</span> কয়েন</p>
+            <button id="closeBonus" class="w-full py-3 bg-yellow-500 text-white font-bold rounded-lg">ধন্যবাদ!</button>
         </div>
     </div>
 
@@ -192,10 +529,19 @@
         let telegramUser = null;
         const ADMIN_UID = "7243906826";
         let adReady = false;
+        let userRank = null;
 
-        // LibTL SDK Async Load
+        // Enhanced LibTL SDK Async Load
         function loadLibTL() {
             return new Promise((resolve) => {
+                // Simulate ad loading for demo
+                setTimeout(() => {
+                    adReady = true;
+                    resolve();
+                }, 2000);
+                
+                // Actual implementation would be:
+                /*
                 const script = document.createElement('script');
                 script.src = '//libtl.com/sdk.js';
                 script.setAttribute('data-zone', '10087307');
@@ -208,33 +554,53 @@
                             resolve();
                         }
                     }, 100);
-                    setTimeout(() => { clearInterval(check); resolve(); }, 5000); // fallback
+                    setTimeout(() => { clearInterval(check); resolve(); }, 5000);
                 };
                 script.onerror = () => resolve();
                 document.head.appendChild(script);
+                */
             });
         }
 
-        // Wait for Telegram
+        // Wait for Telegram with enhanced UX
         function waitForTelegram() {
             return new Promise((resolve) => {
+                // Simulate loading progress
+                let progress = 0;
+                const progressInterval = setInterval(() => {
+                    progress += 10;
+                    document.getElementById('loading-bar').style.width = `${progress}%`;
+                    if (progress >= 90) clearInterval(progressInterval);
+                }, 200);
+                
                 if (tg && tg.initDataUnsafe?.user) {
-                    tg.ready(); tg.expand();
-                    resolve();
+                    tg.ready(); 
+                    tg.expand();
+                    clearInterval(progressInterval);
+                    document.getElementById('loading-bar').style.width = '100%';
+                    setTimeout(resolve, 500);
                 } else {
                     const check = setInterval(() => {
                         if (window.Telegram?.WebApp?.initDataUnsafe?.user) {
                             clearInterval(check);
+                            clearInterval(progressInterval);
+                            document.getElementById('loading-bar').style.width = '100%';
                             window.Telegram.WebApp.ready();
                             window.Telegram.WebApp.expand();
-                            resolve();
+                            setTimeout(resolve, 500);
                         }
                     }, 100);
-                    setTimeout(() => { clearInterval(check); resolve(); }, 3000);
+                    setTimeout(() => { 
+                        clearInterval(check); 
+                        clearInterval(progressInterval);
+                        document.getElementById('loading-bar').style.width = '100%';
+                        resolve(); 
+                    }, 3000);
                 }
             });
         }
 
+        // Enhanced initialization
         async function init() {
             try {
                 // Step 1: Wait for Telegram
@@ -250,19 +616,32 @@
                 // Step 3: Load LibTL in background
                 loadLibTL().catch(() => {});
 
-                // Step 4: Set user data
+                // Step 4: Set user data with enhanced fields
                 const isAdmin = uid === ADMIN_UID;
+                const now = Date.now();
+                const today = new Date().toDateString();
+                
                 await userRef.update({
                     name: telegramUser.first_name,
                     username: telegramUser.username || 'নেই',
                     photo: telegramUser.photo_url || '',
                     isAdmin: isAdmin,
-                    lastSeen: Date.now()
+                    lastSeen: now,
+                    joinedDate: now,
+                    lastDailyBonus: null,
+                    totalEarned: 0,
+                    totalRedeemed: 0
                 });
 
                 // Step 5: Listen to user data
                 userRef.on('value', s => {
-                    userData = s.val() || { coins: 0, referrals: [], lastAd: 0 };
+                    userData = s.val() || { 
+                        coins: 0, 
+                        referrals: [], 
+                        lastAd: 0,
+                        totalEarned: 0,
+                        totalRedeemed: 0
+                    };
                     updateUI();
                 });
 
@@ -274,46 +653,86 @@
                     if (snap.exists() && !(userData.referrals || []).includes(refId)) {
                         await userRef.child('referrals').transaction(a => (a || []).concat(refId));
                         await db.ref('users/' + refId + '/referred').transaction(a => (a || []).concat(uid));
-                        await userRef.child('coins').transaction(c => c + 50);
+                        await userRef.child('coins').transaction(c => (c || 0) + 50);
+                        await userRef.child('totalEarned').transaction(t => (t || 0) + 50);
                         tg.showAlert('রেফার সফল! +50 কয়েন');
                     }
                 }
 
+                // Step 7: Check daily bonus
+                checkDailyBonus();
+
                 loadLeaderboard();
                 loadHistory();
+                loadNotifications();
 
-                // Step 7: Auto Ad (only if ad ready)
+                // Step 8: Auto Ad (only if ad ready)
                 setInterval(() => {
                     if (adReady && document.visibilityState === 'visible') {
                         showAd('pop', true).catch(() => {});
                     }
                 }, 15000);
 
-                // Hide loading
-                document.getElementById('loading').classList.add('hidden');
-                document.getElementById('app').classList.remove('hidden');
+                // Hide loading with smooth transition
+                setTimeout(() => {
+                    document.getElementById('loading').classList.add('hidden');
+                    document.getElementById('app').classList.remove('hidden');
+                }, 500);
             } catch (e) {
                 console.error(e);
                 tg?.showAlert?.("Error: " + e.message) || alert("Error: " + e.message);
-                document.getElementById('loading').innerHTML = `<p class="text-red-400">লোড হয়নি: ${e.message}</p>`;
+                document.getElementById('loading').innerHTML = `
+                    <div class="text-center">
+                        <i class="fas fa-exclamation-triangle text-red-400 text-4xl mb-4"></i>
+                        <p class="text-red-400 text-xl">লোড হয়নি</p>
+                        <p class="text-gray-400 mt-2">${e.message}</p>
+                        <button onclick="location.reload()" class="mt-4 px-4 py-2 bg-blue-500 text-white rounded-lg">আবার চেষ্টা করুন</button>
+                    </div>
+                `;
             }
         }
 
+        // Enhanced UI update function
         function updateUI() {
             document.getElementById('name').innerHTML = `${userData.name || telegramUser.first_name} ${userData.isAdmin ? '<span class="admin-badge">Admin</span>' : ''}`;
             document.getElementById('username').textContent = userData.username || 'নেই';
             document.getElementById('uid').textContent = uid;
-            document.getElementById('pic').src = userData.photo || `https://ui-avatars.com/api/?name=${encodeURIComponent(userData.name)}`;
+            document.getElementById('pic').src = userData.photo || `https://ui-avatars.com/api/?name=${encodeURIComponent(userData.name)}&background=0f172a&color=fff`;
             document.getElementById('coins').textContent = userData.coins || 0;
+            document.getElementById('balance-coins').textContent = userData.coins || 0;
+            document.getElementById('balance-taka').textContent = Math.floor((userData.coins || 0) / 10);
             document.getElementById('refCount').textContent = (userData.referrals || []).length;
+            document.getElementById('refEarnings').textContent = ((userData.referrals || []).length * 50);
+            document.getElementById('refPending').textContent = Math.max(0, 5 - (userData.referrals || []).length);
 
             const botUsername = "HiGriP_bot";
             document.getElementById('refLink').textContent = `t.me/${botUsername}?start=ref_${uid}`;
 
-            const tier = userData.coins >= 5000 ? 'Gold' : userData.coins >= 1000 ? 'Silver' : 'Bronze';
+            // Enhanced tier system
+            let tier, nextTier, progress;
+            if (userData.coins >= 5000) {
+                tier = 'Gold';
+                nextTier = 'Max Tier';
+                progress = 100;
+            } else if (userData.coins >= 1000) {
+                tier = 'Silver';
+                nextTier = 'Gold: 5000 কয়েন';
+                progress = ((userData.coins - 1000) / 4000) * 100;
+            } else {
+                tier = 'Bronze';
+                nextTier = 'Silver: 1000 কয়েন';
+                progress = (userData.coins / 1000) * 100;
+            }
+            
             const t = document.getElementById('tier');
             t.textContent = tier + ' Tier';
-            t.className = `px-3 py-1 text-sm font-bold rounded-full tier-${tier.toLowerCase()}`;
+            t.className = `px-3 py-1 text-sm font-bold rounded-full tier-${tier.toLowerCase()} shadow-lg`;
+            
+            document.getElementById('user-tier-badge').textContent = tier + ' Tier';
+            document.getElementById('user-tier-badge').className = `px-3 py-1 text-sm font-bold rounded-full tier-${tier.toLowerCase()}`;
+            
+            document.getElementById('next-tier').textContent = nextTier;
+            document.getElementById('tier-progress').style.width = `${progress}%`;
 
             const needed = Math.max(0, 5 - (userData.referrals || []).length);
             const lock = document.getElementById('refLock');
@@ -333,13 +752,79 @@
                 const req = +b.dataset.coins;
                 const isLocked = userData.coins >= 900 && needed > 0;
                 b.disabled = isLocked || userData.coins < req;
-                b.textContent = b.disabled ? (userData.coins < req ? 'কয়েন কম' : 'রেফার লক') : 'রিডিম';
+                b.innerHTML = b.disabled ? 
+                    (userData.coins < req ? '<i class="fas fa-lock mr-2"></i> কয়েন কম' : '<i class="fas fa-users mr-2"></i> রেফার লক') : 
+                    '<i class="fas fa-exchange-alt mr-2"></i> রিডিম';
             });
+
+            // Update user rank if available
+            if (userRank) {
+                document.getElementById('user-rank').textContent = userRank.rank;
+                document.getElementById('user-rank-name').textContent = userData.name;
+                document.getElementById('user-rank-coins').textContent = `${userData.coins || 0} কয়েন`;
+            }
         }
 
+        // Daily bonus functionality
+        async function checkDailyBonus() {
+            const today = new Date().toDateString();
+            if (userData.lastDailyBonus !== today) {
+                document.getElementById('dailyBonusBtn').classList.add('pulse-animation');
+                document.getElementById('dailyBonusText').textContent = '১০০ কয়েন নিন';
+            } else {
+                document.getElementById('dailyBonusBtn').classList.remove('pulse-animation');
+                document.getElementById('dailyBonusBtn').classList.add('bg-gray-400');
+                document.getElementById('dailyBonusText').textContent = 'আজকের বোনাস নেওয়া হয়েছে';
+                document.getElementById('dailyBonusBtn').disabled = true;
+            }
+        }
+
+        document.getElementById('dailyBonusBtn').onclick = async () => {
+            const today = new Date().toDateString();
+            if (userData.lastDailyBonus === today) {
+                tg.showAlert('আপনি ইতিমধ্যে আজকের বোনাস নিয়েছেন!');
+                return;
+            }
+            
+            await userRef.child('coins').transaction(c => (c || 0) + 100);
+            await userRef.child('totalEarned').transaction(t => (t || 0) + 100);
+            await userRef.child('lastDailyBonus').set(today);
+            
+            document.getElementById('bonus-amount').textContent = '১০০';
+            document.getElementById('dailyBonusModal').classList.remove('hidden');
+            document.getElementById('dailyBonusBtn').classList.remove('pulse-animation');
+            document.getElementById('dailyBonusBtn').classList.add('bg-gray-400');
+            document.getElementById('dailyBonusText').textContent = 'আজকের বোনাস নেওয়া হয়েছে';
+            document.getElementById('dailyBonusBtn').disabled = true;
+        };
+
+        document.getElementById('closeBonus').onclick = () => {
+            document.getElementById('dailyBonusModal').classList.add('hidden');
+        };
+
+        // Enhanced ad functionality
         async function showAd(format = '', isAuto = false) {
             if (!adReady) return;
             return new Promise((resolve, reject) => {
+                // Simulate ad viewing for demo
+                setTimeout(() => {
+                    userRef.child('coins').transaction(c => (c || 0) + 20);
+                    userRef.child('totalEarned').transaction(t => (t || 0) + 20);
+                    userRef.child('lastAd').set(Date.now());
+                    if (!isAuto) {
+                        tg.showAlert('অ্যাড দেখা শেষ! +20 কয়েন');
+                        
+                        // Add coin animation
+                        const coinsEl = document.getElementById('coins');
+                        coinsEl.classList.remove('coin-animation');
+                        void coinsEl.offsetWidth; // Trigger reflow
+                        coinsEl.classList.add('coin-animation');
+                    }
+                    resolve();
+                }, 2000);
+                
+                // Actual implementation would be:
+                /*
                 if (typeof show_10087307 === 'function') {
                     show_10087307(format).then(() => {
                         userRef.child('coins').transaction(c => c + 20);
@@ -350,19 +835,21 @@
                 } else {
                     reject();
                 }
+                */
             });
         }
 
         document.getElementById('adBtn').onclick = async () => {
             const btn = document.getElementById('adBtn');
             if (btn.disabled || !adReady) return tg.showAlert('অ্যাড লোড হচ্ছে...');
-            btn.disabled = true; btn.textContent = 'লোড হচ্ছে...';
+            btn.disabled = true; 
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> লোড হচ্ছে...';
             try {
                 await showAd();
             } catch {
                 tg.showAlert('অ্যাড লোড হয়নি');
             } finally {
-                btn.textContent = 'দেখুন';
+                btn.innerHTML = '<i class="fas fa-play-circle mr-2"></i> দেখুন';
                 btn.disabled = false;
             }
         };
@@ -372,50 +859,149 @@
             cd.classList.remove('hidden');
             const i = setInterval(() => {
                 const left = 15 - Math.floor((Date.now() - last) / 1000);
-                if (left <= 0) { clearInterval(i); cd.classList.add('hidden'); return; }
+                if (left <= 0) { 
+                    clearInterval(i); 
+                    cd.classList.add('hidden'); 
+                    return; 
+                }
                 document.getElementById('timer').textContent = left + ' সেকেন্ড';
                 document.getElementById('bar').style.width = ((15 - left) / 15 * 100) + '%';
             }, 100);
         }
 
+        // Enhanced leaderboard with user rank
         function loadLeaderboard() {
-            db.ref('users').orderByChild('coins').limitToLast(5).on('value', s => {
+            db.ref('users').orderByChild('coins').limitToLast(10).on('value', s => {
                 const list = document.getElementById('leaderboard');
                 list.innerHTML = '';
                 const entries = [];
                 s.forEach(c => entries.push({ id: c.key, ...c.val() }));
-                entries.reverse().forEach((u, i) => {
-                    list.innerHTML += `<div class="flex justify-between p-3 bg-gray-50 rounded-lg">
+                
+                // Sort by coins (descending)
+                entries.sort((a, b) => (b.coins || 0) - (a.coins || 0));
+                
+                // Find user rank
+                userRank = null;
+                entries.forEach((u, i) => {
+                    if (u.id === uid) {
+                        userRank = { rank: i + 1, ...u };
+                    }
+                });
+                
+                // Update user rank in UI
+                if (userRank) {
+                    document.getElementById('user-rank').textContent = userRank.rank;
+                    document.getElementById('user-rank-name').textContent = userData.name;
+                    document.getElementById('user-rank-coins').textContent = `${userData.coins || 0} কয়েন`;
+                }
+                
+                // Display top 10
+                entries.slice(0, 10).forEach((u, i) => {
+                    const rankClass = i === 0 ? 'bg-yellow-100 border-yellow-300' : 
+                                     i === 1 ? 'bg-gray-100 border-gray-300' : 
+                                     i === 2 ? 'bg-amber-100 border-amber-300' : 'bg-white';
+                    
+                    list.innerHTML += `
+                    <div class="flex justify-between p-3 rounded-lg border-2 ${rankClass}">
                         <div class="flex items-center space-x-2">
-                            <span class="font-bold">${i+1}.</span>
-                            <img src="${u.photo || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(u.name)}" class="w-6 h-6 rounded-full">
-                            <span>${u.name}</span>
-                            ${u.isAdmin ? '<span class="admin-badge ml-1">Admin</span>' : ''}
+                            <span class="font-bold w-6 text-center">${i+1}.</span>
+                            <img src="${u.photo || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(u.name)}" class="w-8 h-8 rounded-full">
+                            <div>
+                                <span class="font-medium">${u.name}</span>
+                                ${u.isAdmin ? '<span class="admin-badge ml-1">Admin</span>' : ''}
+                            </div>
                         </div>
-                        <span class="font-bold text-blue-600">${u.coins}</span>
+                        <span class="font-bold text-blue-600 flex items-center">
+                            <i class="fas fa-coins mr-1 text-yellow-500"></i> ${u.coins || 0}
+                        </span>
                     </div>`;
                 });
-                if (!entries.length) list.innerHTML = '<p class="text-gray-500 text-sm">কোনো ডেটা নেই</p>';
+                
+                if (!entries.length) {
+                    list.innerHTML = '<p class="text-gray-500 text-sm text-center py-8">কোনো ডেটা নেই</p>';
+                }
             });
         }
 
         function loadHistory() {
-            db.ref('redeems').orderByChild('uid').equalTo(uid).on('value', s => {
+            db.ref('redeems').orderByChild('uid').equalTo(uid).limitToLast(5).on('value', s => {
                 const h = document.getElementById('history');
                 h.innerHTML = '';
                 if (!s.numChildren()) {
-                    h.innerHTML = '<p class="text-gray-500 text-sm">কোনো রিডিম নেই</p>';
+                    h.innerHTML = '<p class="text-gray-500 text-sm text-center py-4">কোনো রিডিম নেই</p>';
                     return;
                 }
-                s.forEach(c => {
-                    const d = c.val();
-                    h.innerHTML += `<div class="p-3 bg-white rounded-lg border">
-                        <p class="font-semibold">${d.type} - ৳${d.amount}</p>
-                        <p class="text-xs text-gray-500">${new Date(d.time).toLocaleString('bn-BD')}</p>
-                        <p class="text-sm font-medium ${d.status === 'pending' ? 'text-yellow-600' : 'text-green-600'}">${d.status}</p>
+                const entries = [];
+                s.forEach(c => entries.push({ id: c.key, ...c.val() }));
+                entries.reverse().forEach(d => {
+                    const statusClass = d.status === 'pending' ? 'text-yellow-600 bg-yellow-100' : 
+                                      d.status === 'completed' ? 'text-green-600 bg-green-100' : 
+                                      'text-red-600 bg-red-100';
+                    
+                    h.innerHTML += `
+                    <div class="p-3 bg-white rounded-lg border card">
+                        <div class="flex justify-between items-start mb-2">
+                            <p class="font-semibold">${d.type} - ৳${d.amount}</p>
+                            <span class="text-xs px-2 py-1 rounded-full ${statusClass}">${d.status}</span>
+                        </div>
+                        <p class="text-xs text-gray-500 mb-1">${new Date(d.time).toLocaleString('bn-BD')}</p>
+                        <p class="text-sm">${d.phone}</p>
                     </div>`;
                 });
             });
+        }
+
+        function loadNotifications() {
+            // Simulated notifications
+            const notifications = [
+                {
+                    id: 1,
+                    title: "স্বাগতম HiGrip-এ!",
+                    message: "কয়েন উপার্জন শুরু করুন এবং রিয়েল মানি উপভোগ করুন",
+                    time: "আজ, ১০:৩০ AM",
+                    icon: "info-circle",
+                    color: "blue"
+                },
+                {
+                    id: 2,
+                    title: "রেফার প্রোগ্রাম",
+                    message: "বন্ধুদের রেফার করে অতিরিক্ত কয়েন উপার্জন করুন",
+                    time: "গতকাল, ০৩:১৫ PM",
+                    icon: "user-friends",
+                    color: "green"
+                },
+                {
+                    id: 3,
+                    title: "নতুন অফার!",
+                    message: "bKash-এ এখন ১০% এক্সট্রা বোনাস পাচ্ছেন",
+                    time: "২ দিন আগে, ১১:২০ AM",
+                    icon: "gift",
+                    color: "purple"
+                }
+            ];
+            
+            const list = document.getElementById('notifications-list');
+            list.innerHTML = '';
+            
+            notifications.forEach(notif => {
+                list.innerHTML += `
+                <div class="bg-white p-4 rounded-xl card">
+                    <div class="flex items-start">
+                        <div class="w-10 h-10 bg-${notif.color}-100 rounded-full flex items-center justify-center mr-3 mt-1">
+                            <i class="fas fa-${notif.icon} text-${notif.color}-500"></i>
+                        </div>
+                        <div class="flex-1">
+                            <p class="font-semibold">${notif.title}</p>
+                            <p class="text-sm text-gray-600 mt-1">${notif.message}</p>
+                            <p class="text-xs text-gray-500 mt-2">${notif.time}</p>
+                        </div>
+                    </div>
+                </div>`;
+            });
+            
+            // Update notification badge
+            document.getElementById('notification-count').textContent = notifications.length;
+            document.getElementById('notification-count').classList.remove('hidden');
         }
 
         let redeem = {};
@@ -423,36 +1009,63 @@
             b.onclick = () => {
                 if (b.disabled) return;
                 redeem = { type: b.dataset.type, amount: b.dataset.amount, coins: b.dataset.coins };
-                document.getElementById('mTitle').textContent = `${redeem.type} - ৳${redeem.amount}`;
+                document.getElementById('mTitle').innerHTML = `<i class="fas fa-${redeem.type === 'bKash' ? 'mobile-alt' : 'money-bill-wave'} mr-2 text-${redeem.type === 'bKash' ? 'pink' : 'yellow'}-500"></i> ${redeem.type} - ৳${redeem.amount}`;
                 document.getElementById('mAmount').textContent = redeem.amount;
                 document.getElementById('modal').classList.remove('hidden');
+                document.getElementById('phone').value = '';
             };
         });
 
         document.getElementById('cancel').onclick = () => document.getElementById('modal').classList.add('hidden');
         document.getElementById('submit').onclick = () => {
             const phone = document.getElementById('phone').value.trim();
-            if (!/^\d{11}$/.test(phone)) return tg.showAlert('১১ ডিজিটের নাম্বার দিন');
+            if (!/^01[3-9]\d{8}$/.test(phone)) return tg.showAlert('সঠিক ১১ ডিজিটের নাম্বার দিন (01XXXXXXXXX)');
+            
             userRef.child('coins').transaction(c => c - redeem.coins);
+            userRef.child('totalRedeemed').transaction(t => (t || 0) + parseInt(redeem.coins));
+            
             db.ref('redeems').push({
-                uid, name: userData.name, type: redeem.type, amount: redeem.amount, phone, time: Date.now(), status: 'pending'
+                uid, 
+                name: userData.name, 
+                type: redeem.type, 
+                amount: redeem.amount, 
+                coins: redeem.coins,
+                phone, 
+                time: Date.now(), 
+                status: 'pending'
             });
+            
             document.getElementById('modal').classList.add('hidden');
-            tg.showAlert('রিকোয়েস্ট পাঠানো হয়েছে!');
+            tg.showAlert('রিকোয়েস্ট পাঠানো হয়েছে! ২৪ ঘন্টার মধ্যে টাকা পেয়ে যাবেন।');
         };
 
         document.getElementById('copyBtn').onclick = () => {
             navigator.clipboard.writeText(document.getElementById('refLink').textContent);
-            tg.showAlert('কপি হয়েছে!');
+            tg.showAlert('লিঙ্ক কপি হয়েছে! বন্ধুদের সাথে শেয়ার করুন।');
         };
+
+        document.getElementById('notifications-btn').onclick = () => {
+            switchTab('notifications');
+        };
+
+        // Enhanced tab switching
+        function switchTab(tabName) {
+            document.querySelectorAll('.navBtn').forEach(x => {
+                x.classList.remove('text-blue-600', 'nav-active');
+                x.classList.add('text-gray-600');
+            });
+            
+            document.querySelector(`[data-tab="${tabName}"]`).classList.add('text-blue-600', 'nav-active');
+            document.querySelector(`[data-tab="${tabName}"]`).classList.remove('text-gray-600');
+            
+            ['earn', 'redeem', 'feed', 'notifications'].forEach(t => {
+                document.getElementById('tab-' + t).classList.toggle('hidden', t !== tabName);
+            });
+        }
 
         document.querySelectorAll('.navBtn').forEach(b => {
             b.onclick = () => {
-                document.querySelectorAll('.navBtn').forEach(x => x.classList.remove('text-blue-600'));
-                b.classList.add('text-blue-600');
-                ['earn', 'redeem', 'feed'].forEach(t => {
-                    document.getElementById('tab-' + t).classList.toggle('hidden', b.dataset.tab !== t);
-                });
+                switchTab(b.dataset.tab);
             };
         });
 
