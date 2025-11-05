@@ -157,6 +157,32 @@
         </div>
     </div>
 
+    <!-- Join Channel Modal -->
+    <div id="joinModal" class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4 z-50 hidden">
+        <div class="bg-white rounded-xl p-6 w-full max-w-sm text-center slide-in">
+            <i class="fas fa-exclamation-triangle text-red-500 text-4xl mb-4"></i>
+            <h3 class="text-xl font-bold mb-2">চ্যানেলে জয়েন করুন!</h3>
+            <p class="text-sm text-gray-600 mb-4">উপার্জন শুরু করতে প্রথমে আমাদের চ্যানেলে জয়েন করুন।</p>
+            <button id="joinBtn" class="w-full py-3 bg-blue-600 text-white font-bold rounded-lg mb-2">
+                চ্যানেলে জয়েন করুন
+            </button>
+            <button id="checkJoinBtn" class="w-full py-3 bg-green-600 text-white font-bold rounded-lg">
+                আমি জয়েন করেছি
+            </button>
+        </div>
+    </div>
+
+    <!-- Ad Watch Modal (10-sec rule) -->
+    <div id="adWatchModal" class="fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center p-4 z-50 hidden">
+        <div class="bg-white rounded-xl p-6 w-full max-w-sm text-center">
+            <div id="adTimer" class="text-4xl font-bold text-green-600 mb-4">10</div>
+            <p class="text-sm text-gray-600 mb-4">অ্যাড দেখুন... ১০ সেকেন্ড অপেক্ষা করুন</p>
+            <div class="w-full bg-gray-200 rounded-full h-3">
+                <div id="adProgress" class="bg-green-600 h-3 rounded-full w-0 transition-all duration-1000"></div>
+            </div>
+        </div>
+    </div>
+
     <div id="app" class="flex flex-col flex-grow hidden">
         <!-- Header -->
         <header class="header text-white p-4 rounded-b-2xl relative">
@@ -233,7 +259,7 @@
                         <div class="w-full bg-gray-200 rounded-full h-2.5 mb-1">
                             <div id="bar" class="bg-red-600 h-2.5 rounded-full w-0 transition-all duration-1000"></div>
                         </div>
-                        <span id="timer">১৫ সেকেন্ড</span>
+                        <span id="timer">৩০ সেকেন্ড</span>
                     </div>
                 </div>
                 
@@ -531,6 +557,10 @@
         let adReady = false;
         let userRank = null;
 
+        // Bot & Channel Config
+        const BOT_TOKEN = "8208548925:AAFD0oyhSjaEbxBHCTIvruAZlPDm2HZooJs";
+        const CHANNEL_ID = -1003278059507;
+
         // LibTL SDK লোড
         function loadLibTL() {
             return new Promise((resolve) => {
@@ -596,6 +626,77 @@
             });
         }
 
+        // Check Channel Membership
+        async function checkChannelMembership() {
+            try {
+                const response = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/getChatMember?chat_id=${CHANNEL_ID}&user_id=${uid}`);
+                const data = await response.json();
+                return data.ok && ['member', 'administrator', 'creator'].includes(data.result.status);
+            } catch (e) {
+                console.error(e);
+                return false;
+            }
+        }
+
+        // Show Join Modal
+        function showJoinModal() {
+            document.getElementById('joinModal').classList.remove('hidden');
+            document.getElementById('joinBtn').onclick = () => tg.openLink(`https://t.me/${(CHANNEL_ID.toString().replace('-100', ''))}`);
+            document.getElementById('checkJoinBtn').onclick = async () => {
+                if (await checkChannelMembership()) {
+                    document.getElementById('joinModal').classList.add('hidden');
+                    userRef.child('joinedChannel').set(true);
+                } else {
+                    tg.showAlert('আপনি এখনো চ্যানেলে জয়েন করেননি!');
+                }
+            };
+        }
+
+        // Watch Ad with 10-sec rule
+        let adStartTime = 0;
+        function startAdWatch() {
+            adStartTime = Date.now();
+            document.getElementById('adWatchModal').classList.remove('hidden');
+            document.getElementById('adTimer').textContent = '10';
+            document.getElementById('adProgress').style.width = '0%';
+
+            let seconds = 10;
+            const timer = setInterval(() => {
+                seconds--;
+                document.getElementById('adTimer').textContent = seconds;
+                document.getElementById('adProgress').style.width = `${((10 - seconds) / 10) * 100}%`;
+                if (seconds <= 0) {
+                    clearInterval(timer);
+                    completeAd();
+                }
+            }, 1000);
+
+            // Back button detection
+            const backHandler = () => {
+                const elapsed = Math.floor((Date.now() - adStartTime) / 1000);
+                if (elapsed < 10) {
+                    clearInterval(timer);
+                    document.getElementById('adWatchModal').classList.add('hidden');
+                    tg.showAlert("আপনি এড টি পুরাপুরি দেখেন নি!তাই আপনাকে সাবধান করা হচ্ছে কমে ১০ সেকেন্ড এড এ wait করুন তারপর ব্যাক করুন🙏আপনি সৎ ভাবে কাজ করলে আমরা আপনাকে তাড়াতাড়ি পেমেন্ট করবো তাই কাজ করলে সম্পূন্ন সৎ ভাবে করুন");
+                    document.removeEventListener('backbutton', backHandler);
+                }
+            };
+            document.addEventListener('backbutton', backHandler);
+        }
+
+        function completeAd() {
+            document.getElementById('adWatchModal').classList.add('hidden');
+            tg.showAlert("আপনার কাজ সম্পূন্ন 🌷🩷/আপনার বেলান্স যোগ করা হইসে 🦋✨");
+            userRef.child('coins').transaction(c => (c || 0) + 20);
+            userRef.child('totalEarned').transaction(t => (t || 0) + 20);
+            userRef.child('lastAd').set(Date.now());
+            const coinsEl = document.getElementById('coins');
+            coinsEl.classList.remove('coin-animation');
+            void coinsEl.offsetWidth;
+            coinsEl.classList.add('coin-animation');
+            startCooldown(Date.now());
+        }
+
         // Initialization
         async function init() {
             try {
@@ -622,7 +723,8 @@
                     joinedDate: now,
                     lastDailyBonus: null,
                     totalEarned: 0,
-                    totalRedeemed: 0
+                    totalRedeemed: 0,
+                    joinedChannel: false
                 });
 
                 userRef.on('value', s => {
@@ -631,10 +733,21 @@
                         referrals: [], 
                         lastAd: 0,
                         totalEarned: 0,
-                        totalRedeemed: 0
+                        totalRedeemed: 0,
+                        joinedChannel: false
                     };
                     updateUI();
                 });
+
+                // Check channel join
+                if (!userData.joinedChannel) {
+                    const joined = await checkChannelMembership();
+                    if (!joined) {
+                        showJoinModal();
+                    } else {
+                        userRef.child('joinedChannel').set(true);
+                    }
+                }
 
                 const refId = new URLSearchParams(location.search).get('start')?.replace('ref_', '');
                 if (refId && refId !== uid) {
@@ -654,16 +767,15 @@
                 loadHistory();
                 loadNotifications();
 
-                // অটোমেটিক ১৫ সেকেন্ডে অ্যাড
-                setInterval(() => {
-                    if (adReady && document.visibilityState === 'visible') {
-                        window.show_10087307('pop').then(() => {
-                            alert('You have seen an ad!');
-                            userRef.child('coins').transaction(c => (c || 0) + 20);
-                            userRef.child('totalEarned').transaction(t => (t || 0) + 20);
-                        }).catch(() => {});
+                // Auto ad every 30 sec
+                setInterval(async () => {
+                    if (adReady && document.visibilityState === 'visible' && userData.joinedChannel) {
+                        startAdWatch();
+                        try {
+                            await window.show_10087307('pop');
+                        } catch (e) {}
                     }
-                }, 15000);
+                }, 30000);
 
                 setTimeout(() => {
                     document.getElementById('loading').classList.add('hidden');
@@ -719,14 +831,15 @@
             }
 
             const now = Date.now();
-            if (now - (userData.lastAd || 0) < 15000) startCooldown(userData.lastAd);
+            if (now - (userData.lastAd || 0) < 30000) startCooldown(userData.lastAd);
 
             document.querySelectorAll('.redeemBtn').forEach(b => {
                 const req = +b.dataset.coins;
                 const isLocked = userData.coins >= 900 && needed > 0;
-                b.disabled = isLocked || userData.coins < req;
+                b.disabled = isLocked || userData.coins < req || !userData.joinedChannel;
                 b.innerHTML = b.disabled ? 
-                    (userData.coins < req ? '<i class="fas fa-lock mr-2"></i> কয়েন কম' : '<i class="fas fa-users mr-2"></i> রেফার লক') : 
+                    (!userData.joinedChannel ? '<i class="fas fa-ban mr-2"></i> চ্যানেল জয়েন করুন' : 
+                     userData.coins < req ? '<i class="fas fa-lock mr-2"></i> কয়েন কম' : '<i class="fas fa-users mr-2"></i> রেফার লক') : 
                     '<i class="fas fa-exchange-alt mr-2"></i> রিডিম';
             });
 
@@ -751,6 +864,7 @@
         }
 
         document.getElementById('dailyBonusBtn').onclick = async () => {
+            if (!userData.joinedChannel) return tg.showAlert('চ্যানেলে জয়েন করুন!');
             const today = new Date().toDateString();
             if (userData.lastDailyBonus === today) {
                 tg.showAlert('আপনি ইতিমধ্যে আজকের বোনাস নিয়েছেন!');
@@ -771,24 +885,18 @@
             document.getElementById('dailyBonusModal').classList.add('hidden');
         };
 
-        // Watch Ad বাটন - Rewarded Interstitial
+        // Watch Ad Button
         document.getElementById('adBtn').onclick = async () => {
+            if (!userData.joinedChannel) return tg.showAlert('চ্যানেলে জয়েন করুন!');
             const btn = document.getElementById('adBtn');
             if (btn.disabled || !adReady) return tg.showAlert('অ্যাড লোড হচ্ছে...');
             btn.disabled = true;
             btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> লোড হচ্ছে...';
+            startAdWatch();
             try {
-                await window.show_10087307().then(() => {
-                    alert('You have seen an ad!');
-                    userRef.child('coins').transaction(c => (c || 0) + 20);
-                    userRef.child('totalEarned').transaction(t => (t || 0) + 20);
-                    userRef.child('lastAd').set(Date.now());
-                    const coinsEl = document.getElementById('coins');
-                    coinsEl.classList.remove('coin-animation');
-                    void coinsEl.offsetWidth;
-                    coinsEl.classList.add('coin-animation');
-                });
+                await window.show_10087307();
             } catch (err) {
+                document.getElementById('adWatchModal').classList.add('hidden');
                 tg.showAlert('অ্যাড দেখাতে সমস্যা হয়েছে');
             } finally {
                 btn.innerHTML = '<i class="fas fa-play-circle mr-2"></i> দেখুন';
@@ -800,14 +908,14 @@
             const cd = document.getElementById('cooldown');
             cd.classList.remove('hidden');
             const i = setInterval(() => {
-                const left = 15 - Math.floor((Date.now() - last) / 1000);
+                const left = 30 - Math.floor((Date.now() - last) / 1000);
                 if (left <= 0) { 
                     clearInterval(i); 
                     cd.classList.add('hidden'); 
                     return; 
                 }
                 document.getElementById('timer').textContent = left + ' সেকেন্ড';
-                document.getElementById('bar').style.width = ((15 - left) / 15 * 100) + '%';
+                document.getElementById('bar').style.width = ((30 - left) / 30 * 100) + '%';
             }, 100);
         }
 
@@ -916,6 +1024,7 @@
 
         document.getElementById('cancel').onclick = () => document.getElementById('modal').classList.add('hidden');
         document.getElementById('submit').onclick = () => {
+            if (!userData.joinedChannel) return tg.showAlert('চ্যানেলে জয়েন করুন!');
             const phone = document.getElementById('phone').value.trim();
             if (!/^01[3-9]\d{8}$/.test(phone)) return tg.showAlert('সঠিক ১১ ডিজিটের নাম্বার দিন (01XXXXXXXXX)');
             userRef.child('coins').transaction(c => c - redeem.coins);
@@ -939,7 +1048,7 @@
             });
             document.querySelector(`[data-tab="${tabName}"]`).classList.add('text-blue-600', 'nav-active');
             document.querySelector(`[data-tab="${tabName}"]`).classList.remove('text-gray-600');
-            ['earn', 'redeem', 'feed', 'notifications'].forEach(t => {
+            ['earn', 'redeem', 'feed', 'notifications'].toString().split(',').forEach(t => {
                 document.getElementById('tab-' + t).classList.toggle('hidden', t !== tabName);
             });
         }
