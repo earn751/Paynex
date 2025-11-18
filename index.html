@@ -1,1244 +1,993 @@
-<!-- HiGriP Promotion Bot 👊 | Admin: 7243906826 | 2025 -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HiGriP 👊 Earn & Promote</title>
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <!-- Using a custom style block to mimic Tailwind/modern CSS, adhering to the no-external-CDN rule -->
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
-        :root {
-            --bg-start: #0f0f1a;
-            --bg-end: #1a0033;
-            --neon-purple: #9d50ff;
-            --neon-cyan: #00ffff;
-            --neon-shadow: 0 0 5px var(--neon-cyan), 0 0 10px var(--neon-purple);
-            --neon-text: var(--neon-cyan);
-            --button-bg: var(--neon-purple);
-            --button-shadow: 0 0 8px var(--neon-purple);
-        }
-
-        body {
-            font-family: 'Inter', sans-serif;
-            background: linear-gradient(135deg, var(--bg-start), var(--bg-end));
-            color: #e0e0f0;
-            min-height: 100vh;
-            margin: 0;
-            padding: 0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-
-        /* Utility Classes for Responsiveness and Aesthetics */
-        .container {
-            width: 100%;
-            max-width: 600px;
-            padding: 0 16px;
-            box-sizing: border-box;
-            flex-grow: 1;
-        }
-
-        .card {
-            background-color: rgba(30, 0, 50, 0.6);
-            border-radius: 12px;
-            padding: 20px;
-            margin-bottom: 16px;
-            border: 1px solid rgba(157, 80, 255, 0.3);
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
-            backdrop-filter: blur(5px);
-        }
-
-        .neon-text {
-            color: var(--neon-text);
-            text-shadow: var(--neon-shadow);
-            font-weight: 700;
-        }
-
-        .neon-button {
-            background: var(--button-bg);
-            color: white;
-            padding: 12px 20px;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            transition: all 0.2s ease-in-out;
-            box-shadow: var(--button-shadow);
-        }
-
-        .neon-button:hover {
-            opacity: 0.9;
-            transform: translateY(-1px);
-            box-shadow: 0 0 12px var(--neon-purple), 0 0 5px var(--neon-cyan);
-        }
-
-        .tab-bar {
-            display: flex;
-            justify-content: space-around;
-            width: 100%;
-            max-width: 600px;
-            position: sticky;
-            top: 0;
-            background-color: rgba(15, 15, 26, 0.9);
-            border-bottom: 2px solid var(--neon-purple);
-            z-index: 10;
-        }
-
-        .tab-button {
-            flex-grow: 1;
-            padding: 15px 10px;
-            text-align: center;
-            color: #a0a0b0;
-            cursor: pointer;
-            transition: color 0.2s, background-color 0.2s;
-            border-bottom: 3px solid transparent;
-        }
-
-        .tab-button.active {
-            color: var(--neon-cyan);
-            border-bottom-color: var(--neon-cyan);
-            text-shadow: 0 0 4px var(--neon-cyan);
-        }
-
-        .section {
-            padding: 20px 0;
-            display: none;
-        }
-
-        .section.active {
-            display: block;
-        }
-
-        /* Custom Styles */
-        .fist-coin {
-            display: inline-block;
-            animation: pulse 1s infinite alternate;
-        }
-
-        @keyframes pulse {
-            from { transform: scale(1); text-shadow: none; }
-            to { transform: scale(1.05); text-shadow: var(--neon-shadow); }
-        }
-
-        .progress-bar-container {
-            background-color: rgba(255, 255, 255, 0.1);
-            border-radius: 50px;
-            height: 15px;
-            overflow: hidden;
-            margin-top: 5px;
-        }
-
-        .progress-bar {
-            height: 100%;
-            background: linear-gradient(90deg, #4b0082, var(--neon-purple), var(--neon-cyan));
-            border-radius: 50px;
-            transition: width 0.5s ease-out;
-            box-shadow: 0 0 5px var(--neon-cyan);
-        }
-
-        .task-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 15px 0;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .task-item:last-child {
-            border-bottom: none;
-        }
-
-        .task-details {
-            flex-grow: 1;
-        }
-
-        .task-reward {
-            font-size: 1.1em;
-            color: var(--neon-cyan);
-            font-weight: 700;
-            margin-left: 10px;
-        }
-
-        /* Modal Styles */
-        .modal-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.8);
-            backdrop-filter: blur(10px);
-            display: none;
-            justify-content: center;
-            align-items: center;
-            z-index: 100;
-        }
-
-        .modal-content {
-            background: linear-gradient(180deg, #1a0033, #0f0f1a);
-            border: 2px solid var(--neon-purple);
-            border-radius: 16px;
-            padding: 30px;
-            width: 90%;
-            max-width: 400px;
-            box-shadow: 0 0 20px rgba(157, 80, 255, 0.8);
-            text-align: center;
-            animation: fadeIn 0.3s;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: scale(0.9); }
-            to { opacity: 1; transform: scale(1); }
-        }
-
-        /* Admin Panel Proof Card */
-        .proof-card {
-            background-color: rgba(50, 0, 80, 0.7);
-            padding: 15px;
-            border-radius: 10px;
-            margin-bottom: 10px;
-            border-left: 5px solid var(--neon-cyan);
-        }
-
-        .proof-card button {
-            margin-top: 10px;
-            margin-right: 10px;
-        }
-
-        /* Floating Button */
-        #quick-earn-button {
-            position: fixed;
-            bottom: 80px;
-            right: 20px;
-            width: 60px;
-            height: 60px;
-            background: var(--neon-cyan);
-            border-radius: 50%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-size: 24px;
-            cursor: pointer;
-            box-shadow: 0 0 15px var(--neon-cyan);
-            animation: float 2s infinite alternate;
-            border: 3px solid white;
-            z-index: 50;
-        }
-
-        @keyframes float {
-            0% { transform: translateY(0); }
-            100% { transform: translateY(-5px); }
-        }
-
-        /* Confetti (Simple CSS only) */
-        .confetti-piece {
-            position: fixed;
-            width: 10px;
-            height: 10px;
-            background-color: var(--neon-cyan);
-            opacity: 0;
-            animation: confetti-fall 2s ease-out forwards;
-            pointer-events: none;
-        }
-
-        @keyframes confetti-fall {
-            0% { opacity: 1; transform: translateY(0) rotate(0deg); }
-            100% { opacity: 0; transform: translateY(500px) rotate(720deg); }
-        }
-
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>HiGriP 👊 - Promotion Bot</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+/* HiGriP Promotion Bot 👊 | Admin: 7243906826 | 2025 */
+:root {
+    --bg: linear-gradient(135deg, #0f0f1a 0%, #1a0033 100%);
+    --neon-purple: #9d4edd;
+    --neon-cyan: #00f2ff;
+    --neon-pink: #ff2a6d;
+    --card: rgba(30, 15, 60, 0.7);
+    --text: #e0e0ff;
+    --success: #00ff9d;
+    --warning: #ffcc00;
+    --error: #ff3860;
+}
+* { 
+    margin:0; 
+    padding:0; 
+    box-sizing:border-box; 
+}
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+    padding-bottom: 80px;
+    line-height: 1.5;
+}
+.container { 
+    padding: 15px; 
+    max-width: 500px; 
+    margin: 0 auto; 
+}
+header {
+    text-align: center;
+    padding: 20px 0;
+    background: rgba(0,0,0,0.4);
+    border-radius: 20px;
+    margin-bottom: 20px;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(157,78,221,0.2);
+    position: relative;
+    overflow: hidden;
+}
+header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--neon-purple), transparent);
+}
+h1 { 
+    font-size: 2.5em; 
+    background: linear-gradient(90deg, var(--neon-purple), var(--neon-cyan)); 
+    -webkit-background-clip: text; 
+    -webkit-text-fill-color: transparent; 
+    margin-bottom: 10px;
+}
+.balance {
+    font-size: 2em;
+    margin: 15px 0;
+    font-weight: bold;
+    text-shadow: 0 0 20px var(--neon-purple);
+}
+.level { 
+    font-size: 1.2em; 
+    color: var(--neon-cyan); 
+    margin-bottom: 5px;
+}
+.streak { 
+    font-size: 1.8em; 
+    color: #ff6b6b; 
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+.card {
+    background: var(--card);
+    border-radius: 20px;
+    padding: 20px;
+    margin: 15px 0;
+    border: 1px solid rgba(157,78,221,0.3);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    backdrop-filter: blur(5px);
+    transition: transform 0.3s, box-shadow 0.3s;
+}
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 35px rgba(157,78,221,0.3);
+}
+.btn {
+    background: linear-gradient(45deg, var(--neon-purple), var(--neon-cyan));
+    color: white;
+    border: none;
+    padding: 15px;
+    border-radius: 15px;
+    font-size: 1.1em;
+    font-weight: bold;
+    width: 100%;
+    margin: 10px 0;
+    cursor: pointer;
+    transition: all 0.3s;
+    box-shadow: 0 5px 15px rgba(157,78,221,0.4);
+    position: relative;
+    overflow: hidden;
+}
+.btn::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+    transition: left 0.5s;
+}
+.btn:hover::after {
+    left: 100%;
+}
+.btn:active { 
+    transform: scale(0.95); 
+}
+.btn:disabled {
+    background: #555;
+    cursor: not-allowed;
+    transform: none;
+}
+.btn-success {
+    background: linear-gradient(45deg, var(--success), #00cc7e);
+}
+.btn-warning {
+    background: linear-gradient(45deg, var(--warning), #ffaa00);
+}
+.btn-danger {
+    background: linear-gradient(45deg, var(--error), #ff1e56);
+}
+.fist { 
+    font-size: 2.5em; 
+    display: inline-block; 
+    animation: punch 1s infinite; 
+}
+@keyframes punch { 
+    0%,100%{transform:rotate(0)} 
+    50%{transform:rotate(-20deg) translateX(-10px)} 
+}
+.progress { 
+    height: 12px; 
+    background: #333; 
+    border-radius: 6px; 
+    overflow: hidden; 
+    margin: 10px 0; 
+    position: relative;
+}
+.progress-bar { 
+    height: 100%; 
+    background: linear-gradient(90deg, #9d4edd, #00f2ff); 
+    width: 0%; 
+    transition: width 1s; 
+    border-radius: 6px;
+    position: relative;
+}
+.progress-bar::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+    animation: shimmer 2s infinite;
+}
+@keyframes shimmer {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+}
+.tabs { 
+    display: flex; 
+    background: rgba(0,0,0,0.5); 
+    border-radius: 15px; 
+    overflow: hidden; 
+    margin: 15px 0; 
+    border: 1px solid rgba(157,78,221,0.2);
+}
+.tab { 
+    flex: 1; 
+    padding: 15px; 
+    text-align: center; 
+    cursor: pointer; 
+    transition: 0.3s; 
+    font-weight: bold;
+}
+.tab.active { 
+    background: var(--neon-purple); 
+    box-shadow: 0 0 10px rgba(157,78,221,0.5);
+}
+.task {
+    background: rgba(255,255,255,0.05);
+    border-radius: 15px;
+    padding: 15px;
+    margin: 12px 0;
+    border-left: 5px solid var(--neon-cyan);
+    transition: all 0.3s;
+}
+.task:hover {
+    background: rgba(255,255,255,0.08);
+    transform: translateX(5px);
+}
+.modal {
+    position: fixed; 
+    top: 0; 
+    left: 0; 
+    width: 100%; 
+    height: 100%; 
+    background: rgba(0,0,0,0.95);
+    display: none; 
+    align-items: center; 
+    justify-content: center; 
+    z-index: 9999;
+    backdrop-filter: blur(5px);
+}
+.modal-content {
+    background: #1a0033; 
+    padding: 30px; 
+    border-radius: 25px; 
+    text-align: center;
+    border: 2px solid var(--neon-purple); 
+    max-width: 90%;
+    animation: popup 0.5s;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.7);
+    position: relative;
+}
+.modal-content::before {
+    content: '';
+    position: absolute;
+    top: -2px;
+    left: -2px;
+    right: -2px;
+    bottom: -2px;
+    background: linear-gradient(45deg, var(--neon-purple), var(--neon-cyan), var(--neon-pink), var(--neon-purple));
+    border-radius: 27px;
+    z-index: -1;
+    background-size: 400% 400%;
+    animation: gradient 3s ease infinite;
+}
+@keyframes gradient {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+@keyframes popup { 
+    from {transform: scale(0.5)} 
+    to {transform: scale(1)} 
+}
+#floating-btn {
+    position: fixed; 
+    bottom: 20px; 
+    right: 20px; 
+    width: 70px; 
+    height: 70px;
+    background: linear-gradient(45deg, #9d4edd, #00f2ff);
+    border-radius: 50%; 
+    display: flex; 
+    align-items: center; 
+    justify-content: center;
+    font-size: 2.5em; 
+    box-shadow: 0 10px 30px rgba(157,78,221,0.6); 
+    z-index: 999;
+    animation: float 3s infinite;
+    cursor: pointer;
+    border: 2px solid rgba(255,255,255,0.2);
+    transition: all 0.3s;
+}
+#floating-btn:active {
+    transform: scale(0.9);
+}
+@keyframes float { 
+    0%,100%{transform:translateY(0)} 
+    50%{transform:translateY(-15px)} 
+}
+.hidden { 
+    display: none !important; 
+}
+.leaderboard { 
+    max-height: 400px; 
+    overflow-y: auto; 
+    padding: 10px;
+    border-radius: 15px;
+    background: rgba(0,0,0,0.3);
+}
+.leaderboard-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 12px 15px;
+    margin: 8px 0;
+    background: rgba(255,255,255,0.05);
+    border-radius: 10px;
+    transition: all 0.3s;
+}
+.leaderboard-item:hover {
+    background: rgba(255,255,255,0.1);
+    transform: translateX(5px);
+}
+.leaderboard-item:nth-child(1) {
+    background: linear-gradient(90deg, rgba(255,215,0,0.2), transparent);
+    border-left: 3px solid gold;
+}
+.leaderboard-item:nth-child(2) {
+    background: linear-gradient(90deg, rgba(192,192,192,0.2), transparent);
+    border-left: 3px solid silver;
+}
+.leaderboard-item:nth-child(3) {
+    background: linear-gradient(90deg, rgba(205,127,50,0.2), transparent);
+    border-left: 3px solid #cd7f32;
+}
+.confetti { 
+    position: fixed; 
+    top: 0; 
+    left: 0; 
+    width: 100%; 
+    height: 100%; 
+    pointer-events: none; 
+    z-index: 99999; 
+}
+.notification {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: var(--card);
+    padding: 15px 20px;
+    border-radius: 10px;
+    border-left: 5px solid var(--neon-cyan);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+    z-index: 10000;
+    transform: translateX(150%);
+    transition: transform 0.5s;
+    max-width: 300px;
+}
+.notification.show {
+    transform: translateX(0);
+}
+.notification.success {
+    border-left-color: var(--success);
+}
+.notification.error {
+    border-left-color: var(--error);
+}
+.stats-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin: 15px 0;
+}
+.stat-card {
+    background: rgba(0,0,0,0.3);
+    border-radius: 15px;
+    padding: 15px;
+    text-align: center;
+    border: 1px solid rgba(157,78,221,0.2);
+}
+.stat-value {
+    font-size: 1.5em;
+    font-weight: bold;
+    color: var(--neon-cyan);
+    margin-bottom: 5px;
+}
+.stat-label {
+    font-size: 0.9em;
+    opacity: 0.8;
+}
+.ref-link {
+    background: rgba(0,0,0,0.3);
+    border-radius: 10px;
+    padding: 10px 15px;
+    margin: 10px 0;
+    word-break: break-all;
+    border: 1px dashed var(--neon-purple);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.copy-btn {
+    background: var(--neon-purple);
+    border: none;
+    border-radius: 5px;
+    padding: 5px 10px;
+    color: white;
+    cursor: pointer;
+    font-size: 0.8em;
+}
+</style>
 </head>
 <body>
+<div class="container">
+    <header>
+        <h1>HiGriP <span class="fist">👊</span></h1>
+        <div class="balance" id="balance">0 GRIP 👊</div>
+        <div class="level">Level <span id="level">1</span> • <span id="multiplier">1.1</span>x Multiplier</div>
+        <div class="streak">🔥 Streak: <span id="streak">0</span> days</div>
+        
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-value" id="totalEarned">0</div>
+                <div class="stat-label">Total Earned</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="referrals">0</div>
+                <div class="stat-label">Referrals</div>
+            </div>
+        </div>
+    </header>
 
-    <!-- Confetti Container -->
-    <div id="confetti-container"></div>
+    <div class="card">
+        <div class="progress">
+            <div class="progress-bar" id="dailyProgress"></div>
+        </div>
+        <small>Grip Strength: <span id="gripStrength">0</span>%</small>
+    </div>
 
-    <!-- Pre-Join Condition Modal -->
-    <div id="join-rules-modal" class="modal-overlay">
-        <div class="modal-content">
-            <h2 class="neon-text">HiGripGo Promotion Bot 👊</h2>
-            <div id="modal-fist" style="font-size: 4em; margin: 15px 0; animation: pulse 0.8s infinite alternate;">👊</div>
-            <ul style="list-style: none; padding: 0; text-align: left; margin-bottom: 25px;">
-                <li style="margin-bottom: 8px;">• Earn GRIP by joining channels/groups</li>
-                <li style="margin-bottom: 8px;">• Promote your own channel</li>
-                <li style="margin-bottom: 8px;">• Payment via screenshot proof</li>
-                <li style="color: #ff5050; font-weight: 600;">• Fake SS / spam = permanent ban</li>
-            </ul>
-            <button id="accept-rules-button" class="neon-button" style="width: 100%; margin-bottom: 10px;">
-                ✅ I Accept Rules & Join
+    <div class="tabs">
+        <div class="tab active" onclick="openTab('earn')">EARN 👊</div>
+        <div class="tab" onclick="openTab('promote')">PROMOTE</div>
+        <div class="tab" onclick="openTab('leaderboard')">LEADERBOARD</div>
+    </div>
+
+    <div id="earn" class="tab-content">
+        <div id="dailyClaim" class="card task">
+            <h3>🔥 Daily Grip Bonus</h3>
+            <p>Day <span id="streakDay">1</span>: <b id="dailyReward">200</b> GRIP 👊</p>
+            <button class="btn" id="dailyClaimBtn" onclick="claimDaily()">Claim Daily Bonus</button>
+        </div>
+        <div id="tasksList"></div>
+    </div>
+
+    <div id="promote" class="tab-content hidden">
+        <button class="btn" onclick="showCreateTask()">+ Create New Promotion</button>
+        <div id="myPromotions"></div>
+    </div>
+
+    <div id="leaderboard" class="tab-content hidden">
+        <h2>🏆 Top Earners</h2>
+        <div id="topEarners" class="leaderboard"></div>
+        <h2 style="margin-top: 20px;">👑 Top Referrers</h2>
+        <div id="topReferrers" class="leaderboard"></div>
+    </div>
+
+    <div class="card">
+        <button class="btn" onclick="shareReferral()">Invite Friends (+800 GRIP each)</button>
+        <p style="text-align:center; margin-top:10px;">Your referral link:</p>
+        <div class="ref-link">
+            <span id="refLink">loading...</span>
+            <button class="copy-btn" onclick="copyRefLink()">Copy</button>
+        </div>
+    </div>
+
+    <div class="card hidden" id="adminPanel">
+        <h2 style="color:#ff6b6b;">Admin Panel 👑</h2>
+        <div id="pendingProofs"></div>
+    </div>
+</div>
+
+<div id="floating-btn" onclick="quickEarn()">👊</div>
+
+<!-- Pre-Join Rules Modal -->
+<div class="modal" id="rulesModal">
+    <div class="modal-content">
+        <h1>HiGripGo Promotion Bot <span class="fist">👊</span></h1>
+        <p style="margin:20px 0; line-height:1.6;">
+            ✅ Earn GRIP by joining channels/groups<br>
+            ✅ Promote your own channel & earn<br>
+            ✅ Payment via screenshot proof<br>
+            <span style="color:#ff6b6b;">🚫 Fake SS / spam = permanent ban</span>
+        </p>
+        <button class="btn" style="font-size:1.3em;" onclick="acceptRules()">✅ I Accept Rules & Join</button>
+        <button class="btn btn-warning" style="margin-top:10px;" onclick="cancelJoin()">Cancel</button>
+    </div>
+</div>
+
+<!-- Create Promotion Modal -->
+<div class="modal" id="createPromoModal">
+    <div class="modal-content">
+        <h2>Create Promotion</h2>
+        <div style="text-align: left; margin: 20px 0;">
+            <label style="display: block; margin-bottom: 8px;">Promotion Title</label>
+            <input type="text" id="promoTitle" placeholder="Enter title" style="width: 100%; padding: 12px; border-radius: 10px; background: rgba(0,0,0,0.5); border: 1px solid var(--neon-purple); color: white; margin-bottom: 15px;">
+            
+            <label style="display: block; margin-bottom: 8px;">Channel/Group Link</label>
+            <input type="text" id="promoLink" placeholder="https://t.me/..." style="width: 100%; padding: 12px; border-radius: 10px; background: rgba(0,0,0,0.5); border: 1px solid var(--neon-purple); color: white; margin-bottom: 15px;">
+            
+            <label style="display: block; margin-bottom: 8px;">Reward per Joiner (GRIP)</label>
+            <input type="number" id="promoReward" placeholder="500" min="100" max="5000" style="width: 100%; padding: 12px; border-radius: 10px; background: rgba(0,0,0,0.5); border: 1px solid var(--neon-purple); color: white; margin-bottom: 15px;">
+            
+            <label style="display: block; margin-bottom: 8px;">Budget (Total GRIP to spend)</label>
+            <input type="number" id="promoBudget" placeholder="10000" min="1000" style="width: 100%; padding: 12px; border-radius: 10px; background: rgba(0,0,0,0.5); border: 1px solid var(--neon-purple); color: white; margin-bottom: 15px;">
+        </div>
+        <button class="btn" onclick="createPromotion()">Create Promotion</button>
+        <button class="btn btn-warning" style="margin-top:10px;" onclick="closeCreatePromo()">Cancel</button>
+    </div>
+</div>
+
+<div class="notification" id="notification"></div>
+<canvas id="confettiCanvas" class="confetti"></canvas>
+
+<script>
+// HiGriP Promotion Bot 👊 | Admin: 7243906826 | 2025
+const tg = window.Telegram.WebApp;
+tg.ready();
+tg.expand();
+
+const ADMIN_ID = 7243906826;
+let user = tg.initDataUnsafe.user || {id: Date.now(), first_name: "Guest", username: "guest"};
+let currentTaskLink = "";
+let db = {
+    users: {},
+    tasks: [],
+    promotions: [],
+    proofs: []
+};
+
+function load() {
+    const saved = localStorage.getItem("higrip_db");
+    if (saved) {
+        try {
+            db = JSON.parse(saved);
+        } catch (e) {
+            console.error("Error loading data:", e);
+            db = { users: {}, tasks: [], promotions: [], proofs: [] };
+        }
+    }
+    
+    if (!db.users[user.id]) {
+        initUser();
+    } else {
+        Object.assign(user, db.users[user.id]);
+    }
+
+    updateUI();
+    checkAdmin();
+    checkDaily();
+    renderTasks();
+    renderPromotions();
+    renderLeaderboard();
+    document.getElementById("refLink").innerText = `https://t.me/HiGriP_bot?start=ref${user.id}`;
+    
+    // Show welcome message
+    showNotification(`Welcome${user.username ? " back, @"+user.username : ""}! Ready to Grip? 👊`, 'success');
+}
+
+function save() { 
+    localStorage.setItem("higrip_db", JSON.stringify(db)); 
+}
+
+function initUser() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const ref = urlParams.get('start')?.replace("ref","");
+    
+    user = {
+        id: user.id,
+        first_name: user.first_name || "User",
+        username: user.username || "user" + user.id,
+        balance: ref && db.users[ref] ? 1300 : 500,
+        total_earned: 0,
+        streak: 0,
+        lastDaily: 0,
+        referrals: 0,
+        dailyTasks: 0,
+        joinedDate: Date.now(),
+        completedTasks: []
+    };
+    
+    if (ref && db.users[ref]) {
+        db.users[ref].balance += 800;
+        db.users[ref].referrals = (db.users[ref].referrals || 0) + 1;
+        showNotification("Welcome! You and your referrer got 800 GRIP 👊", 'success');
+    }
+    
+    db.users[user.id] = user;
+    save();
+}
+
+function updateUI() {
+    document.getElementById("balance").innerText = user.balance.toLocaleString() + " GRIP 👊";
+    const lvl = Math.floor(user.total_earned / 10000) + 1;
+    document.getElementById("level").innerText = lvl;
+    document.getElementById("multiplier").innerText = (lvl * 1.1).toFixed(1);
+    document.getElementById("streak").innerText = user.streak || 0;
+    document.getElementById("totalEarned").innerText = user.total_earned.toLocaleString();
+    document.getElementById("referrals").innerText = user.referrals || 0;
+    
+    const strength = Math.min(100, (user.dailyTasks || 0) * 20);
+    document.getElementById("dailyProgress").style.width = strength + "%";
+    document.getElementById("gripStrength").innerText = strength;
+}
+
+function checkDaily() {
+    const today = new Date().toDateString();
+    if (user.lastDaily !== today) {
+        const day = ((user.streak || 0) % 7) + 1;
+        document.getElementById("streakDay").innerText = day;
+        document.getElementById("dailyReward").innerText = day * 200 + 600;
+        document.getElementById("dailyClaimBtn").disabled = false;
+        document.getElementById("dailyClaimBtn").innerText = "Claim Daily Bonus";
+    } else {
+        document.getElementById("dailyClaimBtn").disabled = true;
+        document.getElementById("dailyClaimBtn").innerText = "✅ Already Claimed Today";
+    }
+}
+
+function claimDaily() {
+    const today = new Date().toDateString();
+    if (user.lastDaily === today) {
+        showNotification("You've already claimed your daily bonus today!", 'error');
+        return;
+    }
+    
+    user.streak = (user.streak || 0) + 1;
+    const day = (user.streak % 7) || 7;
+    const reward = day <= 7 ? day * 200 + 600 : 2000;
+    
+    user.balance += reward;
+    user.total_earned += reward;
+    user.lastDaily = today;
+    db.users[user.id] = user;
+    save();
+    
+    confettiBurst();
+    updateUI();
+    checkDaily();
+    tg.HapticFeedback.notificationOccurred("success");
+    showNotification(`Daily bonus claimed! +${reward} GRIP 👊`, 'success');
+}
+
+function renderTasks() {
+    const list = document.getElementById("tasksList");
+    list.innerHTML = "";
+    
+    const sampleTasks = [
+        {id:1, title:"Join Official Channel", type:"channel", link:"https://t.me/higripgo", reward:1200, budget:500000, done:0},
+        {id:2, title:"Join Earning Group BD", type:"group", link:"https://t.me/bdearning24", reward:1500, budget:300000, done:0},
+        {id:3, title:"Start @AirdropBot", type:"bot", link:"https://t.me/Airdrop", reward:800, budget:999999, done:0}
+    ];
+    
+    sampleTasks.forEach(t => {
+        const isCompleted = user.completedTasks && user.completedTasks.includes(t.id);
+        const div = document.createElement("div");
+        div.className = "task";
+        div.innerHTML = `
+            <h3>${t.title}</h3>
+            <p>Reward: <b>${t.reward} GRIP 👊</b></p>
+            <button class="btn ${isCompleted ? 'btn-success' : ''}" onclick="startTask('${t.type}','${t.link}', ${t.id})" ${isCompleted ? 'disabled' : ''}>
+                ${isCompleted ? '✅ Completed' : 'Join & Earn'}
             </button>
-            <button id="cancel-rules-button" style="background: none; border: 1px solid #777; color: #aaa; padding: 8px 15px; border-radius: 6px; cursor: pointer;">
-                Cancel
-            </button>
-        </div>
-    </div>
+        `;
+        list.appendChild(div);
+    });
+}
 
-    <div class="container">
-        <!-- Header & Stats -->
-        <div class="card" style="margin-top: 16px;">
-            <div id="welcome-message" style="font-size: 1.2em; font-weight: 500; margin-bottom: 15px;">
-                Welcome...
-            </div>
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-                <div>
-                    <span style="font-size: 2.2em; line-height: 1;">
-                        <span id="user-balance" class="neon-text">0</span>
-                        <span class="fist-coin">👊</span>
-                    </span>
-                    <div style="font-size: 0.8em; color: #a0a0b0;">GRIP Coin</div>
-                </div>
-                <div style="text-align: right;">
-                    <div id="user-level" style="font-size: 1.5em; font-weight: 700; color: #ffeb3b;">LVL 1</div>
-                    <div id="bonus-multiplier" style="font-size: 0.8em; color: #a0a0b0;">Bonus: 1.0x</div>
-                    <div id="premium-badge" style="font-size: 0.7em; color: #ff9800; display: none;">👑 Premium</div>
-                </div>
-            </div>
+function startTask(type, link, taskId) {
+    if (type === "channel" || type === "group") {
+        currentTaskLink = link;
+        currentTaskId = taskId;
+        document.getElementById("rulesModal").style.display = "flex";
+    } else {
+        window.open(link, "_blank");
+        setTimeout(() => {
+            completeTask(taskId);
+        }, 3000);
+    }
+}
 
-            <!-- Grip Strength Progress Bar (Daily Tasks) -->
-            <div style="font-size: 0.9em; color: var(--neon-cyan);">Grip Strength (<span id="grip-strength-percent">0</span>%)</div>
-            <div class="progress-bar-container">
-                <div id="grip-strength-bar" class="progress-bar" style="width: 0%;"></div>
-            </div>
-        </div>
-
-        <!-- Daily Login Streak Card -->
-        <div id="daily-streak-card" class="card" style="display: none;">
-            <div style="display: flex; justify-content: space-between; align-items: center;">
-                <h3 style="margin: 0; color: #ff5722;"><span id="streak-fire">🔥</span> Daily Streak: <span id="streak-counter">0</span> Days</h3>
-                <button id="claim-daily-button" class="neon-button" style="padding: 8px 15px; font-size: 0.9em;">Claim</button>
-            </div>
-            <p id="daily-reward-info" style="font-size: 0.85em; color: #a0a0b0; margin-top: 10px;">Today's Reward: 200 👊</p>
-        </div>
-
-        <!-- Notification Center -->
-        <div id="notification-center" class="card" style="display: none;">
-            <h3 class="neon-text" style="margin-top: 0;">Notifications</h3>
-            <div id="notification-list" style="max-height: 150px; overflow-y: auto;">
-                <p style="color: #aaa; font-size: 0.9em;">No new updates.</p>
-            </div>
-        </div>
-
-        <!-- Floating Quick Earn Button -->
-        <div id="quick-earn-button" onclick="changeTab('earn')" title="Quick Earn">
-            <span class="fist-coin">👊</span>
-        </div>
-
-
-        <!-- Admin Panel Button (Conditional) -->
-        <button id="admin-button" class="neon-button" onclick="changeTab('admin')" style="display: none; width: 100%; margin-bottom: 16px;">
-            Admin 👑 Panel
-        </button>
-
-
-        <!-- Tab Content -->
-        <div id="home-section" class="section active">
-            <div class="card">
-                <h3 class="neon-text" style="margin-top: 0;">Your Referral Grip</h3>
-                <p style="font-size: 0.9em; color: #ccc;">Share this link to earn 800 👊 for every successful referral.</p>
-                <input type="text" id="referral-link-input" readonly
-                       style="width: 100%; background: rgba(0, 0, 0, 0.5); border: 1px solid var(--neon-cyan); padding: 8px; border-radius: 6px; color: white; margin-bottom: 10px;">
-                <button class="neon-button" style="width: 100%;" onclick="copyReferralLink()">
-                    Copy & Share 🔗
-                </button>
-            </div>
-            <div class="card">
-                <h3 class="neon-text" style="margin-top: 0;">Top Referrers</h3>
-                <div id="top-referrers-list">Loading...</div>
-            </div>
-        </div>
-
-        <div id="earn-section" class="section">
-            <h2 class="neon-text">EARN GRIP 👊 Tasks</h2>
-            <div id="task-list">
-                <!-- Task items will be inserted here -->
-                <p style="color: #aaa; text-align: center;">Loading tasks...</p>
-            </div>
-        </div>
-
-        <div id="promote-section" class="section">
-            <h2 class="neon-text">PROMOTE NOW</h2>
-            <div class="card">
-                <h3 style="margin-top: 0;">Create New Promotion</h3>
-                <form id="create-task-form">
-                    <div style="margin-bottom: 15px;">
-                        <label for="task-title" style="display: block; margin-bottom: 5px;">Title (e.g., "Join My Group")</label>
-                        <input type="text" id="task-title" required style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid var(--neon-purple); background: #220044;">
-                    </div>
-
-                    <div style="margin-bottom: 15px;">
-                        <label for="task-type" style="display: block; margin-bottom: 5px;">Task Type</label>
-                        <select id="task-type" required style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid var(--neon-purple); background: #220044; color: white;">
-                            <option value="Join Channel/Group">Join Channel/Group (Auto-Verify Mock)</option>
-                            <option value="Start Bot">Start Bot (Screenshot Proof)</option>
-                            <option value="View Post">View Post (Forward Proof)</option>
-                            <option value="Visit Website">Visit Website / Mini App (Screenshot Proof)</option>
-                        </select>
-                    </div>
-
-                    <div style="margin-bottom: 15px;">
-                        <label for="task-link" style="display: block; margin-bottom: 5px;">Link (t.me/xxx or https://)</label>
-                        <input type="url" id="task-link" required style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid var(--neon-purple); background: #220044;">
-                    </div>
-
-                    <div style="display: flex; gap: 15px; margin-bottom: 15px;">
-                        <div style="flex-grow: 1;">
-                            <label for="task-reward" style="display: block; margin-bottom: 5px;">Reward per User (500–10k 👊)</label>
-                            <input type="number" id="task-reward" required min="500" max="10000" value="800" style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid var(--neon-purple); background: #220044;">
-                        </div>
-                        <div style="flex-grow: 1;">
-                            <label for="task-budget" style="display: block; margin-bottom: 5px;">Total Budget (Min 5000 👊)</label>
-                            <input type="number" id="task-budget" required min="5000" value="10000" style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid var(--neon-purple); background: #220044;">
-                            <label style="font-size: 0.8em; color: #aaa;"><input type="checkbox" id="unlimited-budget" style="margin-right: 5px;">Unlimited</label>
-                        </div>
-                    </div>
-
-                    <button type="submit" class="neon-button" style="width: 100%;">
-                        Launch Promotion
-                    </button>
-                    <p id="promotion-cost-warning" style="color: #ff5050; font-size: 0.85em; margin-top: 10px;"></p>
-                </form>
-            </div>
-            <div id="my-promotions-list">
-                <h3 class="neon-text">My Live Promotions</h3>
-                <!-- Live promotions will be inserted here -->
-                <p style="color: #aaa; text-align: center;">No active promotions.</p>
-            </div>
-        </div>
-
-        <div id="leaderboard-section" class="section">
-            <h2 class="neon-text">LEADERBOARD</h2>
-
-            <div class="card">
-                <h3 style="margin-top: 0; color: var(--neon-cyan);">Global Top 10 Earners</h3>
-                <div id="global-earners-list">Loading...</div>
-            </div>
-
-            <div class="card">
-                <h3 style="margin-top: 0; color: var(--neon-purple);">Top 10 Referrers</h3>
-                <div id="top-referrers-leaderboard">Loading...</div>
-            </div>
-        </div>
-
-        <div id="admin-section" class="section">
-            <h2 class="neon-text">ADMIN 👑 PANEL</h2>
-            <div id="pending-proofs-list">
-                <p style="color: #aaa; text-align: center;">No pending proofs for review.</p>
-                <!-- Proof cards will be inserted here -->
-            </div>
-            <div id="admin-rejection-modal" class="modal-overlay" onclick="event.stopPropagation(); this.style.display='none';" style="display: none;">
-                <div class="modal-content" onclick="event.stopPropagation();">
-                    <h3 class="neon-text">Reject Proof</h3>
-                    <p>Enter the reason for rejection (this will be sent to the user).</p>
-                    <textarea id="rejection-reason" rows="4" style="width: 100%; background: #220044; border: 1px solid var(--neon-purple); padding: 8px; border-radius: 6px; color: white;"></textarea>
-                    <button class="neon-button" onclick="submitRejection()" style="margin-top: 10px;">Submit Rejection</button>
-                    <button style="background: none; border: 1px solid #777; color: #aaa; padding: 8px 15px; border-radius: 6px; cursor: pointer;" onclick="document.getElementById('admin-rejection-modal').style.display='none'">Cancel</button>
-                </div>
-            </div>
-        </div>
-
-    </div>
-
-    <!-- Navigation Bar -->
-    <div class="tab-bar">
-        <div class="tab-button active" data-tab="home" onclick="changeTab('home')">🏠 Home</div>
-        <div class="tab-button" data-tab="earn" onclick="changeTab('earn')">💰 Earn</div>
-        <div class="tab-button" data-tab="promote" onclick="changeTab('promote')">🚀 Promote</div>
-        <div class="tab-button" data-tab="leaderboard" onclick="changeTab('leaderboard')">🏆 Top</div>
-    </div>
-
-
-    <script>
-        // HiGriP WebApp Script
-        const ADMIN_ID = '7243906826';
-        const BOT_USERNAME = '@HiGriP_bot';
-        const BOT_TOKEN_PHRASE = 'Grip👊';
-        const STORAGE_KEY_USER_PREFIX = 'hipgrip_user_data_';
-        const STORAGE_KEY_ALL_USERS = 'hipgrip_users';
-        const STORAGE_KEY_TASKS = 'hipgrip_tasks';
-        const STORAGE_KEY_PROOFS = 'hipgrip_proofs';
-        const STARTING_BALANCE = 500;
-        const REFERRAL_REWARD = 800;
-        const DAILY_REWARDS = [200, 400, 600, 800, 1000, 1500, 2000]; // Day 1 to Day 7
-
-        let tgUser = null;
-        let userData = null;
-        let currentTaskLink = ''; // Used for the pre-join modal
-
-        // --- CORE STORAGE AND UTILITIES ---
-
-        function loadAllUsers() {
-            try {
-                return JSON.parse(localStorage.getItem(STORAGE_KEY_ALL_USERS)) || [];
-            } catch (e) {
-                console.error('Error loading all users:', e);
-                return [];
-            }
+function acceptRules() {
+    document.getElementById("rulesModal").style.display = "none";
+    tg.openLink(currentTaskLink);
+    setTimeout(() => {
+        showNotification("After joining, send screenshot here to earn GRIP 👊");
+    }, 2000);
+    
+    // Simulate task completion after delay
+    setTimeout(() => {
+        if (currentTaskId) {
+            completeTask(currentTaskId);
         }
+    }, 5000);
+}
 
-        function saveAllUsers(users) {
-            try {
-                localStorage.setItem(STORAGE_KEY_ALL_USERS, JSON.stringify(users));
-            } catch (e) {
-                console.error('Error saving all users:', e);
-            }
+function completeTask(taskId) {
+    if (!user.completedTasks) user.completedTasks = [];
+    if (user.completedTasks.includes(taskId)) return;
+    
+    const task = getTaskById(taskId);
+    if (!task) return;
+    
+    user.completedTasks.push(taskId);
+    user.balance += task.reward;
+    user.total_earned += task.reward;
+    user.dailyTasks = (user.dailyTasks || 0) + 1;
+    db.users[user.id] = user;
+    save();
+    
+    updateUI();
+    renderTasks();
+    tg.HapticFeedback.notificationOccurred("success");
+    showNotification(`Task completed! +${task.reward} GRIP 👊`, 'success');
+}
+
+function getTaskById(taskId) {
+    const sampleTasks = [
+        {id:1, title:"Join Official Channel", type:"channel", link:"https://t.me/higripgo", reward:1200, budget:500000, done:0},
+        {id:2, title:"Join Earning Group BD", type:"group", link:"https://t.me/bdearning24", reward:1500, budget:300000, done:0},
+        {id:3, title:"Start @AirdropBot", type:"bot", link:"https://t.me/Airdrop", reward:800, budget:999999, done:0}
+    ];
+    return sampleTasks.find(t => t.id === taskId);
+}
+
+function cancelJoin() {
+    document.getElementById("rulesModal").style.display = "none";
+}
+
+function shareReferral() {
+    const link = `https://t.me/HiGriP_bot?start=ref${user.id}`;
+    tg.openTelegramLink(`https://t.me/share/url?url=${encodeURIComponent(link + "\n\nJoin HiGriP & get 500 GRIP free 👊")}`);
+}
+
+function copyRefLink() {
+    const link = `https://t.me/HiGriP_bot?start=ref${user.id}`;
+    navigator.clipboard.writeText(link).then(() => {
+        showNotification("Referral link copied to clipboard!", 'success');
+    }).catch(err => {
+        console.error('Failed to copy: ', err);
+        showNotification("Failed to copy link", 'error');
+    });
+}
+
+function checkAdmin() {
+    if (user.id == ADMIN_ID) {
+        document.getElementById("adminPanel").classList.remove("hidden");
+        // Add admin tab if not exists
+        if (!document.querySelector('.tab[onclick="openTab(\'admin\')"]')) {
+            document.querySelector(".tabs").insertAdjacentHTML('beforeend', '<div class="tab" onclick="openTab(\'admin\')">ADMIN</div>');
         }
-
-        function loadData(key) {
-            try {
-                return JSON.parse(localStorage.getItem(key));
-            } catch (e) {
-                console.error('Error loading data for key:', key, e);
-                return null;
-            }
-        }
-
-        function saveData(key, data) {
-            try {
-                localStorage.setItem(key, JSON.stringify(data));
-            } catch (e) {
-                console.error('Error saving data for key:', key, e);
-            }
-        }
-
-        function saveUserData() {
-            if (tgUser && userData) {
-                saveData(STORAGE_KEY_USER_PREFIX + tgUser.id, userData);
-
-                // Update global user list for leaderboards
-                const allUsers = loadAllUsers();
-                let userIndex = allUsers.findIndex(u => u.id === tgUser.id);
-
-                const minimalUser = {
-                    id: tgUser.id,
-                    username: tgUser.username,
-                    first_name: tgUser.first_name,
-                    balance: userData.balance,
-                    totalEarned: userData.totalEarned,
-                    referrals: userData.referrals.length,
-                };
-
-                if (userIndex > -1) {
-                    allUsers[userIndex] = minimalUser;
-                } else {
-                    allUsers.push(minimalUser);
-                }
-                saveAllUsers(allUsers);
-            }
-        }
-
-        function updateUI() {
-            if (!userData) return;
-
-            // 1. Core Stats
-            document.getElementById('user-balance').textContent = userData.balance.toLocaleString();
-            document.getElementById('user-level').textContent = `LVL ${userData.level}`;
-            document.getElementById('bonus-multiplier').textContent = `Bonus: ${userData.multiplier.toFixed(1)}x`;
-
-            // 2. Welcome Message
-            const welcomeText = tgUser.username ? `@${tgUser.username}` : tgUser.first_name || 'Gripster';
-            document.getElementById('welcome-message').innerHTML = `Welcome back, <span class="neon-text">${welcomeText}</span>! Ready to Grip? <span class="fist-coin">👊</span>`;
-
-            // 3. Level Calculation
-            userData.level = Math.floor(userData.totalEarned / 10000) + 1;
-            userData.multiplier = 1 + (userData.level - 1) * 0.1;
-
-            // 4. Grip Strength (Daily Task Progress)
-            const completedTasks = Object.values(userData.tasksCompletedToday).filter(v => v).length;
-            const maxTasks = 5; // Assuming 5 tasks contribute to the daily strength for simplicity
-            const strengthPercent = Math.min(100, Math.floor((completedTasks / maxTasks) * 100));
-            document.getElementById('grip-strength-bar').style.width = `${strengthPercent}%`;
-            document.getElementById('grip-strength-percent').textContent = strengthPercent;
-
-            // 5. Daily Streak Card
-            updateDailyStreakUI();
-
-            // 6. Referral Link
-            document.getElementById('referral-link-input').value = `https://t.me/HiGriP_bot?start=ref${tgUser.id}`;
-
-            // 7. Admin Button (Visibility)
-            if (String(tgUser.id) === ADMIN_ID) {
-                document.getElementById('admin-button').style.display = 'block';
-            } else {
-                document.getElementById('admin-button').style.display = 'none';
-            }
-
-            // 8. Render Tabs
-            renderEarnTasks();
-            renderPromotions();
-            renderLeaderboards();
-            renderAdminPanel();
-            renderNotifications();
-
-            saveUserData();
-            Telegram.WebApp.ready();
-            Telegram.WebApp.MainButton.hide();
-        }
-
-        // --- AUTHENTICATION & INITIALIZATION ---
-
-        async function initApp() {
-            Telegram.WebApp.ready();
-            Telegram.WebApp.expand();
-            Telegram.WebApp.setHeaderColor('#1a0033');
-            Telegram.WebApp.setBackgroundColor('#0f0f1a');
-
-            if (Telegram.WebApp.initDataUnsafe && Telegram.WebApp.initDataUnsafe.user) {
-                tgUser = Telegram.WebApp.initDataUnsafe.user;
-                const userId = tgUser.id;
-
-                let storedUserData = loadData(STORAGE_KEY_USER_PREFIX + userId);
-
-                // Check for new user / initialization
-                if (!storedUserData) {
-                    userData = {
-                        balance: STARTING_BALANCE,
-                        totalEarned: 0,
-                        level: 1,
-                        multiplier: 1.0,
-                        referrals: [],
-                        lastDailyClaim: null,
-                        streak: 0,
-                        tasksCompleted: {}, // taskId: true
-                        tasksCompletedToday: {}, // taskId: true (cleared daily)
-                        notifications: [{ type: 'welcome', message: `Welcome to Grip👊, you received ${STARTING_BALANCE} 👊!`, timestamp: Date.now() }],
-                    };
-                    processReferral(tgUser);
-                } else {
-                    userData = storedUserData;
-                    // Reset tasksCompletedToday if a new day
-                    const today = new Date().toDateString();
-                    if (new Date(userData.lastDailyClaim).toDateString() !== today) {
-                         userData.tasksCompletedToday = {};
-                    }
-                }
-
-                updateUI();
-
-            } else {
-                document.body.innerHTML = '<div style="padding: 50px; text-align: center; color: #ff5050;">Authentication failed. Please open this app inside Telegram.</div>';
-            }
-        }
-
-        function processReferral(newUser) {
-            const startParam = Telegram.WebApp.initDataUnsafe.start_param;
-            if (startParam && startParam.startsWith('ref')) {
-                const referrerId = startParam.substring(3);
-                const allUsers = loadAllUsers();
-                const referrer = allUsers.find(u => String(u.id) === referrerId);
-
-                if (referrer && String(referrer.id) !== String(newUser.id)) {
-                    // Update new user
-                    userData.balance += REFERRAL_REWARD;
-                    userData.totalEarned += REFERRAL_REWARD;
-                    userData.notifications.push({ type: 'referral', message: `You were referred! Received ${REFERRAL_REWARD} 👊.`, timestamp: Date.now() });
-
-                    // Update referrer
-                    let referrerData = loadData(STORAGE_KEY_USER_PREFIX + referrer.id);
-                    if (referrerData) {
-                        referrerData.balance += REFERRAL_REWARD;
-                        referrerData.totalEarned += REFERRAL_REWARD;
-                        referrerData.referrals.push(newUser.id);
-                        referrerData.notifications.push({ type: 'referral', message: `New referral: @${newUser.username || newUser.first_name}! Received ${REFERRAL_REWARD} 👊.`, timestamp: Date.now() });
-                        saveData(STORAGE_KEY_USER_PREFIX + referrer.id, referrerData);
-                    }
-                }
-            }
-        }
-
-        // --- DAILY STREAK LOGIC ---
-
-        function updateDailyStreakUI() {
-            const today = new Date();
-            const lastClaimDate = userData.lastDailyClaim ? new Date(userData.lastDailyClaim) : null;
-            const streakElement = document.getElementById('daily-streak-card');
-            const streakCounter = document.getElementById('streak-counter');
-            const dailyRewardInfo = document.getElementById('daily-reward-info');
-            const claimButton = document.getElementById('claim-daily-button');
-
-            const isSameDay = lastClaimDate && lastClaimDate.toDateString() === today.toDateString();
-            const yesterday = new Date(today);
-            yesterday.setDate(today.getDate() - 1);
-            const isConsecutive = lastClaimDate && lastClaimDate.toDateString() === yesterday.toDateString();
-
-            if (isSameDay) {
-                // Claimed today
-                streakElement.style.display = 'block';
-                claimButton.disabled = true;
-                claimButton.textContent = 'Claimed!';
-                claimButton.style.backgroundColor = '#4CAF50';
-                streakCounter.textContent = userData.streak;
-                dailyRewardInfo.textContent = `Claimed ${DAILY_REWARDS[(userData.streak - 1) % DAILY_REWARDS.length] || DAILY_REWARDS[0]} 👊 today. Streak secured!`;
-
-            } else {
-                // Not claimed today
-                const currentStreak = isConsecutive ? userData.streak + 1 : 1;
-                const rewardIndex = (currentStreak - 1) % DAILY_REWARDS.length;
-                const nextReward = DAILY_REWARDS[rewardIndex];
-
-                streakElement.style.display = 'block';
-                claimButton.disabled = false;
-                claimButton.textContent = `Claim ${nextReward} 👊`;
-                claimButton.style.backgroundColor = varCss('button-bg');
-                streakCounter.textContent = currentStreak;
-                dailyRewardInfo.textContent = `Day ${currentStreak} Reward: ${nextReward} 👊`;
-            }
-        }
-
-        document.getElementById('claim-daily-button').onclick = () => {
-            const today = new Date();
-            const lastClaimDate = userData.lastDailyClaim ? new Date(userData.lastDailyClaim) : null;
-            const yesterday = new Date(today);
-            yesterday.setDate(today.getDate() - 1);
-            const isConsecutive = lastClaimDate && lastClaimDate.toDateString() === yesterday.toDateString();
-
-            const currentStreak = lastClaimDate && lastClaimDate.toDateString() === today.toDateString() ? userData.streak : (isConsecutive ? userData.streak + 1 : 1);
-            const rewardIndex = (currentStreak - 1) % DAILY_REWARDS.length;
-            const rewardAmount = DAILY_REWARDS[rewardIndex];
-
-            // Update user data
-            userData.balance += rewardAmount;
-            userData.totalEarned += rewardAmount;
-            userData.lastDailyClaim = today.toISOString();
-            userData.streak = currentStreak;
-            userData.notifications.push({ type: 'daily', message: `Day ${currentStreak} streak claimed: ${rewardAmount} 👊.`, timestamp: Date.now() });
-
-            showConfetti(3);
-            updateUI();
-        };
-
-
-        // --- EARN SECTION (TASKS) LOGIC ---
-
-        function getTasks() {
-            let tasks = loadData(STORAGE_KEY_TASKS) || mockTasks();
-            // Filter out tasks with 0 budget unless marked as unlimited
-            return tasks.filter(t => t.budget > 0 || t.unlimited);
-        }
-
-        function mockTasks() {
-            const mock = [
-                { id: 't1', title: "🇧🇩 Join Our BD Earning Channel", type: "Join Channel/Group", link: "https://t.me/examplechannel1", reward: 800, budget: 100000, promoterId: '999', completedUsers: [] },
-                { id: 't2', title: "Start HiGriP Test Bot", type: "Start Bot", link: `https://t.me/${BOT_USERNAME}`, reward: 1500, budget: 50000, promoterId: '999', completedUsers: [] },
-                { id: 't3', title: "Visit Mini App & Screenshot", type: "Visit Website", link: "https://t.me/miniappexample", reward: 3000, budget: 20000, promoterId: '123', completedUsers: [] },
-                { id: 't4', title: "View Pinned Post (Forward Proof)", type: "View Post", link: "https://t.me/examplechannel2/100", reward: 500, budget: 90000, promoterId: '456', completedUsers: [] },
-                { id: 't5', title: "Join Mega Group Chat", type: "Join Channel/Group", link: "https://t.me/examplegroup", reward: 1200, budget: 80000, promoterId: '789', completedUsers: [] },
-            ];
-            saveData(STORAGE_KEY_TASKS, mock);
-            return mock;
-        }
-
-        function renderEarnTasks() {
-            const taskListElement = document.getElementById('task-list');
-            const tasks = getTasks();
-            taskListElement.innerHTML = '';
-
-            if (tasks.length === 0) {
-                taskListElement.innerHTML = '<p style="color: #aaa; text-align: center; padding: 20px;">No active tasks available right now. Check back soon!</p>';
-                return;
-            }
-
-            tasks.forEach(task => {
-                const isCompleted = userData.tasksCompleted[task.id];
-                const isCompletedToday = userData.tasksCompletedToday[task.id];
-                const manualProof = ['Start Bot', 'View Post', 'Visit Website'].includes(task.type);
-
-                const rewardWithBonus = Math.round(task.reward * userData.multiplier);
-                const remainingUsers = task.unlimited ? '∞' : Math.floor(task.budget / task.reward);
-
-                let buttonText, buttonColor, action;
-
-                if (isCompleted) {
-                    buttonText = 'Completed';
-                    buttonColor = '#555';
-                    action = 'none';
-                } else if (isCompletedToday && manualProof) {
-                     buttonText = 'Proof Pending';
-                     buttonColor = '#ffc107';
-                     action = 'none';
-                } else if (remainingUsers === 0 && !task.unlimited) {
-                    buttonText = 'Exhausted';
-                    buttonColor = '#555';
-                    action = 'none';
-                } else {
-                    buttonText = manualProof ? 'Submit Proof' : 'Join & Earn';
-                    buttonColor = varCss('neon-purple');
-                    action = `handleTaskClick('${task.id}', '${task.type}', '${task.link}', ${manualProof ? 'true' : 'false'})`;
-                }
-
-                taskListElement.innerHTML += `
-                    <div class="task-item">
-                        <div class="task-details">
-                            <h4 style="margin: 0; font-size: 1.1em;">${task.title}</h4>
-                            <p style="font-size: 0.8em; color: #a0a0b0; margin: 5px 0 0;">
-                                <span class="neon-text">${task.type}</span> | Remaining: ${remainingUsers}
-                                ${manualProof ? '<span style="color: #ffc107;"> (Manual Proof)</span>' : ''}
-                            </p>
-                            <span class="task-reward">+${rewardWithBonus.toLocaleString()} 👊</span>
-                        </div>
-                        <button class="neon-button" style="background: ${buttonColor}; padding: 8px 15px; font-size: 0.9em;"
-                            onclick="${action}" ${action === 'none' ? 'disabled' : ''}>
-                            ${buttonText}
-                        </button>
-                    </div>
-                `;
-            });
-        }
-
-        function handleTaskClick(taskId, taskType, link, manualProof) {
-            if (manualProof === 'true' || manualProof === true) {
-                // Manual proof task: mock submission
-                submitManualProof(taskId, taskType, link);
-            } else if (taskType === 'Join Channel/Group') {
-                // Auto-verify mock task: show modal first
-                currentTaskLink = link;
-                document.getElementById('join-rules-modal').style.display = 'flex';
-                document.getElementById('accept-rules-button').onclick = () => {
-                    document.getElementById('join-rules-modal').style.display = 'none';
-                    completeJoinTask(taskId, link);
-                };
-                document.getElementById('cancel-rules-button').onclick = () => {
-                    document.getElementById('join-rules-modal').style.display = 'none';
-                };
-            }
-        }
-
-        // Auto-Verify (Mock) for Join/Channel/Group
-        function completeJoinTask(taskId, link) {
-            // In a real bot, verification would happen here. For MVP, we auto-complete and redirect.
-            window.open(link, '_blank'); // Open the link for the user to join
-
-            const tasks = getTasks();
-            const task = tasks.find(t => t.id === taskId);
-
-            if (!task || userData.tasksCompleted[taskId]) return;
-
-            const rewardWithBonus = Math.round(task.reward * userData.multiplier);
-
-            // Deduct budget (promoter pays)
-            if (!task.unlimited) {
-                task.budget -= task.reward;
-            }
-            task.completedUsers.push(tgUser.id);
-            saveData(STORAGE_KEY_TASKS, tasks);
-
-            // Pay user
-            userData.balance += rewardWithBonus;
-            userData.totalEarned += rewardWithBonus;
-            userData.tasksCompleted[taskId] = true;
-            userData.tasksCompletedToday[taskId] = true;
-            userData.notifications.push({ type: 'earn', message: `Completed: ${task.title}. Earned ${rewardWithBonus} 👊.`, timestamp: Date.now() });
-
-            showConfetti(5);
-            updateUI();
-        }
-
-        // Manual Proof Submission (Mock)
-        function submitManualProof(taskId, taskType, link) {
-            // For MVP, we mock the file upload with a prompt for proof link
-            const proofLink = prompt(`[${taskType}] Please visit the link and get proof: \n${link}\n\nEnter the link to your screenshot/forward proof:`);
-
-            if (proofLink) {
-                // Mark as pending
-                userData.tasksCompletedToday[taskId] = true;
-
-                // Create a mock proof object for Admin Panel
-                let proofs = loadData(STORAGE_KEY_PROOFS) || [];
-                const newProof = {
-                    id: Date.now().toString(),
-                    taskId: taskId,
-                    taskTitle: getTasks().find(t => t.id === taskId).title,
-                    taskReward: getTasks().find(t => t.id === taskId).reward, // Store base reward
-                    userId: tgUser.id,
-                    username: tgUser.username || tgUser.first_name,
-                    proofLink: proofLink,
-                    status: 'pending'
-                };
-                proofs.push(newProof);
-                saveData(STORAGE_KEY_PROOFS, proofs);
-
-                userData.notifications.push({ type: 'submission', message: `Proof for "${newProof.taskTitle}" submitted. Waiting for admin approval.`, timestamp: Date.now() });
-
-                updateUI();
-                alertBox(`Proof Submitted!`, `Your proof for "${newProof.taskTitle}" has been submitted for admin review. You will be notified upon approval/rejection.`);
-            } else {
-                alertBox('Submission Cancelled', 'Proof submission was cancelled.');
-            }
-            window.open(link, '_blank'); // Redirect to link after prompt
-        }
-
-
-        // --- PROMOTE SECTION LOGIC ---
-
-        document.getElementById('create-task-form').onsubmit = (e) => {
-            e.preventDefault();
-            const title = document.getElementById('task-title').value;
-            const type = document.getElementById('task-type').value;
-            const link = document.getElementById('task-link').value;
-            const reward = parseInt(document.getElementById('task-reward').value);
-            const budgetInput = document.getElementById('task-budget');
-            const unlimited = document.getElementById('unlimited-budget').checked;
-            let budget = unlimited ? -1 : parseInt(budgetInput.value);
-
-            // Basic Validation
-            if (reward < 500 || reward > 10000) {
-                alertBox('Error', 'Reward must be between 500 and 10000 GRIP.');
-                return;
-            }
-            if (!unlimited && (budget < 5000 || budget < reward)) {
-                alertBox('Error', 'Minimum budget is 5000 GRIP or at least the reward amount.');
-                return;
-            }
-
-            const totalCost = unlimited ? 'Unlimited' : budget;
-
-            if (userData.balance < totalCost && !unlimited) {
-                alertBox('Error', `Your balance (${userData.balance.toLocaleString()} 👊) is too low for a budget of ${totalCost.toLocaleString()} 👊.`);
-                return;
-            }
-
-            if (!unlimited) {
-                userData.balance -= budget;
-            }
-
-            const tasks = loadData(STORAGE_KEY_TASKS) || [];
-            const newTask = {
-                id: 't' + Date.now(),
-                title,
-                type,
-                link,
-                reward,
-                budget,
-                unlimited,
-                promoterId: tgUser.id,
-                completedUsers: [],
-                createdAt: Date.now()
-            };
-            tasks.push(newTask);
-            saveData(STORAGE_KEY_TASKS, tasks);
-            saveUserData();
-
-            alertBox('Success!', `Your promotion "${title}" has been launched! Cost: ${unlimited ? 'Unlimited (balance deducted)' : budget.toLocaleString() + ' 👊'}`);
-
-            document.getElementById('create-task-form').reset();
-            updateUI();
-        };
-
-        // Update cost warning dynamically
-        document.getElementById('task-budget').oninput = document.getElementById('task-reward').oninput = document.getElementById('unlimited-budget').onchange = () => {
-            const reward = parseInt(document.getElementById('task-reward').value) || 0;
-            const budget = parseInt(document.getElementById('task-budget').value) || 0;
-            const unlimited = document.getElementById('unlimited-budget').checked;
-            const warning = document.getElementById('promotion-cost-warning');
-
-            if (unlimited) {
-                warning.textContent = 'WARNING: Unlimited budget means the promotion runs until manually paused or all users complete it. Initial GRIP balance is reserved.';
-                document.getElementById('task-budget').disabled = true;
-            } else {
-                document.getElementById('task-budget').disabled = false;
-                if (budget < reward) {
-                     warning.textContent = `Budget must be higher than reward (${reward} 👊).`;
-                } else if (budget < 5000) {
-                    warning.textContent = 'Recommended minimum budget is 5000 GRIP.';
-                } else {
-                    warning.textContent = `Total Cost: ${budget.toLocaleString()} 👊. You have ${userData.balance.toLocaleString()} 👊.`;
-                }
-            }
-        };
-
-        function renderPromotions() {
-            if (!tgUser) return;
-            const myPromotionsList = document.getElementById('my-promotions-list');
-            const tasks = getTasks();
-            const myTasks = tasks.filter(t => String(t.promoterId) === String(tgUser.id));
-
-            myPromotionsList.innerHTML = '<h3 class="neon-text">My Live Promotions</h3>';
-
-            if (myTasks.length === 0) {
-                myPromotionsList.innerHTML += '<p style="color: #aaa; text-align: center;">No active promotions.</p>';
-                return;
-            }
-
-            myTasks.forEach(task => {
-                const spent = task.completedUsers.length * task.reward;
-                const remaining = task.unlimited ? 'Unlimited' : (task.budget - spent).toLocaleString();
-                const progressWidth = task.unlimited ? 100 : Math.min(100, (spent / task.budget) * 100);
-
-                myPromotionsList.innerHTML += `
-                    <div class="card" style="padding: 15px; margin-bottom: 10px;">
-                        <h4 style="margin: 0; color: var(--neon-cyan);">${task.title}</h4>
-                        <p style="font-size: 0.85em; color: #aaa; margin: 5px 0;">
-                            Type: ${task.type} | Reward: ${task.reward.toLocaleString()} 👊
-                        </p>
-                        <p style="font-size: 0.8em; color: #fff; margin: 5px 0 10px;">
-                            Users Joined: <span class="neon-text">${task.completedUsers.length}</span> | Remaining Budget: <span class="neon-text">${remaining} 👊</span>
-                        </p>
-                        <div class="progress-bar-container" style="height: 8px;">
-                            <div class="progress-bar" style="width: ${progressWidth}%;"></div>
-                        </div>
-                    </div>
-                `;
-            });
-        }
-
-        // --- ADMIN PANEL LOGIC ---
-
-        function renderAdminPanel() {
-            if (String(tgUser.id) !== ADMIN_ID) {
-                document.getElementById('admin-section').style.display = 'none';
-                return;
-            }
-
-            const proofsList = document.getElementById('pending-proofs-list');
-            let proofs = loadData(STORAGE_KEY_PROOFS) || [];
-
-            const pendingProofs = proofs.filter(p => p.status === 'pending');
-            proofsList.innerHTML = '';
-
-            if (pendingProofs.length === 0) {
-                proofsList.innerHTML = '<p style="color: #aaa; text-align: center; padding: 20px;">No pending proofs for review.</p>';
-                return;
-            }
-
-            pendingProofs.forEach(proof => {
-                proofsList.innerHTML += `
-                    <div class="proof-card" id="proof-${proof.id}">
-                        <p style="margin: 0; font-weight: 600;">Task: ${proof.taskTitle}</p>
-                        <p style="margin: 5px 0;">User ID: ${proof.userId} (<span class="neon-text">${proof.username}</span>)</p>
-                        <p style="margin: 5px 0;">Reward: <span class="neon-text">${proof.taskReward.toLocaleString()} 👊</span> (Base)</p>
-                        <p style="font-size: 0.9em;">Proof Link: <a href="${proof.proofLink}" target="_blank" style="color: var(--neon-cyan); word-break: break-all;">View Proof</a></p>
-                        <button class="neon-button" style="background: #4CAF50;" onclick="approveProof('${proof.id}')">Approve & Pay</button>
-                        <button class="neon-button" style="background: #FF5252;" onclick="showRejectionModal('${proof.id}')">Reject</button>
-                    </div>
-                `;
-            });
-        }
-
-        function approveProof(proofId) {
-            let proofs = loadData(STORAGE_KEY_PROOFS) || [];
-            const proofIndex = proofs.findIndex(p => p.id === proofId);
-
-            if (proofIndex === -1) return;
-
-            const proof = proofs[proofIndex];
-            proof.status = 'approved';
-
-            // 1. Pay the User
-            let user = loadData(STORAGE_KEY_USER_PREFIX + proof.userId);
-            if (user) {
-                // Calculate user's current multiplier
-                const userLevel = Math.floor(user.totalEarned / 10000) + 1;
-                const userMultiplier = 1 + (userLevel - 1) * 0.1;
-                const finalReward = Math.round(proof.taskReward * userMultiplier);
-
-                user.balance += finalReward;
-                user.totalEarned += finalReward;
-                user.tasksCompleted[proof.taskId] = true; // Mark as permanently completed
-                user.notifications.push({ type: 'approval', message: `✅ Approved: "${proof.taskTitle}". Received ${finalReward} 👊.`, timestamp: Date.now() });
-                saveData(STORAGE_KEY_USER_PREFIX + proof.userId, user);
-
-                // 2. Deduct from Promoter's Budget
-                let tasks = loadData(STORAGE_KEY_TASKS) || [];
-                const task = tasks.find(t => t.id === proof.taskId);
-                if (task) {
-                    const promoter = loadData(STORAGE_KEY_USER_PREFIX + task.promoterId);
-                    if (promoter) {
-                        // The user was already deducted the total budget when task was created.
-                        // We only need to reduce the task's budget count and mark user as completed.
-                        if (!task.unlimited) {
-                            task.budget -= task.reward;
-                        }
-                        task.completedUsers.push(proof.userId);
-                        saveData(STORAGE_KEY_TASKS, tasks);
-                    }
-                }
-            }
-
-            // 3. Finalize Proof Status
-            proofs.splice(proofIndex, 1); // Remove from pending list (or simply filter out 'pending')
-            saveData(STORAGE_KEY_PROOFS, proofs.filter(p => p.status === 'pending' || p.status === 'rejected'));
-
-            showConfetti(8);
-            renderAdminPanel();
-            alertBox('Approved!', `Paid ${finalReward} 👊 to User ID ${proof.userId}.`);
-        }
-
-        let proofIdToReject = null;
-
-        function showRejectionModal(proofId) {
-            proofIdToReject = proofId;
-            document.getElementById('admin-rejection-modal').style.display = 'flex';
-            document.getElementById('rejection-reason').value = '';
-        }
-
-        function submitRejection() {
-            const reason = document.getElementById('rejection-reason').value.trim();
-            if (!reason) {
-                alertBox('Error', 'Please provide a reason for rejection.');
-                return;
-            }
-
-            let proofs = loadData(STORAGE_KEY_PROOFS) || [];
-            const proofIndex = proofs.findIndex(p => p.id === proofIdToReject);
-
-            if (proofIndex === -1) return;
-
-            const proof = proofs[proofIndex];
-            proof.status = 'rejected';
-
-            // Notify the user
-            let user = loadData(STORAGE_KEY_USER_PREFIX + proof.userId);
-            if (user) {
-                user.tasksCompletedToday[proof.taskId] = false; // Allow user to resubmit
-                user.notifications.push({ type: 'rejection', message: `❌ Rejected: "${proof.taskTitle}". Reason: ${reason}`, timestamp: Date.now() });
-                saveData(STORAGE_KEY_USER_PREFIX + proof.userId, user);
-            }
-
-            // Remove from pending list
-            proofs.splice(proofIndex, 1);
-            saveData(STORAGE_KEY_PROOFS, proofs.filter(p => p.status === 'pending' || p.status === 'rejected'));
-
-            document.getElementById('admin-rejection-modal').style.display = 'none';
-            renderAdminPanel();
-            alertBox('Rejected', `Proof rejected. Reason sent to User ID ${proof.userId}.`);
-        }
-
-
-        // --- LEADERBOARD LOGIC ---
-
-        function renderLeaderboards() {
-            const allUsers = loadAllUsers();
-
-            // 1. Global Top Earners
-            const topEarners = [...allUsers]
-                .sort((a, b) => b.totalEarned - a.totalEarned)
-                .slice(0, 10);
-            renderList('global-earners-list', topEarners, (user, index) =>
-                `#${index + 1}. <span class="${index < 3 ? 'neon-text' : ''}">${user.username || user.first_name || 'User ' + user.id}</span> - ${user.totalEarned.toLocaleString()} 👊`
+    }
+}
+
+function openTab(tab) {
+    document.querySelectorAll(".tab-content").forEach(c => c.classList.add("hidden"));
+    document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
+    document.getElementById(tab).classList.remove("hidden");
+    document.querySelector(`.tab[onclick="openTab('${tab}')"]`).classList.add("active");
+    
+    // Refresh content if needed
+    if (tab === 'leaderboard') {
+        renderLeaderboard();
+    } else if (tab === 'promote') {
+        renderPromotions();
+    }
+}
+
+function quickEarn() {
+    openTab('earn');
+    document.getElementById("floating-btn").style.transform = "scale(1.5)";
+    setTimeout(() => document.getElementById("floating-btn").style.transform = "", 300);
+}
+
+function renderLeaderboard() {
+    const earners = Object.values(db.users).sort((a,b) => b.total_earned - a.total_earned).slice(0,10);
+    const refs = Object.values(db.users).sort((a,b) => (b.referrals||0) - (a.referrals||0)).slice(0,10);
+    
+    const earnersHTML = earners.map((u,i) => 
+        `<div class="leaderboard-item">
+            <span>${i+1}. @${u.username}</span>
+            <span>${u.total_earned.toLocaleString()} GRIP</span>
+        </div>`
+    ).join("");
+    
+    const refsHTML = refs.map((u,i) => 
+        `<div class="leaderboard-item">
+            <span>${i+1}. @${u.username}</span>
+            <span>${u.referrals||0} referrals</span>
+        </div>`
+    ).join("");
+    
+    document.getElementById("topEarners").innerHTML = earnersHTML;
+    document.getElementById("topReferrers").innerHTML = refsHTML;
+}
+
+function showCreateTask() {
+    document.getElementById("createPromoModal").style.display = "flex";
+}
+
+function closeCreatePromo() {
+    document.getElementById("createPromoModal").style.display = "none";
+}
+
+function createPromotion() {
+    const title = document.getElementById("promoTitle").value;
+    const link = document.getElementById("promoLink").value;
+    const reward = parseInt(document.getElementById("promoReward").value);
+    const budget = parseInt(document.getElementById("promoBudget").value);
+    
+    if (!title || !link || !reward || !budget) {
+        showNotification("Please fill all fields", 'error');
+        return;
+    }
+    
+    if (user.balance < budget) {
+        showNotification("Not enough GRIP for this budget", 'error');
+        return;
+    }
+    
+    // Deduct budget from user balance
+    user.balance -= budget;
+    db.users[user.id] = user;
+    
+    // Create promotion
+    const promo = {
+        id: Date.now(),
+        userId: user.id,
+        title,
+        link,
+        reward,
+        budget,
+        spent: 0,
+        createdAt: Date.now(),
+        status: 'active'
+    };
+    
+    if (!db.promotions) db.promotions = [];
+    db.promotions.push(promo);
+    save();
+    
+    closeCreatePromo();
+    renderPromotions();
+    updateUI();
+    showNotification("Promotion created successfully!", 'success');
+}
+
+function renderPromotions() {
+    const container = document.getElementById("myPromotions");
+    container.innerHTML = "";
+    
+    if (!db.promotions || db.promotions.length === 0) {
+        container.innerHTML = '<div class="task"><p>No promotions created yet</p></div>';
+        return;
+    }
+    
+    const myPromos = db.promotions.filter(p => p.userId === user.id);
+    
+    if (myPromos.length === 0) {
+        container.innerHTML = '<div class="task"><p>No promotions created yet</p></div>';
+        return;
+    }
+    
+    myPromos.forEach(promo => {
+        const div = document.createElement("div");
+        div.className = "task";
+        div.innerHTML = `
+            <h3>${promo.title}</h3>
+            <p>Reward: ${promo.reward} GRIP per joiner</p>
+            <p>Budget: ${promo.budget.toLocaleString()} GRIP</p>
+            <p>Spent: ${promo.spent.toLocaleString()} GRIP</p>
+            <p>Status: <span style="color: ${promo.status === 'active' ? 'var(--success)' : '#ff6b6b'}">${promo.status}</span></p>
+            <button class="btn" onclick="sharePromotion(${promo.id})">Share Promotion</button>
+        `;
+        container.appendChild(div);
+    });
+}
+
+function sharePromotion(promoId) {
+    const promo = db.promotions.find(p => p.id === promoId);
+    if (!promo) return;
+    
+    const message = `Join ${promo.title} and earn ${promo.reward} GRIP! ${promo.link}`;
+    tg.openTelegramLink(`https://t.me/share/url?url=${encodeURIComponent(message)}`);
+}
+
+function confettiBurst() {
+    const canvas = document.getElementById("confettiCanvas");
+    const ctx = canvas.getContext("2d");
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    
+    const confetti = [];
+    const confettiCount = 300;
+    const gravity = 0.5;
+    const terminalVelocity = 5;
+    const drag = 0.075;
+    const colors = [
+        { front: '#9d4edd', back: '#7b2cbf' },
+        { front: '#00f2ff', back: '#00b4c8' },
+        { front: '#ff2a6d', back: '#d10047' },
+        { front: '#00ff9d', back: '#00cc7e' },
+        { front: '#ffcc00', back: '#e6b800' }
+    ];
+
+    // Initialize confetti particles
+    for (let i = 0; i < confettiCount; i++) {
+        confetti.push({
+            color: colors[Math.floor(Math.random() * colors.length)],
+            dimensions: {
+                x: Math.random() * 10 + 10,
+                y: Math.random() * 10 + 10
+            },
+            position: {
+                x: Math.random() * canvas.width,
+                y: Math.random() * canvas.height - canvas.height
+            },
+            rotation: Math.random() * 2 * Math.PI,
+            scale: {
+                x: 1,
+                y: 1
+            },
+            velocity: {
+                x: Math.random() * 50 - 25,
+                y: Math.random() * 50 + 50
+            },
+            wobble: Math.random() * 10
+        });
+    }
+
+    function update() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        for (let i = 0; i < confetti.length; i++) {
+            const particle = confetti[i];
+            
+            // Apply forces
+            particle.velocity.x -= particle.velocity.x * drag;
+            particle.velocity.y = Math.min(particle.velocity.y + gravity, terminalVelocity);
+            particle.velocity.x += Math.random() > 0.5 ? Math.random() : -Math.random();
+            
+            // Update position
+            particle.position.x += particle.velocity.x;
+            particle.position.y += particle.velocity.y;
+            
+            // Apply wobble
+            particle.rotation += particle.wobble * 0.01;
+            
+            // Draw particle
+            ctx.save();
+            ctx.translate(particle.position.x, particle.position.y);
+            ctx.rotate(particle.rotation);
+            ctx.scale(particle.scale.x, particle.scale.y);
+            
+            ctx.fillStyle = particle.color.front;
+            ctx.fillRect(
+                -particle.dimensions.x / 2,
+                -particle.dimensions.y / 2,
+                particle.dimensions.x,
+                particle.dimensions.y
             );
-
-            // 2. Top Referrers
-            const topReferrers = [...allUsers]
-                .sort((a, b) => b.referrals - a.referrals)
-                .slice(0, 10);
-            renderList('top-referrers-leaderboard', topReferrers, (user, index) =>
-                `#${index + 1}. <span class="${index < 3 ? 'neon-text' : ''}">${user.username || user.first_name || 'User ' + user.id}</span> - ${user.referrals} Refs`
-            );
-
-            // 3. Home Section - Top Referrers
-             renderList('top-referrers-list', topReferrers.slice(0, 5), (user, index) =>
-                `#${index + 1}. <span class="${index < 3 ? 'neon-text' : ''}">${user.username || user.first_name || 'User ' + user.id}</span> - ${user.referrals} Refs`
-            );
-        }
-
-        function renderList(elementId, items, formatter) {
-            const element = document.getElementById(elementId);
-            if (!element) return;
-            element.innerHTML = items.map((item, index) =>
-                `<p style="margin: 5px 0; font-size: 0.95em;">${formatter(item, index)}</p>`
-            ).join('');
-        }
-
-        // --- UI/UX & HELPER FUNCTIONS ---
-
-        function changeTab(tabId) {
-            document.querySelectorAll('.section').forEach(section => section.classList.remove('active'));
-            document.querySelectorAll('.tab-button').forEach(button => button.classList.remove('active'));
-
-            document.getElementById(`${tabId}-section`).classList.add('active');
-            document.querySelector(`.tab-button[data-tab="${tabId}"]`).classList.add('active');
-
-            Telegram.WebApp.HapticFeedback.selectionChanged();
-        }
-
-        function copyReferralLink() {
-            const linkInput = document.getElementById('referral-link-input');
-            linkInput.select();
-            document.execCommand('copy');
-            alertBox('Copied!', 'Referral link copied to clipboard. Start sharing!');
-            Telegram.WebApp.HapticFeedback.notificationOccurred('success');
-        }
-
-        function renderNotifications() {
-            const list = document.getElementById('notification-list');
-            document.getElementById('notification-center').style.display = 'block';
-
-            if (!userData.notifications || userData.notifications.length === 0) {
-                 list.innerHTML = '<p style="color: #aaa; font-size: 0.9em;">No new updates.</p>';
-                 return;
+            
+            ctx.restore();
+            
+            // Remove particles that are out of view
+            if (particle.position.y >= canvas.height) {
+                confetti.splice(i, 1);
+                i--;
             }
-
-            const notificationsHTML = userData.notifications
-                .sort((a, b) => b.timestamp - a.timestamp)
-                .slice(0, 5) // Show top 5
-                .map(n => {
-                    let icon = '🔔';
-                    let color = '#fff';
-                    if (n.type === 'approval') { icon = '✅'; color = '#4CAF50'; }
-                    if (n.type === 'rejection') { icon = '❌'; color = '#FF5252'; }
-                    if (n.type === 'earn' || n.type === 'daily') { icon = '💰'; color = varCss('neon-cyan'); }
-
-                    return `<p style="margin: 5px 0; font-size: 0.9em; color: ${color};">${icon} ${n.message}</p>`;
-                }).join('');
-
-            list.innerHTML = notificationsHTML;
         }
 
-
-        function varCss(name) {
-            return getComputedStyle(document.documentElement).getPropertyValue(`--${name}`);
+        if (confetti.length > 0) {
+            requestAnimationFrame(update);
         }
+    }
 
-        // Custom Modal Alert Box (instead of alert())
-        function alertBox(title, message) {
-            const existingModal = document.getElementById('custom-alert-modal');
-            if (existingModal) existingModal.remove();
+    update();
+}
 
-            const modal = document.createElement('div');
-            modal.id = 'custom-alert-modal';
-            modal.className = 'modal-overlay';
-            modal.innerHTML = `
-                <div class="modal-content" style="max-width: 300px;">
-                    <h3 class="neon-text" style="color: ${title.includes('Success') || title.includes('Copied') || title.includes('Approved') ? varCss('neon-cyan') : '#ff5050'}; margin-top: 0;">${title}</h3>
-                    <p style="font-size: 0.9em; color: #ccc;">${message}</p>
-                    <button class="neon-button" style="width: 100%; margin-top: 15px; background: ${title.includes('Success') || title.includes('Copied') || title.includes('Approved') ? varCss('neon-purple') : '#ff5050'};" onclick="document.getElementById('custom-alert-modal').remove();">
-                        OK, Got it!
-                    </button>
-                </div>
-            `;
-            document.body.appendChild(modal);
-            modal.style.display = 'flex';
-        }
+function showNotification(message, type = '') {
+    const notification = document.getElementById("notification");
+    notification.textContent = message;
+    notification.className = "notification";
+    if (type) notification.classList.add(type);
+    notification.classList.add("show");
+    
+    setTimeout(() => {
+        notification.classList.remove("show");
+    }, 3000);
+}
 
-        // Confetti Effect
-        function showConfetti(count) {
-            const container = document.getElementById('confetti-container');
-            const colors = [varCss('neon-purple'), varCss('neon-cyan'), '#FFD700'];
-            for (let i = 0; i < count; i++) {
-                const piece = document.createElement('div');
-                piece.className = 'confetti-piece';
-                piece.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
-                piece.style.left = `${Math.random() * 100}vw`;
-                piece.style.top = `${Math.random() * -20}vh`;
-                piece.style.transform = `scale(${Math.random() * 0.5 + 0.5}) rotate(${Math.random() * 360}deg)`;
-                piece.style.animationDelay = `${Math.random() * 0.5}s`;
-                container.appendChild(piece);
-            }
-            setTimeout(() => {
-                container.innerHTML = ''; // Clean up
-            }, 2000);
-
-            // Simple sound effect mock (Tone.js requires CDN, so we'll skip the actual sound, but add Haptic feedback)
-            Telegram.WebApp.HapticFeedback.notificationOccurred('success');
-        }
-
-        // Wait for Telegram to be ready
-        window.onload = initApp;
-
-    </script>
+// Auto init
+load();
+</script>
 </body>
 </html>
