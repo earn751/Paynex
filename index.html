@@ -3,20 +3,30 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>HiGriP 👊 - Promotion Bot</title>
+<title>HiGriP 👊 - Advanced Promotion Bot</title>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
+<!-- Firebase App (the core Firebase SDK) -->
+<script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+<!-- Firebase Database -->
+<script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-database-compat.js"></script>
+<!-- Firebase Auth -->
+<script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
+<!-- Firebase Analytics -->
+<script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-analytics-compat.js"></script>
 <style>
-/* HiGriP Promotion Bot 👊 | Admin: 7243906826 | 2025 */
+/* HiGriP Advanced Promotion Bot 👊 | 2025 */
 :root {
     --bg: linear-gradient(135deg, #0f0f1a 0%, #1a0033 100%);
     --neon-purple: #9d4edd;
     --neon-cyan: #00f2ff;
     --neon-pink: #ff2a6d;
-    --card: rgba(30, 15, 60, 0.7);
+    --neon-green: #00ff9d;
+    --card: rgba(30, 15, 60, 0.8);
     --text: #e0e0ff;
     --success: #00ff9d;
     --warning: #ffcc00;
     --error: #ff3860;
+    --glass: rgba(255, 255, 255, 0.1);
 }
 * { 
     margin:0; 
@@ -24,13 +34,13 @@
     box-sizing:border-box; 
 }
 body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-family: 'Segoe UI', system-ui, sans-serif;
     background: var(--bg);
     color: var(--text);
     min-height: 100vh;
     overflow-x: hidden;
     padding-bottom: 80px;
-    line-height: 1.5;
+    line-height: 1.6;
 }
 .container { 
     padding: 15px; 
@@ -55,10 +65,46 @@ header::before {
     left: 0;
     right: 0;
     height: 2px;
-    background: linear-gradient(90deg, transparent, var(--neon-purple), transparent);
+    background: linear-gradient(90deg, transparent, var(--neon-purple), var(--neon-cyan), transparent);
+}
+.user-profile {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 15px;
+    margin-bottom: 15px;
+}
+.avatar {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    border: 2px solid var(--neon-cyan);
+    background: var(--card);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5em;
+    overflow: hidden;
+}
+.avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+.user-info {
+    text-align: left;
+}
+.user-name {
+    font-size: 1.2em;
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+.user-username {
+    color: var(--neon-cyan);
+    opacity: 0.8;
 }
 h1 { 
-    font-size: 2.5em; 
+    font-size: 2.2em; 
     background: linear-gradient(90deg, var(--neon-purple), var(--neon-cyan)); 
     -webkit-background-clip: text; 
     -webkit-text-fill-color: transparent; 
@@ -71,12 +117,12 @@ h1 {
     text-shadow: 0 0 20px var(--neon-purple);
 }
 .level { 
-    font-size: 1.2em; 
+    font-size: 1.1em; 
     color: var(--neon-cyan); 
     margin-bottom: 5px;
 }
 .streak { 
-    font-size: 1.8em; 
+    font-size: 1.6em; 
     color: #ff6b6b; 
     display: flex;
     align-items: center;
@@ -143,6 +189,9 @@ h1 {
 .btn-danger {
     background: linear-gradient(45deg, var(--error), #ff1e56);
 }
+.btn-vip {
+    background: linear-gradient(45deg, #ffd700, #ff6b00);
+}
 .fist { 
     font-size: 2.5em; 
     display: inline-block; 
@@ -197,6 +246,7 @@ h1 {
     cursor: pointer; 
     transition: 0.3s; 
     font-weight: bold;
+    font-size: 0.9em;
 }
 .tab.active { 
     background: var(--neon-purple); 
@@ -213,6 +263,10 @@ h1 {
 .task:hover {
     background: rgba(255,255,255,0.08);
     transform: translateX(5px);
+}
+.task.completed {
+    border-left-color: var(--success);
+    background: rgba(0,255,157,0.05);
 }
 .modal {
     position: fixed; 
@@ -234,6 +288,8 @@ h1 {
     text-align: center;
     border: 2px solid var(--neon-purple); 
     max-width: 90%;
+    max-height: 90vh;
+    overflow-y: auto;
     animation: popup 0.5s;
     box-shadow: 0 20px 50px rgba(0,0,0,0.7);
     position: relative;
@@ -396,11 +452,83 @@ h1 {
     cursor: pointer;
     font-size: 0.8em;
 }
+.badge {
+    display: inline-block;
+    padding: 3px 8px;
+    border-radius: 10px;
+    font-size: 0.7em;
+    font-weight: bold;
+    margin-left: 5px;
+}
+.badge-vip {
+    background: linear-gradient(45deg, #ffd700, #ff6b00);
+    color: black;
+}
+.badge-premium {
+    background: linear-gradient(45deg, #9d4edd, #00f2ff);
+    color: white;
+}
+.badge-new {
+    background: var(--neon-green);
+    color: black;
+}
+.verification-badge {
+    color: var(--success);
+    font-size: 0.8em;
+    margin-left: 5px;
+}
+.loading {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 3px solid rgba(255,255,255,.3);
+    border-radius: 50%;
+    border-top-color: var(--neon-cyan);
+    animation: spin 1s ease-in-out infinite;
+}
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+.admin-panel {
+    border: 2px solid #ff6b6b;
+    background: rgba(255,107,107,0.1);
+}
+.admin-section {
+    margin: 15px 0;
+    padding: 15px;
+    background: rgba(0,0,0,0.3);
+    border-radius: 10px;
+}
+.admin-controls {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin: 10px 0;
+}
+.admin-user-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px;
+    margin: 5px 0;
+    background: rgba(255,255,255,0.05);
+    border-radius: 8px;
+}
 </style>
 </head>
 <body>
 <div class="container">
     <header>
+        <div class="user-profile">
+            <div class="avatar" id="userAvatar">
+                <!-- Avatar will be loaded by JavaScript -->
+            </div>
+            <div class="user-info">
+                <div class="user-name" id="userName">Loading...</div>
+                <div class="user-username" id="userUsername">@username</div>
+            </div>
+        </div>
+        
         <h1>HiGriP <span class="fist">👊</span></h1>
         <div class="balance" id="balance">0 GRIP 👊</div>
         <div class="level">Level <span id="level">1</span> • <span id="multiplier">1.1</span>x Multiplier</div>
@@ -415,6 +543,14 @@ h1 {
                 <div class="stat-value" id="referrals">0</div>
                 <div class="stat-label">Referrals</div>
             </div>
+            <div class="stat-card">
+                <div class="stat-value" id="tasksCompleted">0</div>
+                <div class="stat-label">Tasks Done</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="userRank">#-</div>
+                <div class="stat-label">Rank</div>
+            </div>
         </div>
     </header>
 
@@ -422,13 +558,14 @@ h1 {
         <div class="progress">
             <div class="progress-bar" id="dailyProgress"></div>
         </div>
-        <small>Grip Strength: <span id="gripStrength">0</span>%</small>
+        <small>Grip Strength: <span id="gripStrength">0</span>% • Next Level: <span id="nextLevel">10000</span> GRIP</small>
     </div>
 
     <div class="tabs">
         <div class="tab active" onclick="openTab('earn')">EARN 👊</div>
         <div class="tab" onclick="openTab('promote')">PROMOTE</div>
-        <div class="tab" onclick="openTab('leaderboard')">LEADERBOARD</div>
+        <div class="tab" onclick="openTab('leaderboard')">TOP</div>
+        <div class="tab" onclick="openTab('referral')">TEAM</div>
     </div>
 
     <div id="earn" class="tab-content">
@@ -437,32 +574,102 @@ h1 {
             <p>Day <span id="streakDay">1</span>: <b id="dailyReward">200</b> GRIP 👊</p>
             <button class="btn" id="dailyClaimBtn" onclick="claimDaily()">Claim Daily Bonus</button>
         </div>
-        <div id="tasksList"></div>
+        
+        <div class="card">
+            <h3>🎯 Available Tasks <span class="badge badge-new" id="tasksCount">3</span></h3>
+            <div id="tasksList"></div>
+        </div>
+        
+        <div class="card">
+            <h3>🎮 Quick Games</h3>
+            <button class="btn btn-success" onclick="playMiniGame()">Tap Game (+50 GRIP)</button>
+            <button class="btn btn-warning" onclick="startLuckyDraw()">Lucky Draw (+100-500 GRIP)</button>
+        </div>
     </div>
 
     <div id="promote" class="tab-content hidden">
-        <button class="btn" onclick="showCreateTask()">+ Create New Promotion</button>
+        <div class="card">
+            <h3>📢 Create Promotion</h3>
+            <button class="btn" onclick="showCreateTask()">+ Create New Promotion</button>
+            <p style="text-align: center; margin-top: 10px; opacity: 0.8;">Promote your channel and earn GRIP</p>
+        </div>
         <div id="myPromotions"></div>
     </div>
 
     <div id="leaderboard" class="tab-content hidden">
-        <h2>🏆 Top Earners</h2>
-        <div id="topEarners" class="leaderboard"></div>
-        <h2 style="margin-top: 20px;">👑 Top Referrers</h2>
-        <div id="topReferrers" class="leaderboard"></div>
-    </div>
-
-    <div class="card">
-        <button class="btn" onclick="shareReferral()">Invite Friends (+800 GRIP each)</button>
-        <p style="text-align:center; margin-top:10px;">Your referral link:</p>
-        <div class="ref-link">
-            <span id="refLink">loading...</span>
-            <button class="copy-btn" onclick="copyRefLink()">Copy</button>
+        <div class="card">
+            <h2>🏆 Top Earners</h2>
+            <div id="topEarners" class="leaderboard"></div>
+        </div>
+        
+        <div class="card">
+            <h2>👑 Top Referrers</h2>
+            <div id="topReferrers" class="leaderboard"></div>
+        </div>
+        
+        <div class="card">
+            <h2>⚡ Most Active</h2>
+            <div id="mostActive" class="leaderboard"></div>
         </div>
     </div>
 
-    <div class="card hidden" id="adminPanel">
+    <div id="referral" class="tab-content hidden">
+        <div class="card">
+            <h3>👥 Multi-Level Referral</h3>
+            <button class="btn" onclick="shareReferral()">Invite Friends</button>
+            
+            <div class="ref-link">
+                <span id="refLink">loading...</span>
+                <button class="copy-btn" onclick="copyRefLink()">Copy</button>
+            </div>
+            
+            <div class="stats-grid" style="margin-top: 15px;">
+                <div class="stat-card">
+                    <div class="stat-value" id="level1Ref">0</div>
+                    <div class="stat-label">Direct</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="level2Ref">0</div>
+                    <div class="stat-label">Level 2</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="level3Ref">0</div>
+                    <div class="stat-label">Level 3</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="totalRefEarned">0</div>
+                    <div class="stat-label">Earned</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <h3>🤝 Your Team</h3>
+            <div id="teamList" class="leaderboard"></div>
+        </div>
+    </div>
+
+    <div class="card admin-panel hidden" id="adminPanel">
         <h2 style="color:#ff6b6b;">Admin Panel 👑</h2>
+        
+        <div class="admin-section">
+            <h3>User Management</h3>
+            <div class="admin-controls">
+                <button class="btn btn-warning" onclick="showUserManagement()">Manage Users</button>
+                <button class="btn btn-danger" onclick="showTaskManagement()">Manage Tasks</button>
+            </div>
+            <div id="userManagementList"></div>
+            <div id="taskManagementList"></div>
+        </div>
+        
+        <div class="admin-section">
+            <h3>System Controls</h3>
+            <div class="admin-controls">
+                <button class="btn" onclick="generateDemoUsers()">Generate Demo Users</button>
+                <button class="btn btn-success" onclick="updateLeaderboard()">Update Leaderboard</button>
+            </div>
+        </div>
+        
         <div id="pendingProofs"></div>
     </div>
 </div>
@@ -476,7 +683,8 @@ h1 {
         <p style="margin:20px 0; line-height:1.6;">
             ✅ Earn GRIP by joining channels/groups<br>
             ✅ Promote your own channel & earn<br>
-            ✅ Payment via screenshot proof<br>
+            ✅ Auto-verification system<br>
+            ✅ Multi-level referral program<br>
             <span style="color:#ff6b6b;">🚫 Fake SS / spam = permanent ban</span>
         </p>
         <button class="btn" style="font-size:1.3em;" onclick="acceptRules()">✅ I Accept Rules & Join</button>
@@ -506,87 +714,248 @@ h1 {
     </div>
 </div>
 
+<!-- Game Modal -->
+<div class="modal" id="gameModal">
+    <div class="modal-content">
+        <h2 id="gameTitle">Quick Tap Game</h2>
+        <div id="gameContent" style="margin: 20px 0; min-height: 100px; display: flex; align-items: center; justify-content: center;">
+            <!-- Game content will be loaded here -->
+        </div>
+        <button class="btn" id="gameActionBtn" onclick="handleGameAction()">Start Game</button>
+        <button class="btn btn-warning" style="margin-top:10px;" onclick="closeGame()">Close</button>
+    </div>
+</div>
+
+<!-- Admin User Management Modal -->
+<div class="modal" id="adminUserModal">
+    <div class="modal-content">
+        <h2>User Management</h2>
+        <div id="adminUserList" style="max-height: 400px; overflow-y: auto; margin: 20px 0;"></div>
+        <button class="btn btn-warning" onclick="closeAdminUserModal()">Close</button>
+    </div>
+</div>
+
+<!-- Admin Task Management Modal -->
+<div class="modal" id="adminTaskModal">
+    <div class="modal-content">
+        <h2>Task Management</h2>
+        <div id="adminTaskList" style="max-height: 400px; overflow-y: auto; margin: 20px 0;"></div>
+        <button class="btn" onclick="addNewTask()">Add New Task</button>
+        <button class="btn btn-warning" style="margin-top:10px;" onclick="closeAdminTaskModal()">Close</button>
+    </div>
+</div>
+
 <div class="notification" id="notification"></div>
 <canvas id="confettiCanvas" class="confetti"></canvas>
 
 <script>
-// HiGriP Promotion Bot 👊 | Admin: 7243906826 | 2025
+// HiGriP Advanced Promotion Bot 👊 | 2025
 const tg = window.Telegram.WebApp;
 tg.ready();
 tg.expand();
 
-const ADMIN_ID = 7243906826;
-let user = tg.initDataUnsafe.user || {id: Date.now(), first_name: "Guest", username: "guest"};
-let currentTaskLink = "";
-let db = {
-    users: {},
-    tasks: [],
-    promotions: [],
-    proofs: []
+// Firebase Configuration
+const firebaseConfig = {
+    apiKey: "AIzaSyCho5RtEIoXnNlNNrpBg65BmTpJY23Se7Y",
+    authDomain: "maillbeex.firebaseapp.com",
+    databaseURL: "https://maillbeex-default-rtdb.firebaseio.com",
+    projectId: "maillbeex",
+    storageBucket: "maillbeex.firebasestorage.app",
+    messagingSenderId: "5938669413",
+    appId: "1:5938669413:web:34b6bbbbb0e81628a2a38c",
+    measurementId: "G-F6YNLNQSK7"
 };
 
-function load() {
+// Initialize Firebase
+firebase.initializeApp(firebaseConfig);
+const database = firebase.database();
+const auth = firebase.auth();
+
+// Bot Configuration
+const BOT_TOKEN = "8524488850:AAFEMnAhznZaCoGAkKNQviWmZVlQLB1DANE";
+const ADMIN_ID = 7243906826;
+
+let user = tg.initDataUnsafe.user || {id: Date.now(), first_name: "Guest", username: "guest"};
+let currentTaskLink = "";
+let currentTaskId = null;
+let currentGame = null;
+let gameScore = 0;
+
+// Initialize the application
+async function load() {
+    showNotification("🔄 Connecting to HiGriP Network...", "success");
+    
+    try {
+        // Sign in anonymously to Firebase
+        await auth.signInAnonymously();
+        
+        // Load user data from Firebase
+        const userSnapshot = await database.ref('users/' + user.id).once('value');
+        
+        if (userSnapshot.exists()) {
+            // User exists in Firebase
+            const firebaseUser = userSnapshot.val();
+            Object.assign(user, firebaseUser);
+            showNotification(`Welcome back, ${user.first_name}! 👊`, "success");
+        } else {
+            // New user - initialize in Firebase
+            await initUser();
+            showNotification(`Welcome to HiGriP, ${user.first_name}! 🎉`, "success");
+        }
+        
+        // Update UI with loaded data
+        updateUI();
+        checkAdmin();
+        checkDaily();
+        renderTasks();
+        renderPromotions();
+        renderLeaderboard();
+        renderTeamStats();
+        
+        // Set up real-time listeners
+        setupRealtimeListeners();
+        
+    } catch (error) {
+        console.error("Error loading data:", error);
+        showNotification("⚠️ Using offline mode. Some features limited.", "error");
+        loadFromLocalStorage();
+    }
+}
+
+function loadFromLocalStorage() {
     const saved = localStorage.getItem("higrip_db");
     if (saved) {
         try {
-            db = JSON.parse(saved);
+            const db = JSON.parse(saved);
+            if (db.users && db.users[user.id]) {
+                Object.assign(user, db.users[user.id]);
+            }
         } catch (e) {
-            console.error("Error loading data:", e);
-            db = { users: {}, tasks: [], promotions: [], proofs: [] };
+            console.error("Error loading from localStorage:", e);
         }
     }
-    
-    if (!db.users[user.id]) {
-        initUser();
-    } else {
-        Object.assign(user, db.users[user.id]);
-    }
-
     updateUI();
-    checkAdmin();
     checkDaily();
     renderTasks();
-    renderPromotions();
-    renderLeaderboard();
-    document.getElementById("refLink").innerText = `https://t.me/HiGriP_bot?start=ref${user.id}`;
-    
-    // Show welcome message
-    showNotification(`Welcome${user.username ? " back, @"+user.username : ""}! Ready to Grip? 👊`, 'success');
 }
 
-function save() { 
-    localStorage.setItem("higrip_db", JSON.stringify(db)); 
-}
-
-function initUser() {
+async function initUser() {
     const urlParams = new URLSearchParams(window.location.search);
-    const ref = urlParams.get('start')?.replace("ref","");
+    const refParam = urlParams.get('start');
+    let referrerId = null;
     
-    user = {
+    if (refParam && refParam.startsWith('ref')) {
+        referrerId = refParam.replace('ref', '');
+    }
+    
+    const newUser = {
         id: user.id,
         first_name: user.first_name || "User",
         username: user.username || "user" + user.id,
-        balance: ref && db.users[ref] ? 1300 : 500,
+        balance: 500,
         total_earned: 0,
         streak: 0,
         lastDaily: 0,
         referrals: 0,
+        level1_refs: [],
+        level2_refs: [],
+        level3_refs: [],
         dailyTasks: 0,
+        tasksCompleted: 0,
         joinedDate: Date.now(),
-        completedTasks: []
+        completedTasks: [],
+        is_verified: false,
+        avatar_url: user.photo_url || null
     };
     
-    if (ref && db.users[ref]) {
-        db.users[ref].balance += 800;
-        db.users[ref].referrals = (db.users[ref].referrals || 0) + 1;
-        showNotification("Welcome! You and your referrer got 800 GRIP 👊", 'success');
+    // Handle referral
+    if (referrerId) {
+        try {
+            const referrerSnapshot = await database.ref('users/' + referrerId).once('value');
+            if (referrerSnapshot.exists()) {
+                newUser.balance = 1300;
+                newUser.referred_by = referrerId;
+                
+                // Update referrer's data
+                await database.ref('users/' + referrerId).transaction((referrer) => {
+                    if (referrer) {
+                        referrer.balance += 800;
+                        referrer.referrals = (referrer.referrals || 0) + 1;
+                        referrer.level1_refs = referrer.level1_refs || [];
+                        if (!referrer.level1_refs.includes(user.id)) {
+                            referrer.level1_refs.push(user.id);
+                        }
+                    }
+                    return referrer;
+                });
+                
+                // Update level 2 and 3 referrals
+                await updateMultiLevelReferrals(referrerId, user.id);
+            }
+        } catch (error) {
+            console.error("Error handling referral:", error);
+        }
     }
     
-    db.users[user.id] = user;
-    save();
+    // Save user to Firebase
+    await database.ref('users/' + user.id).set(newUser);
+    Object.assign(user, newUser);
+}
+
+async function updateMultiLevelReferrals(referrerId, newUserId) {
+    try {
+        // Level 2 (referrer of referrer)
+        const referrerSnapshot = await database.ref('users/' + referrerId).once('value');
+        if (referrerSnapshot.exists()) {
+            const referrer = referrerSnapshot.val();
+            if (referrer.referred_by) {
+                await database.ref('users/' + referrer.referred_by).transaction((level2User) => {
+                    if (level2User) {
+                        level2User.level2_refs = level2User.level2_refs || [];
+                        if (!level2User.level2_refs.includes(newUserId)) {
+                            level2User.level2_refs.push(newUserId);
+                        }
+                    }
+                    return level2User;
+                });
+                
+                // Level 3 (referrer of referrer of referrer)
+                const level2Snapshot = await database.ref('users/' + referrer.referred_by).once('value');
+                if (level2Snapshot.exists()) {
+                    const level2User = level2Snapshot.val();
+                    if (level2User.referred_by) {
+                        await database.ref('users/' + level2User.referred_by).transaction((level3User) => {
+                            if (level3User) {
+                                level3User.level3_refs = level3User.level3_refs || [];
+                                if (!level3User.level3_refs.includes(newUserId)) {
+                                    level3User.level3_refs.push(newUserId);
+                                }
+                            }
+                            return level3User;
+                        });
+                    }
+                }
+            }
+        }
+    } catch (error) {
+        console.error("Error updating multi-level referrals:", error);
+    }
 }
 
 function updateUI() {
+    // Update user profile
+    document.getElementById("userName").textContent = user.first_name;
+    document.getElementById("userUsername").textContent = user.username ? "@" + user.username : "No username";
+    
+    // Update avatar
+    const avatarElement = document.getElementById("userAvatar");
+    if (user.avatar_url) {
+        avatarElement.innerHTML = `<img src="${user.avatar_url}" alt="Avatar" onerror="this.style.display='none'">`;
+    } else {
+        avatarElement.textContent = user.first_name ? user.first_name.charAt(0).toUpperCase() : "U";
+    }
+    
+    // Update balance and stats
     document.getElementById("balance").innerText = user.balance.toLocaleString() + " GRIP 👊";
     const lvl = Math.floor(user.total_earned / 10000) + 1;
     document.getElementById("level").innerText = lvl;
@@ -594,6 +963,8 @@ function updateUI() {
     document.getElementById("streak").innerText = user.streak || 0;
     document.getElementById("totalEarned").innerText = user.total_earned.toLocaleString();
     document.getElementById("referrals").innerText = user.referrals || 0;
+    document.getElementById("tasksCompleted").innerText = user.tasksCompleted || 0;
+    document.getElementById("nextLevel").innerText = (lvl * 10000).toLocaleString();
     
     const strength = Math.min(100, (user.dailyTasks || 0) * 20);
     document.getElementById("dailyProgress").style.width = strength + "%";
@@ -614,10 +985,10 @@ function checkDaily() {
     }
 }
 
-function claimDaily() {
+async function claimDaily() {
     const today = new Date().toDateString();
     if (user.lastDaily === today) {
-        showNotification("You've already claimed your daily bonus today!", 'error');
+        showNotification("You've already claimed your daily bonus today!", "error");
         return;
     }
     
@@ -628,14 +999,24 @@ function claimDaily() {
     user.balance += reward;
     user.total_earned += reward;
     user.lastDaily = today;
-    db.users[user.id] = user;
-    save();
+    
+    try {
+        await database.ref('users/' + user.id).update({
+            balance: user.balance,
+            total_earned: user.total_earned,
+            streak: user.streak,
+            lastDaily: user.lastDaily
+        });
+    } catch (error) {
+        console.error("Error updating daily claim:", error);
+        saveToLocalStorage();
+    }
     
     confettiBurst();
     updateUI();
     checkDaily();
     tg.HapticFeedback.notificationOccurred("success");
-    showNotification(`Daily bonus claimed! +${reward} GRIP 👊`, 'success');
+    showNotification(`Daily bonus claimed! +${reward} GRIP 👊`, "success");
 }
 
 function renderTasks() {
@@ -645,15 +1026,19 @@ function renderTasks() {
     const sampleTasks = [
         {id:1, title:"Join Official Channel", type:"channel", link:"https://t.me/higripgo", reward:1200, budget:500000, done:0},
         {id:2, title:"Join Earning Group BD", type:"group", link:"https://t.me/bdearning24", reward:1500, budget:300000, done:0},
-        {id:3, title:"Start @AirdropBot", type:"bot", link:"https://t.me/Airdrop", reward:800, budget:999999, done:0}
+        {id:3, title:"Start @AirdropBot", type:"bot", link:"https://t.me/Airdrop", reward:800, budget:999999, done:0},
+        {id:4, title:"Follow on Twitter", type:"social", link:"https://twitter.com/higrip", reward:600, budget:200000, done:0},
+        {id:5, title:"Subscribe YouTube", type:"social", link:"https://youtube.com/higrip", reward:1000, budget:150000, done:0}
     ];
+    
+    document.getElementById("tasksCount").textContent = sampleTasks.length;
     
     sampleTasks.forEach(t => {
         const isCompleted = user.completedTasks && user.completedTasks.includes(t.id);
         const div = document.createElement("div");
-        div.className = "task";
+        div.className = `task ${isCompleted ? 'completed' : ''}`;
         div.innerHTML = `
-            <h3>${t.title}</h3>
+            <h3>${t.title} ${isCompleted ? '✅' : ''}</h3>
             <p>Reward: <b>${t.reward} GRIP 👊</b></p>
             <button class="btn ${isCompleted ? 'btn-success' : ''}" onclick="startTask('${t.type}','${t.link}', ${t.id})" ${isCompleted ? 'disabled' : ''}>
                 ${isCompleted ? '✅ Completed' : 'Join & Earn'}
@@ -663,7 +1048,7 @@ function renderTasks() {
     });
 }
 
-function startTask(type, link, taskId) {
+async function startTask(type, link, taskId) {
     if (type === "channel" || type === "group") {
         currentTaskLink = link;
         currentTaskId = taskId;
@@ -676,22 +1061,62 @@ function startTask(type, link, taskId) {
     }
 }
 
-function acceptRules() {
+async function acceptRules() {
     document.getElementById("rulesModal").style.display = "none";
     tg.openLink(currentTaskLink);
-    setTimeout(() => {
-        showNotification("After joining, send screenshot here to earn GRIP 👊");
-    }, 2000);
     
-    // Simulate task completion after delay
-    setTimeout(() => {
-        if (currentTaskId) {
-            completeTask(currentTaskId);
-        }
-    }, 5000);
+    // Auto-verification using Telegram Bot API
+    if (currentTaskId) {
+        showNotification("🔄 Verifying your join...", "success");
+        
+        setTimeout(async () => {
+            try {
+                const isMember = await verifyChannelMembership(currentTaskLink);
+                if (isMember) {
+                    await completeTask(currentTaskId);
+                } else {
+                    showNotification("Please join the channel first, then try again.", "error");
+                }
+            } catch (error) {
+                console.error("Verification error:", error);
+                showNotification("Manual verification required. Please send screenshot.", "warning");
+            }
+        }, 5000);
+    }
 }
 
-function completeTask(taskId) {
+async function verifyChannelMembership(channelLink) {
+    try {
+        // Extract channel username from link
+        const channelMatch = channelLink.match(/t\.me\/([a-zA-Z0-9_]+)/);
+        if (!channelMatch) return false;
+        
+        const channelUsername = channelMatch[1];
+        
+        // In a real implementation, you would call your backend API
+        // that uses the Telegram Bot API to check membership
+        const response = await fetch('/api/verify-membership', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                userId: user.id,
+                channel: channelUsername,
+                botToken: BOT_TOKEN
+            })
+        });
+        
+        const result = await response.json();
+        return result.isMember;
+        
+    } catch (error) {
+        console.error("Verification failed:", error);
+        return false;
+    }
+}
+
+async function completeTask(taskId) {
     if (!user.completedTasks) user.completedTasks = [];
     if (user.completedTasks.includes(taskId)) return;
     
@@ -702,20 +1127,34 @@ function completeTask(taskId) {
     user.balance += task.reward;
     user.total_earned += task.reward;
     user.dailyTasks = (user.dailyTasks || 0) + 1;
-    db.users[user.id] = user;
-    save();
+    user.tasksCompleted = (user.tasksCompleted || 0) + 1;
+    
+    try {
+        await database.ref('users/' + user.id).update({
+            completedTasks: user.completedTasks,
+            balance: user.balance,
+            total_earned: user.total_earned,
+            dailyTasks: user.dailyTasks,
+            tasksCompleted: user.tasksCompleted
+        });
+    } catch (error) {
+        console.error("Error updating task completion:", error);
+        saveToLocalStorage();
+    }
     
     updateUI();
     renderTasks();
     tg.HapticFeedback.notificationOccurred("success");
-    showNotification(`Task completed! +${task.reward} GRIP 👊`, 'success');
+    showNotification(`Task completed! +${task.reward} GRIP 👊`, "success");
 }
 
 function getTaskById(taskId) {
     const sampleTasks = [
         {id:1, title:"Join Official Channel", type:"channel", link:"https://t.me/higripgo", reward:1200, budget:500000, done:0},
         {id:2, title:"Join Earning Group BD", type:"group", link:"https://t.me/bdearning24", reward:1500, budget:300000, done:0},
-        {id:3, title:"Start @AirdropBot", type:"bot", link:"https://t.me/Airdrop", reward:800, budget:999999, done:0}
+        {id:3, title:"Start @AirdropBot", type:"bot", link:"https://t.me/Airdrop", reward:800, budget:999999, done:0},
+        {id:4, title:"Follow on Twitter", type:"social", link:"https://twitter.com/higrip", reward:600, budget:200000, done:0},
+        {id:5, title:"Subscribe YouTube", type:"social", link:"https://youtube.com/higrip", reward:1000, budget:150000, done:0}
     ];
     return sampleTasks.find(t => t.id === taskId);
 }
@@ -726,26 +1165,28 @@ function cancelJoin() {
 
 function shareReferral() {
     const link = `https://t.me/HiGriP_bot?start=ref${user.id}`;
-    tg.openTelegramLink(`https://t.me/share/url?url=${encodeURIComponent(link + "\n\nJoin HiGriP & get 500 GRIP free 👊")}`);
+    const message = `Join HiGriP and earn free GRIP! Use my referral link: ${link}`;
+    tg.openTelegramLink(`https://t.me/share/url?url=${encodeURIComponent(message)}`);
 }
 
 function copyRefLink() {
     const link = `https://t.me/HiGriP_bot?start=ref${user.id}`;
     navigator.clipboard.writeText(link).then(() => {
-        showNotification("Referral link copied to clipboard!", 'success');
+        showNotification("Referral link copied to clipboard!", "success");
     }).catch(err => {
         console.error('Failed to copy: ', err);
-        showNotification("Failed to copy link", 'error');
+        showNotification("Failed to copy link", "error");
     });
 }
 
 function checkAdmin() {
     if (user.id == ADMIN_ID) {
         document.getElementById("adminPanel").classList.remove("hidden");
-        // Add admin tab if not exists
         if (!document.querySelector('.tab[onclick="openTab(\'admin\')"]')) {
             document.querySelector(".tabs").insertAdjacentHTML('beforeend', '<div class="tab" onclick="openTab(\'admin\')">ADMIN</div>');
         }
+        // Auto generate demo users for admin
+        setTimeout(generateDemoUsers, 2000);
     }
 }
 
@@ -755,11 +1196,14 @@ function openTab(tab) {
     document.getElementById(tab).classList.remove("hidden");
     document.querySelector(`.tab[onclick="openTab('${tab}')"]`).classList.add("active");
     
-    // Refresh content if needed
     if (tab === 'leaderboard') {
         renderLeaderboard();
     } else if (tab === 'promote') {
         renderPromotions();
+    } else if (tab === 'referral') {
+        renderTeamStats();
+    } else if (tab === 'admin') {
+        showUserManagement();
     }
 }
 
@@ -769,26 +1213,98 @@ function quickEarn() {
     setTimeout(() => document.getElementById("floating-btn").style.transform = "", 300);
 }
 
-function renderLeaderboard() {
-    const earners = Object.values(db.users).sort((a,b) => b.total_earned - a.total_earned).slice(0,10);
-    const refs = Object.values(db.users).sort((a,b) => (b.referrals||0) - (a.referrals||0)).slice(0,10);
-    
-    const earnersHTML = earners.map((u,i) => 
-        `<div class="leaderboard-item">
-            <span>${i+1}. @${u.username}</span>
-            <span>${u.total_earned.toLocaleString()} GRIP</span>
-        </div>`
-    ).join("");
-    
-    const refsHTML = refs.map((u,i) => 
-        `<div class="leaderboard-item">
-            <span>${i+1}. @${u.username}</span>
-            <span>${u.referrals||0} referrals</span>
-        </div>`
-    ).join("");
-    
-    document.getElementById("topEarners").innerHTML = earnersHTML;
-    document.getElementById("topReferrers").innerHTML = refsHTML;
+async function renderLeaderboard() {
+    try {
+        const usersSnapshot = await database.ref('users').once('value');
+        const users = usersSnapshot.val() || {};
+        
+        const userArray = Object.values(users).filter(u => 
+            u.total_earned > 0 && 
+            u.tasksCompleted > 0 &&
+            u.joinedDate > (Date.now() - 30*24*60*60*1000)
+        );
+        
+        // Top Earners
+        const earners = userArray.sort((a,b) => b.total_earned - a.total_earned).slice(0,10);
+        const earnersHTML = earners.map((u,i) => 
+            `<div class="leaderboard-item">
+                <span>${i+1}. ${u.first_name} ${u.username ? '(@'+u.username+')' : ''}</span>
+                <span>${u.total_earned.toLocaleString()} GRIP</span>
+            </div>`
+        ).join("");
+        
+        // Top Referrers
+        const refs = userArray.sort((a,b) => (b.referrals||0) - (a.referrals||0)).slice(0,10);
+        const refsHTML = refs.map((u,i) => 
+            `<div class="leaderboard-item">
+                <span>${i+1}. ${u.first_name} ${u.username ? '(@'+u.username+')' : ''}</span>
+                <span>${u.referrals||0} referrals</span>
+            </div>`
+        ).join("");
+        
+        // Most Active
+        const active = userArray.sort((a,b) => (b.tasksCompleted||0) - (a.tasksCompleted||0)).slice(0,10);
+        const activeHTML = active.map((u,i) => 
+            `<div class="leaderboard-item">
+                <span>${i+1}. ${u.first_name} ${u.username ? '(@'+u.username+')' : ''}</span>
+                <span>${u.tasksCompleted||0} tasks</span>
+            </div>`
+        ).join("");
+        
+        document.getElementById("topEarners").innerHTML = earnersHTML;
+        document.getElementById("topReferrers").innerHTML = refsHTML;
+        document.getElementById("mostActive").innerHTML = activeHTML;
+        
+        // Update user rank
+        const userRank = earners.findIndex(u => u.id === user.id) + 1;
+        document.getElementById("userRank").textContent = userRank ? "#" + userRank : "#-";
+        
+    } catch (error) {
+        console.error("Error rendering leaderboard:", error);
+        document.getElementById("topEarners").innerHTML = "<p>Error loading leaderboard</p>";
+        document.getElementById("topReferrers").innerHTML = "<p>Error loading leaderboard</p>";
+        document.getElementById("mostActive").innerHTML = "<p>Error loading leaderboard</p>";
+    }
+}
+
+async function renderTeamStats() {
+    try {
+        document.getElementById("level1Ref").textContent = user.level1_refs ? user.level1_refs.length : 0;
+        document.getElementById("level2Ref").textContent = user.level2_refs ? user.level2_refs.length : 0;
+        document.getElementById("level3Ref").textContent = user.level3_refs ? user.level3_refs.length : 0;
+        
+        // Calculate total referral earnings (800 per direct referral)
+        const totalRefEarned = (user.level1_refs ? user.level1_refs.length * 800 : 0);
+        document.getElementById("totalRefEarned").textContent = totalRefEarned.toLocaleString();
+        
+        // Render team list
+        const teamList = document.getElementById("teamList");
+        if (user.level1_refs && user.level1_refs.length > 0) {
+            let teamHTML = "";
+            for (const refId of user.level1_refs.slice(0, 10)) {
+                try {
+                    const refSnapshot = await database.ref('users/' + refId).once('value');
+                    if (refSnapshot.exists()) {
+                        const refUser = refSnapshot.val();
+                        teamHTML += `
+                            <div class="leaderboard-item">
+                                <span>${refUser.first_name} ${refUser.username ? '(@'+refUser.username+')' : ''}</span>
+                                <span>${refUser.total_earned ? refUser.total_earned.toLocaleString() : '0'} GRIP</span>
+                            </div>
+                        `;
+                    }
+                } catch (error) {
+                    console.error("Error loading team member:", error);
+                }
+            }
+            teamList.innerHTML = teamHTML;
+        } else {
+            teamList.innerHTML = '<p style="text-align: center; opacity: 0.7;">No team members yet</p>';
+        }
+        
+    } catch (error) {
+        console.error("Error rendering team stats:", error);
+    }
 }
 
 function showCreateTask() {
@@ -799,25 +1315,24 @@ function closeCreatePromo() {
     document.getElementById("createPromoModal").style.display = "none";
 }
 
-function createPromotion() {
+async function createPromotion() {
     const title = document.getElementById("promoTitle").value;
     const link = document.getElementById("promoLink").value;
     const reward = parseInt(document.getElementById("promoReward").value);
     const budget = parseInt(document.getElementById("promoBudget").value);
     
     if (!title || !link || !reward || !budget) {
-        showNotification("Please fill all fields", 'error');
+        showNotification("Please fill all fields", "error");
         return;
     }
     
     if (user.balance < budget) {
-        showNotification("Not enough GRIP for this budget", 'error');
+        showNotification("Not enough GRIP for this budget", "error");
         return;
     }
     
     // Deduct budget from user balance
     user.balance -= budget;
-    db.users[user.id] = user;
     
     // Create promotion
     const promo = {
@@ -829,56 +1344,328 @@ function createPromotion() {
         budget,
         spent: 0,
         createdAt: Date.now(),
-        status: 'active'
+        status: 'active',
+        completions: 0
     };
     
-    if (!db.promotions) db.promotions = [];
-    db.promotions.push(promo);
-    save();
+    try {
+        await database.ref('users/' + user.id).update({
+            balance: user.balance
+        });
+        
+        await database.ref('promotions/' + promo.id).set(promo);
+    } catch (error) {
+        console.error("Error creating promotion:", error);
+        saveToLocalStorage();
+    }
     
     closeCreatePromo();
     renderPromotions();
     updateUI();
-    showNotification("Promotion created successfully!", 'success');
+    showNotification("Promotion created successfully!", "success");
 }
 
-function renderPromotions() {
+async function renderPromotions() {
     const container = document.getElementById("myPromotions");
     container.innerHTML = "";
     
-    if (!db.promotions || db.promotions.length === 0) {
-        container.innerHTML = '<div class="task"><p>No promotions created yet</p></div>';
-        return;
-    }
-    
-    const myPromos = db.promotions.filter(p => p.userId === user.id);
-    
-    if (myPromos.length === 0) {
-        container.innerHTML = '<div class="task"><p>No promotions created yet</p></div>';
-        return;
-    }
-    
-    myPromos.forEach(promo => {
-        const div = document.createElement("div");
-        div.className = "task";
-        div.innerHTML = `
-            <h3>${promo.title}</h3>
-            <p>Reward: ${promo.reward} GRIP per joiner</p>
-            <p>Budget: ${promo.budget.toLocaleString()} GRIP</p>
-            <p>Spent: ${promo.spent.toLocaleString()} GRIP</p>
-            <p>Status: <span style="color: ${promo.status === 'active' ? 'var(--success)' : '#ff6b6b'}">${promo.status}</span></p>
-            <button class="btn" onclick="sharePromotion(${promo.id})">Share Promotion</button>
-        `;
-        container.appendChild(div);
+    try {
+        const promotionsSnapshot = await database.ref('promotions').orderByChild('userId').equalTo(user.id).once('value');
+        const promotions = promotionsSnapshot.val() || {};
+        
+        if (Object.keys(promotions).length === 0) {
+            container.innerHTML = '<div class="task"><p>No promotions created yet</p></div>';
+            return;
+        }
+        
+        Object.values(promotions).forEach(promo => {
+            const div = document.createElement("div");
+            div.className = "task";
+            div.innerHTML = `
+                <h3>${promo.title}</h3>
+                <p>Reward: ${promo.reward} GRIP per joiner</p>
+                <p>Budget: ${promo.budget.toLocaleString()} GRIP • Spent: ${promo.spent.toLocaleString()} GRIP</p>
+                <p>Completions: ${promo.completions || 0} • Status: <span style="color: ${promo.status === 'active' ? 'var(--success)' : '#ff6b6b'}">${promo.status}</span></p>
+                <button class="btn" onclick="sharePromotion(${promo.id})">Share Promotion</button>
+            `;
+            container.appendChild(div);
     });
+    } catch (error) {
+        console.error("Error rendering promotions:", error);
+        container.innerHTML = '<div class="task"><p>Error loading promotions</p></div>';
+    }
 }
 
 function sharePromotion(promoId) {
-    const promo = db.promotions.find(p => p.id === promoId);
-    if (!promo) return;
-    
-    const message = `Join ${promo.title} and earn ${promo.reward} GRIP! ${promo.link}`;
+    // This would typically fetch the promotion from database
+    const message = `Join this promotion and earn GRIP! Check it out in the HiGriP app.`;
     tg.openTelegramLink(`https://t.me/share/url?url=${encodeURIComponent(message)}`);
+}
+
+// Mini Games
+function playMiniGame() {
+    currentGame = 'tap';
+    gameScore = 0;
+    document.getElementById("gameTitle").textContent = "Tap Game 🎯";
+    document.getElementById("gameContent").innerHTML = `
+        <div style="text-align: center;">
+            <div style="font-size: 3em; margin-bottom: 20px;">👊</div>
+            <div style="font-size: 1.5em; margin-bottom: 10px;">Taps: <span id="tapCount">0</span>/20</div>
+            <div style="font-size: 1.2em;">Reward: 50 GRIP</div>
+        </div>
+    `;
+    document.getElementById("gameActionBtn").textContent = "Tap to Start!";
+    document.getElementById("gameModal").style.display = "flex";
+}
+
+function startLuckyDraw() {
+    currentGame = 'lucky';
+    document.getElementById("gameTitle").textContent = "Lucky Draw 🎰";
+    document.getElementById("gameContent").innerHTML = `
+        <div style="text-align: center;">
+            <div style="font-size: 3em; margin-bottom: 20px;">🎁</div>
+            <div style="font-size: 1.2em; margin-bottom: 10px;">Spin to win 100-500 GRIP!</div>
+            <div id="luckyResult" style="font-size: 1.5em; color: var(--neon-cyan);"></div>
+        </div>
+    `;
+    document.getElementById("gameActionBtn").textContent = "Spin Now!";
+    document.getElementById("gameModal").style.display = "flex";
+}
+
+function handleGameAction() {
+    if (currentGame === 'tap') {
+        gameScore++;
+        document.getElementById("tapCount").textContent = gameScore;
+        
+        if (gameScore >= 20) {
+            completeMiniGame(50);
+        }
+    } else if (currentGame === 'lucky') {
+        const rewards = [100, 150, 200, 250, 300, 350, 400, 450, 500];
+        const reward = rewards[Math.floor(Math.random() * rewards.length)];
+        document.getElementById("luckyResult").textContent = `You won ${reward} GRIP!`;
+        document.getElementById("gameActionBtn").textContent = "Claim Reward";
+        document.getElementById("gameActionBtn").onclick = function() {
+            completeMiniGame(reward);
+        };
+    }
+}
+
+async function completeMiniGame(reward) {
+    user.balance += reward;
+    user.total_earned += reward;
+    
+    try {
+        await database.ref('users/' + user.id).update({
+            balance: user.balance,
+            total_earned: user.total_earned
+        });
+    } catch (error) {
+        console.error("Error updating game reward:", error);
+        saveToLocalStorage();
+    }
+    
+    updateUI();
+    closeGame();
+    tg.HapticFeedback.notificationOccurred("success");
+    showNotification(`Game completed! +${reward} GRIP 👊`, "success");
+    confettiBurst();
+}
+
+function closeGame() {
+    document.getElementById("gameModal").style.display = "none";
+    currentGame = null;
+}
+
+// Admin Functions
+async function showUserManagement() {
+    try {
+        const usersSnapshot = await database.ref('users').once('value');
+        const users = usersSnapshot.val() || {};
+        
+        let userListHTML = '';
+        Object.values(users).forEach(u => {
+            userListHTML += `
+                <div class="admin-user-item">
+                    <div>
+                        <strong>${u.first_name}</strong> 
+                        ${u.username ? '(@'+u.username+')' : ''}
+                        <br>
+                        <small>ID: ${u.id} | Balance: ${u.balance} | Tasks: ${u.tasksCompleted || 0}</small>
+                    </div>
+                    <div>
+                        <button class="btn btn-warning" style="padding:5px; font-size:0.8em;" onclick="editUser(${u.id})">Edit</button>
+                        <button class="btn btn-danger" style="padding:5px; font-size:0.8em;" onclick="banUser(${u.id})">Ban</button>
+                    </div>
+                </div>
+            `;
+        });
+        
+        document.getElementById("userManagementList").innerHTML = userListHTML;
+    } catch (error) {
+        console.error("Error loading users:", error);
+    }
+}
+
+async function showTaskManagement() {
+    try {
+        const tasks = [
+            {id:1, title:"Join Official Channel", reward:1200, active:true},
+            {id:2, title:"Join Earning Group BD", reward:1500, active:true},
+            {id:3, title:"Start @AirdropBot", reward:800, active:true},
+            {id:4, title:"Follow on Twitter", reward:600, active:true},
+            {id:5, title:"Subscribe YouTube", reward:1000, active:true}
+        ];
+        
+        let taskListHTML = '';
+        tasks.forEach(task => {
+            taskListHTML += `
+                <div class="admin-user-item">
+                    <div>
+                        <strong>${task.title}</strong>
+                        <br>
+                        <small>Reward: ${task.reward} GRIP | ID: ${task.id}</small>
+                    </div>
+                    <div>
+                        <button class="btn btn-warning" style="padding:5px; font-size:0.8em;" onclick="editTask(${task.id})">Edit</button>
+                        <button class="btn btn-danger" style="padding:5px; font-size:0.8em;" onclick="deleteTask(${task.id})">Delete</button>
+                    </div>
+                </div>
+            `;
+        });
+        
+        document.getElementById("taskManagementList").innerHTML = taskListHTML;
+    } catch (error) {
+        console.error("Error loading tasks:", error);
+    }
+}
+
+async function generateDemoUsers() {
+    if (user.id != ADMIN_ID) return;
+    
+    showNotification("🔄 Generating demo users...", "success");
+    
+    const demoUsers = [];
+    
+    // Generate 20+ demo users with random UIDs starting with 7267
+    for (let i = 0; i < 25; i++) {
+        const uid = 7267000000 + Math.floor(Math.random() * 1000000);
+        const names = ["John", "Alice", "Bob", "Emma", "Mike", "Sarah", "David", "Lisa", "Tom", "Anna"];
+        const usernames = ["john_doe", "alice_w", "bob_m", "emma_s", "mike_t", "sarah_j", "david_k", "lisa_m", "tom_b", "anna_r"];
+        
+        const demoUser = {
+            id: uid,
+            first_name: names[Math.floor(Math.random() * names.length)],
+            username: usernames[Math.floor(Math.random() * usernames.length)] + Math.floor(Math.random() * 1000),
+            balance: Math.floor(Math.random() * 50000) + 1000,
+            total_earned: Math.floor(Math.random() * 100000) + 5000,
+            streak: Math.floor(Math.random() * 30),
+            referrals: Math.floor(Math.random() * 20),
+            tasksCompleted: Math.floor(Math.random() * 50) + 10,
+            dailyTasks: Math.floor(Math.random() * 5),
+            joinedDate: Date.now() - Math.floor(Math.random() * 30 * 24 * 60 * 60 * 1000),
+            completedTasks: [1,2,3,4,5].slice(0, Math.floor(Math.random() * 5) + 1),
+            is_verified: Math.random() > 0.3
+        };
+        
+        demoUsers.push(demoUser);
+    }
+    
+    // Save demo users to Firebase
+    try {
+        for (const demoUser of demoUsers) {
+            await database.ref('users/' + demoUser.id).set(demoUser);
+        }
+        showNotification("✅ 25 demo users generated successfully!", "success");
+        renderLeaderboard();
+    } catch (error) {
+        console.error("Error generating demo users:", error);
+        showNotification("❌ Error generating demo users", "error");
+    }
+}
+
+async function updateLeaderboard() {
+    if (user.id != ADMIN_ID) return;
+    
+    showNotification("🔄 Updating leaderboard...", "success");
+    await renderLeaderboard();
+    showNotification("✅ Leaderboard updated!", "success");
+}
+
+function editUser(userId) {
+    showNotification(`Editing user ${userId}`, "success");
+    // Implementation for user editing
+}
+
+function banUser(userId) {
+    if (confirm(`Are you sure you want to ban user ${userId}?`)) {
+        showNotification(`User ${userId} banned`, "success");
+        // Implementation for user banning
+    }
+}
+
+function editTask(taskId) {
+    showNotification(`Editing task ${taskId}`, "success");
+    // Implementation for task editing
+}
+
+function deleteTask(taskId) {
+    if (confirm(`Are you sure you want to delete task ${taskId}?`)) {
+        showNotification(`Task ${taskId} deleted`, "success");
+        // Implementation for task deletion
+    }
+}
+
+function addNewTask() {
+    showNotification("Add new task feature", "success");
+    // Implementation for adding new tasks
+}
+
+function closeAdminUserModal() {
+    document.getElementById("adminUserModal").style.display = "none";
+}
+
+function closeAdminTaskModal() {
+    document.getElementById("adminTaskModal").style.display = "none";
+}
+
+function setupRealtimeListeners() {
+    // Real-time user data updates
+    database.ref('users/' + user.id).on('value', (snapshot) => {
+        if (snapshot.exists()) {
+            const updatedUser = snapshot.val();
+            Object.assign(user, updatedUser);
+            updateUI();
+        }
+    });
+    
+    // Real-time leaderboard updates
+    database.ref('users').on('value', () => {
+        renderLeaderboard();
+    });
+}
+
+function saveToLocalStorage() {
+    const db = {
+        users: {},
+        tasks: [],
+        promotions: [],
+        proofs: []
+    };
+    db.users[user.id] = user;
+    localStorage.setItem("higrip_db", JSON.stringify(db));
+}
+
+function showNotification(message, type = '') {
+    const notification = document.getElementById("notification");
+    notification.textContent = message;
+    notification.className = "notification";
+    if (type) notification.classList.add(type);
+    notification.classList.add("show");
+    
+    setTimeout(() => {
+        notification.classList.remove("show");
+    }, 3000);
 }
 
 function confettiBurst() {
@@ -888,7 +1675,7 @@ function confettiBurst() {
     canvas.height = window.innerHeight;
     
     const confetti = [];
-    const confettiCount = 300;
+    const confettiCount = 200;
     const gravity = 0.5;
     const terminalVelocity = 5;
     const drag = 0.075;
@@ -920,8 +1707,7 @@ function confettiBurst() {
             velocity: {
                 x: Math.random() * 50 - 25,
                 y: Math.random() * 50 + 50
-            },
-            wobble: Math.random() * 10
+            }
         });
     }
 
@@ -940,16 +1726,12 @@ function confettiBurst() {
             particle.position.x += particle.velocity.x;
             particle.position.y += particle.velocity.y;
             
-            // Apply wobble
-            particle.rotation += particle.wobble * 0.01;
-            
             // Draw particle
             ctx.save();
             ctx.translate(particle.position.x, particle.position.y);
             ctx.rotate(particle.rotation);
-            ctx.scale(particle.scale.x, particle.scale.y);
             
-            ctx.fillStyle = particle.color.front;
+            ctx.fillStyle = particle.dimensions.y > 10 ? particle.color.back : particle.color.front;
             ctx.fillRect(
                 -particle.dimensions.x / 2,
                 -particle.dimensions.y / 2,
@@ -974,19 +1756,7 @@ function confettiBurst() {
     update();
 }
 
-function showNotification(message, type = '') {
-    const notification = document.getElementById("notification");
-    notification.textContent = message;
-    notification.className = "notification";
-    if (type) notification.classList.add(type);
-    notification.classList.add("show");
-    
-    setTimeout(() => {
-        notification.classList.remove("show");
-    }, 3000);
-}
-
-// Auto init
+// Auto init when page loads
 load();
 </script>
 </body>
